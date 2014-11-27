@@ -14,6 +14,7 @@ import json
 
 from django import forms
 from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 
@@ -21,6 +22,7 @@ from horizon import exceptions
 from horizon import forms
 from horizon import tables
 from horizon import tabs
+from horizon.utils import memoized
 
 from django.views.generic.base import TemplateView
 
@@ -37,7 +39,6 @@ class IndexView(tabs.TabbedTableView):
     tab_group_class = application_tabs.PanelTabs
     template_name = 'idm/myApplications/index.html'
 
-
   
 class CreateView(forms.ModalFormView):
     form_class = application_forms.CreateApplicationForm
@@ -47,6 +48,7 @@ class CreateView(forms.ModalFormView):
 class UploadImageView(forms.ModalFormView):
     form_class = application_forms.UploadImageForm
     template_name = 'idm/myApplications/upload.html'
+
     
 # NOTE(garcianavalon) from horizon.forms.views
 ADD_TO_FIELD_HEADER = "HTTP_X_HORIZON_ADD_TO_FIELD"
@@ -105,9 +107,71 @@ class DetailApplicationView(TemplateView):
         # Call the base implementation first to get a context
         context = super(DetailApplicationView, self).get_context_data(**kwargs)
         application_id = self.kwargs['application_id']
-        application = fiware_api.keystone.application_get(self.request,application_id)
+        application = fiware_api.keystone.application_get(self.request, application_id)
         context['description'] = application.description
         context['url'] = application.extra['url']
-        context['callbackURL'] = application.redirect_uris
+        context['image'] = application.extra.get('img', 'Image not present in extra')
+        if application.redirect_uris:
+            context['callbackURL'] = application.redirect_uris[0]
+        else:
+            context['callbackURL'] = ''
         context['application_name'] = application.name
         return context
+
+class MultiFormView(TemplateView):
+    template_name = 'idm/myApplications/edit.html'
+
+    @memoized.memoized_method
+    def get_object(self):
+        try:
+            return fiware_api.keystone.application_get(self.request, self.kwargs['application_id'])
+        except Exception:
+            redirect = reverse("horizon:idm:myApplications:index")
+            exceptions.handle(self.request, _('Unable to update application'), redirect=redirect)
+
+    def get_context_data(self, **kwargs):
+        context = super(MultiFormView, self).get_context_data(**kwargs)
+        application = self.get_object()
+        context['application'] = application
+        context['image'] = application.extra.get('img', 'Image not present in extra')
+
+        #Existing data from organizations
+        initial_data = {
+            "appID": application.id,
+            "name": application.name,
+            "description": application.description,
+            "callbackurl": application.redirect_uris[0],
+            "url": application.extra.get('url', None)
+        }
+        
+        #Create forms
+        info = application_forms.InfoForm(self.request, initial=initial_data)
+        avatar = application_forms.AvatarForm(self.request, initial=initial_data)
+        cancel = application_forms.CancelForm(self.request, initial=initial_data)
+
+        #Actions and titles
+        info.action = 'info/'
+        info.title = 'Information'
+        avatar.action = "avatar/"
+        avatar.title = 'Avatar Update'
+        cancel.action = "cancel/"
+        cancel.title = 'Cancel'
+
+        context['form'] = [info, avatar, cancel]       
+        return context
+
+class HandleForm(forms.ModalFormView):
+    template_name = ''
+    http_method_not_allowed = ['get']
+
+
+class InfoFormView(HandleForm):    
+    form_class = application_forms.InfoForm
+
+   
+class AvatarFormView(forms.ModalFormView):
+    form_class = application_forms.AvatarForm
+
+
+class CancelFormView(forms.ModalFormView):
+    form_class = application_forms.CancelForm
