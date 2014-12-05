@@ -16,6 +16,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import os
+import logging
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -41,6 +42,8 @@ from openstack_dashboard.dashboards.idm.organizations \
     import tabs as organization_tabs
 from openstack_dashboard.dashboards.idm.organizations \
     import forms as organization_forms
+
+LOG = logging.getLogger('idm_logger')
 
 AVATAR_ROOT = os.path.abspath(os.path.join(settings.MEDIA_ROOT, 'OrganizationAvatar'))
 
@@ -84,6 +87,10 @@ class DetailOrganizationView(tables.MultiTableView):
         context['contact_info'] = organization.description
         context['organization.id'] = organization.id
         context['organization_name'] = organization.name
+        context['image'] = getattr(organization, 'img', '/static/dashboard/img/logos/small/group.png')
+        context['city'] = getattr(organization, 'city', '')
+        context['email'] = getattr(organization, 'email', '')
+        context['website'] = getattr(organization, 'website', '')
         return context
 
 
@@ -106,11 +113,16 @@ class MultiFormView(TemplateView):
         context['organization'] = organization
 
         #Existing data from organizations
+           
         initial_data = {
             "orgID": organization.id,
             "name": organization.name,
-            "description": organization.description,
+            "description": organization.description,    
+            "city": getattr(organization, 'city', ''),
+            "email": getattr(organization, 'email', ''),
+            "website":getattr(organization, 'website', ''),
         }
+       
         #Create forms
         info = organization_forms.InfoForm(self.request, initial=initial_data)
         contact = organization_forms.ContactForm(self.request, initial=initial_data)
@@ -118,6 +130,7 @@ class MultiFormView(TemplateView):
         cancel = organization_forms.CancelForm(self.request, initial=initial_data)
 
         #Actions and titles
+        # TODO(garcianavalon) quizas es mejor meterlo en el __init__ del form
         info.action = 'info/'
         info.title = 'Information'
         contact.action = "contact/"
@@ -127,7 +140,9 @@ class MultiFormView(TemplateView):
         cancel.action = "cancel/"
         cancel.title = 'Cancel'
 
-        context['form'] = [info, contact, avatar, cancel]       
+        context['forms'] = [info, contact, avatar]
+        context['cancel_form'] = cancel
+        context['image'] = getattr(organization, 'img', '/static/dashboard/img/logos/small/group.png')
         return context
 
 class HandleForm(forms.ModalFormView):
