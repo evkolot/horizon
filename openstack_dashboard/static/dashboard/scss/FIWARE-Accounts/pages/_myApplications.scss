@@ -8,11 +8,10 @@
   .modal-header{
     padding: 0;
     min-height: 32px;
-    margin-bottom: 15px;
     border-bottom: 1px solid transparent;
     h3{
-      margin: 0;
-      position: absolute;
+      font-size: 17px !important;
+      color: #48B9C9;
 
       .steps-group {
         position: relative;
@@ -35,16 +34,22 @@
           &:last-child{
             margin-right: 0px;
           }
+          @media (max-width: $screen-xs-min){
+            margin-right: 45px;
+          }
         }
         .line{
           position: relative;
           z-index: 1;
           height: 2px;
           margin-top: -15px;
-          width: 293px;
+          width: 291px;
           background-color: $gray-light;
           position: relative;
           z-index: 1;
+          @media (max-width: $screen-xs-min){
+            width: 175px;
+          }
         }
       }
       .steps-group .completed{
@@ -60,17 +65,6 @@
 }
 
 
-
-
-
-
-.site-client-roles{
-  @include make-sm-column(12, $gutter: $grid-gutter-width);
-  @include make-md-column(12, $gutter: $grid-gutter-width);
-  @include make-lg-column(12, $gutter: $grid-gutter-width);
-  padding: 25px 0 0px;
-  margin: 0 0 20px;
-}
 .site-client-roles{
   .list-group-item{
     min-height: 46px !important;
@@ -112,27 +106,32 @@
   }
 }
 
-.site-client-roles{
-  .data{
-    float: left;
+#role_list {
+  @include make-sm-column(5, $gutter: $grid-gutter-width);
+  @include make-md-column(5, $gutter: $grid-gutter-width);
+  @include make-lg-column(5, $gutter: $grid-gutter-width);
+  @media (max-width: $screen-sm-min){
+    padding-left: 0;
+    padding-right: 0;
   }
-  .btn-link{
-    float: right;
-    border: rgba(0, 0, 0, 0);
-    &:hover{
-      border: transparent;
-      color: $brand-secundary;
+  .role{
+    text-align: left;
+    position: relative;
+    height: 34px;
+    padding-top: 7px;
+    a{
+      position: absolute;
+    }
+    .ajax-inline-edit{
+      right: 27px;
+      top: 8px;
+    }
+    .ajax-modal{
+      right: 7px;
     }
   }
-  .panel-title {
-    margin-bottom: 0;
-    text-align: right;
-    font-size: 15px;
-    padding-top: 10px;
-    color: inherit;
-    border-top: 1px solid #DDD;
-  }
 }
+
 #add_permission{
   .modal-content{
     padding: 10px 15px;
@@ -142,17 +141,36 @@
   }
 }
 
-.relation_list{
-  @include make-sm-column(5, $gutter: $grid-gutter-width);
-  @include make-md-column(5, $gutter: $grid-gutter-width);
-  @include make-lg-column(5, $gutter: $grid-gutter-width);
+#permissions_list{
+  @include make-sm-column(7, $gutter: $grid-gutter-width);
+  @include make-md-column(7, $gutter: $grid-gutter-width);
+  @include make-lg-column(7, $gutter: $grid-gutter-width);
   @media (max-width: $screen-sm-min){
     padding-left: 0;
     padding-right: 0;
   }
 }
+
 .permissions_list,
-.relation_list{
+.role_list{
+  header{
+    min-height: 26px;
+    h4{
+      display: inline;
+    }
+    button{
+      float:right;
+      background-color: transparent;
+      padding: 0 1px 0 0;
+      margin-top: -2px;
+      &:hover{
+        color: $brand-secundary;
+      }
+    }
+  }
+  .btn-group-vertical{
+    width: 95%;
+  }
   .list-group-item{
     position: relative;
     padding-left: 0;
@@ -198,23 +216,125 @@
   }
 }
 
+
 .permissions_list{
-  @include make-sm-column(6, $gutter: $grid-gutter-width);
-  @include make-md-column(6, $gutter: $grid-gutter-width);
-  @include make-lg-column(6, $gutter: $grid-gutter-width);
-  border-left: 1px solid $gray-light;
-  @media (max-width: $screen-sm-min){
-    border-left: none;
-    margin-top: 30px;
-    padding-left: 0;
-    padding-right: 0;
-  }
   .alert{
     margin-top: 10px;
   }
+  li{
+    background-color: $white;
+    color: #C5C5C5;
+    white-space: nowrap;
+    padding-right: 10px;
+    padding-left: 10px;
+    border-top: 1px solid $border-color;
+    border-bottom: 1px solid $border-color;
+    &:first-child{
+      border-top: none;
+    }
+    &:hover{
+      text-decoration: none;
+      background-color: $gray-lighter;
+    }
+    i{
+      margin-right: 5px;
+      min-width: 14px;
+      @include opacity (0);
+    }
+  }
+  li.active{
+    text-decoration: none;
+    background-color: $gray-lighter;
+    color: $text-color;
+    border-top: 1px solid $border-color;
+    border-bottom: 1px solid $border-color;
+    padding-left: 10px;
+    i{
+      @include opacity (1);
+      color: $brand-primary;
+    }
+    &:hover{
+      text-decoration: none;
+      background-color: #E2E2E2;
+      color: $text-color;
+      border-top: 1px solid $border-color;
+      border-bottom: 1px solid $border-color;
+    }
+  }
+  hr{
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    border-top: 1px solid $gray !important;
+  } 
 }
+
 #collapse_oauth2_credentials {
   .btn-link{
     margin-top: -6px;
+  }
+}
+
+
+.workflow-roles{
+  .modal-dialog {
+    width: 100%;
+    margin: 10px 0 0;
+    .modal-content {
+      box-shadow: none;
+      border: none;
+      margin-top: 20px;
+      padding-bottom: 0;
+    }
+    .modal-footer {
+      border-top: none;
+      margin-top: 20px;
+      padding-bottom: 0;
+    }
+  }
+}
+
+#edit{
+  .modal{
+  top: 0 !important;
+  }
+  .modal-header {
+    padding: 0px 0px 5px;
+    border-bottom: 1px solid $border-color;
+  }
+
+  .modal-body {
+    padding: 0;
+  }
+
+  .modal-footer {
+    padding: 15px 0;
+    border-top: 1px solid $border-color;
+  }
+}
+
+#fiware_roles_roles{ 
+  .static_page{
+    .modal-header{
+      display: none;
+    }
+    .modal-body{
+      padding: 0;
+      .form-group {
+        padding: 0;
+        margin-bottom: 0;
+      }
+      label.control-label{
+        display: none;
+      }
+    }
+    .modal-footer{
+      margin: -27px 9px 0 0;
+      position: relative;
+      padding: 0;
+      float: right;
+      .fa-check{
+        margin-right: 4px;
+      }
+    }
   }
 }

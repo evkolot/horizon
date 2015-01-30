@@ -12,11 +12,11 @@
 
 import logging
 import os
-from PIL import Image 
 
 from django import forms
 from django import shortcuts
 from django.conf import settings
+from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -25,123 +25,104 @@ from horizon import messages
 from horizon.utils import functions as utils
 
 from openstack_dashboard import fiware_api
+from openstack_dashboard.dashboards.idm import forms as idm_forms
+
 
 LOG = logging.getLogger('idm_logger')
-
 AVATAR = settings.MEDIA_ROOT+"/"+"ApplicationAvatar/"
 
 class CreateApplicationForm(forms.SelfHandlingForm):
-    appID = forms.CharField(label=_("ID"), widget=forms.HiddenInput(), required=False)
-    nextredir = forms.CharField(widget=forms.HiddenInput(), required=False)
+    appID = forms.CharField(widget=forms.HiddenInput(), required=False)
+    redirect_to = forms.CharField(widget=forms.HiddenInput(), required=False)
     name = forms.CharField(label=_("Name"), required=True)
     description = forms.CharField(label=_("Description"), 
                                 widget=forms.Textarea, 
                                 required=True)
     url = forms.CharField(label=_("URL"), required=True)
     callbackurl = forms.CharField(label=_("Callback URL"), required=True)
+    title = 'Information'
 
     def handle(self, request, data):
         #create application
         #default_domain = api.keystone.get_default_domain(request)
-        if data['nextredir'] == "create":
+        if data['redirect_to'] == "create":
             try:
 
-                extra = {
-                    'url':data['url'],
-                    'img': "/static/dashboard/img/logos/small/app.png"
-                }
+                default_img = '/static/dashboard/img/logos/small/app.png'
                 application = fiware_api.keystone.application_create(request,
-                                                    name=data['name'],
-                                                    description=data['description'],
-                                                    redirect_uris=[data['callbackurl']],
-                                                    extra=extra)
+                                                name=data['name'],
+                                                description=data['description'],
+                                                redirect_uris=[data['callbackurl']],
+                                                url=data['url'],
+                                                img=default_img)
                 LOG.debug('Application {0} created'.format(application.name))
             except Exception:
                 exceptions.handle(request, _('Unable to register the application.'))
                 return False
-            
-            response = shortcuts.redirect('horizon:idm:myApplications:upload', application.id)
+            response = shortcuts.redirect('horizon:idm:myApplications:avatar_step', application.id)
+
 
         else:
             try:
-                application = fiware_api.keystone.application_get(request, data['appID'])
                 LOG.debug('updating application {0}'.format(data['appID']))
+
                 redirect_uris = [data['callbackurl'],]
-                extra = application.extra
-                extra['url'] = data['url'] 
-                fiware_api.keystone.application_update(request, data['appID'], name=data['name'], description=data['description'],
-                        redirect_uris=redirect_uris, extra=extra)
-                LOG.debug('image {0}'.format(application.id))
+                fiware_api.keystone.application_update(request, 
+                                                data['appID'], 
+                                                name=data['name'], 
+                                                description=data['description'],
+                                                redirect_uris=redirect_uris, 
+                                                url=data['url'])
                 msg = 'Application updated successfully.'
                 messages.success(request, _(msg))
-                LOG.debug('image {0}'.format(application.id))
                 LOG.debug(msg)
                 response = shortcuts.redirect('horizon:idm:myApplications:detail', data['appID'])
-                return response
             except Exception as e:
                 LOG.error(e)
-                response = shortcuts.redirect('horizon:idm:myApplications:detail', data['appID'])
+                exceptions.handle(request, _('Unable to update the application.'))
 
         return response
     
-class UploadImageForm(forms.SelfHandlingForm):
-    appID = forms.CharField(label=_("ID"), widget=forms.HiddenInput())
+class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
+    appID = forms.CharField(widget=forms.HiddenInput())
     image = forms.ImageField(required=False)
-    nextredir = forms.CharField(widget=forms.HiddenInput(), required=False)
-    x1 = forms.DecimalField(widget=forms.HiddenInput(), required=False)
-    y1 = forms.DecimalField(widget=forms.HiddenInput(), required=False)
-    x2 = forms.DecimalField(widget=forms.HiddenInput(), required=False)
-    y2 = forms.DecimalField(widget=forms.HiddenInput(), required=False)
-
+    redirect_to = forms.CharField(widget=forms.HiddenInput(), required=False)
+    title = 'Avatar Update'
 
     def handle(self, request, data):
-        application = fiware_api.keystone.application_get(request, data['appID'])
+        application_id = data['appID']
         if request.FILES:
 
-            x1 = self.cleaned_data['x1'] 
-            x2 = self.cleaned_data['x2']
-            y1 = self.cleaned_data['y1']
-            y2 = self.cleaned_data['y2']
-
             image = request.FILES['image'] 
-            imageName = data['appID']
-            LOG.debug('An image exists with id: '+ imageName)
-
+            output_img = self.crop(image)
             
-            img = Image.open(image)
-
-            x1 = int(x1)
-            x2 = int(x2)
-            y1 = int(y1)
-            y2 = int(y2)
-
-            output_img = img.crop((x1, y1, x2, y2))
+            imageName = application_id
             output_img.save(settings.MEDIA_ROOT+"/"+"ApplicationAvatar/"+imageName, 'JPEG')
-            extra = application.extra
-            extra['img'] = settings.MEDIA_URL+'ApplicationAvatar/'+imageName
-            fiware_api.keystone.application_update(request, application.id, extra=extra)
-            LOG.debug(application)
-        if data['nextredir'] == "update":
-            response = shortcuts.redirect('horizon:idm:myApplications:detail', data['appID']) 
-            LOG.debug('Avatar for application {0} updated'.format(application.id))
+            
+            img = settings.MEDIA_URL+'ApplicationAvatar/'+imageName
+            fiware_api.keystone.application_update(request, application_id, img=img)
+
+        if data['redirect_to'] == "update":
+            response = shortcuts.redirect('horizon:idm:myApplications:detail', application_id) 
+            LOG.debug('Avatar for application {0} updated'.format(application_id))
         else:
-            response = shortcuts.redirect('horizon:idm:myApplications:roles_index')
-            LOG.debug('Avatar for application {0} saved'.format(application.id))
+            response = shortcuts.redirect('horizon:idm:myApplications:roles_index', 
+                                        application_id)
+            LOG.debug('Avatar for application {0} saved'.format(application_id))
         return response
 
 
 class CreateRoleForm(forms.SelfHandlingForm):
-    # application_id = forms.CharField(label=_("Domain ID"),
-    #                             required=True,
-    #                             widget=forms.HiddenInput())
     name = forms.CharField(max_length=255, label=_("Role Name"))
+    application_id = forms.CharField(required=True,
+                                 widget=forms.HiddenInput())
     no_autocomplete = True
-
     def handle(self, request, data):
         try:
             LOG.info('Creating role with name "%s"' % data['name'])
             new_role = fiware_api.keystone.role_create(request,
-                                                name=data['name'])
+                                            name=data['name'],
+                                            application=data['application_id'])
             messages.success(request,
                              _('Role "%s" was successfully created.')
                              % data['name'])
@@ -149,19 +130,59 @@ class CreateRoleForm(forms.SelfHandlingForm):
         except Exception:
             exceptions.handle(request, _('Unable to create role.'))
 
+class EditRoleForm(forms.SelfHandlingForm):
+    role_id = forms.CharField(required=True,
+                                 widget=forms.HiddenInput())
+    name = forms.CharField(max_length=60, label='')
+    no_autocomplete = True
+    def handle(self, request, data):
+        try:
+            LOG.info('Updating role with id {0}'.format(data['role_id']))
+            role = fiware_api.keystone.role_update(request,
+                                            role=data['role_id'],
+                                            name=data['name'])
+            messages.success(request,
+                             _('Role "%s" was successfully updated.')
+                             % data['role_id'])
+            response = HttpResponse(role.name)
+            return response
+        except Exception:
+            exceptions.handle(request, _('Unable to delete role.'))
+
+class DeleteRoleForm(forms.SelfHandlingForm):
+    role_id = forms.CharField(required=True,
+                                 widget=forms.HiddenInput())
+
+    def handle(self, request, data):
+        try:
+            LOG.info('Deleting role with id {0}'.format(data['role_id']))
+            fiware_api.keystone.role_delete(request,
+                                            role_id=data['role_id'])
+            messages.success(request,
+                             _('Role "%s" was successfully deleted.')
+                             % data['role_id'])
+            return True
+        except Exception:
+            exceptions.handle(request, _('Unable to delete role.'))
 
 class CreatePermissionForm(forms.SelfHandlingForm):
-    # application_id = forms.CharField(label=_("Domain ID"),
-    #                             required=True,
-    #                             widget=forms.HiddenInput())
+    application_id = forms.CharField(required=True,
+                                 widget=forms.HiddenInput())
     name = forms.CharField(max_length=255, label=_("Permission Name"))
+    description = forms.CharField(max_length=255, label=_("Description"))
+    action = forms.CharField(max_length=255, label=_("HTTP action"))
+    resource = forms.CharField(max_length=255, label=_("Resource"))
     no_autocomplete = True
-
     def handle(self, request, data):
         try:
             LOG.info('Creating permission with name "%s"' % data['name'])
             new_permission = fiware_api.keystone.permission_create(request,
-                                                name=data['name'])
+                                            name=data['name'],
+                                            application=data['application_id'])
+            # TODO(garcianavalon) add support for extra arguments in permissions
+                                            # resource=data['resource'],
+                                            # action=data['action'])
+
             messages.success(request,
                              _('Permission "%s" was successfully created.')
                              % data['name'])
@@ -172,10 +193,9 @@ class CreatePermissionForm(forms.SelfHandlingForm):
         
 class CancelForm(forms.SelfHandlingForm):
     appID = forms.CharField(label=_("ID"), widget=forms.HiddenInput())
-    name = forms.CharField(label=_("Name"), widget=forms.HiddenInput(), required=False)
+    title = 'Cancel'
 
-    def handle(self, request, data):
-        application = fiware_api.keystone.application_get(request, data['appID'])
+    def handle(self, request, data, application):
         image = application.extra['img']
         LOG.debug(image)
         if "ApplicationAvatar" in image:

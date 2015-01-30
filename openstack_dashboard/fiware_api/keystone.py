@@ -30,7 +30,7 @@ else:
     from keystoneclient import session
     from keystoneclient.auth.identity import v3
     from keystoneclient.v3 import client
-    from keystoneclient.v3.contrib.oauth2 import auth
+    from keystoneclient.v3.contrib.oauth2 import auth as oauth2_auth
 
 LOG = logging.getLogger('idm_logger')
 
@@ -51,7 +51,7 @@ def fiwareclient(session=None, request=None):# TODO(garcianavalon) use this
     return keystone
         
 def _oauth2_session(access_token_id):
-    auth = auth.OAuth2(access_token=access_token_id)
+    auth = oauth2_auth.OAuth2(access_token=access_token_id)
     return session.Session(auth=auth)
 
 def _password_session():
@@ -133,26 +133,28 @@ def role_get(request, role_id):
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
     return manager.get(role_id)
 
-def role_list(request):
+def role_list(request, user=None, organization=None, application=None):
     #manager = fiwareclient().fiware_roles.roles
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
-    return manager.list()
+    return manager.list(user=user,
+                        organization=organization,
+                        application=application)
 
-def role_create(request, name, is_editable=True, application=None, **kwargs):
+def role_create(request, name, is_internal=False, application=None, **kwargs):
     #manager = fiwareclient().fiware_roles.roles
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
     return manager.create(name=name,
-                is_editable=is_editable,
+                is_internal=is_internal,
                 application=application,
                 **kwargs)
 
-def role_update(request, role, name=None, is_editable=True, 
+def role_update(request, role, name=None, is_internal=False, 
                 application=None, **kwargs):
     #manager = fiwareclient().fiware_roles.roles
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
     return manager.update(role, 
                         name=name,
-                        is_editable=is_editable,
+                        is_internal=is_internal,
                         application=application,
                         **kwargs)
         
@@ -161,31 +163,44 @@ def role_delete(request, role_id):
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
     return manager.delete(role_id)
 
+def add_role_to_user(request, role, user, organization):
+    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    return manager.add_to_user(role, user, organization)
+
+def remove_role_from_user(request, role, user, organization):
+    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    return manager.remove_from_user(role, user, organization)
+
+def list_allowed_roles_to_assign(request, user, organization):
+    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    return manager.list_allowed_roles_to_assign(user, organization)
+
 def permission_get(request, permission_id):
     #manager = fiwareclient().fiware_roles.permissions
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.permissions
     return manager.get(permission_id)
 
-def permission_list(request):
+def permission_list(request, role=None, application=None):
     #manager = fiwareclient().fiware_roles.permissions
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.permissions
-    return manager.list()
+    return manager.list(role=role,
+                        application=application)
 
-def permission_create(request, name, is_editable=True, application=None, **kwargs):
+def permission_create(request, name, is_internal=False, application=None, **kwargs):
     #manager = fiwareclient().fiware_roles.permissions
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.permissions
     return manager.create(name=name,
-                is_editable=is_editable,
+                is_internal=is_internal,
                 application=application,
                 **kwargs)
 
-def permission_update(request, permission, name=None, is_editable=True, 
+def permission_update(request, permission, name=None, is_internal=False, 
                 application=None, **kwargs):
     #manager = fiwareclient().fiware_roles.permissions
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.permissions
     return manager.update(permission, 
                         name=name,
-                        is_editable=is_editable,
+                        is_internal=is_internal,
                         application=application,
                         **kwargs)
         
@@ -194,11 +209,18 @@ def permission_delete(request, permission_id):
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.permissions
     return manager.delete(permission_id)
 
+def add_permission_to_role(request, permission, role):
+    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.permissions
+    return manager.add_to_role(permission, role)
+
+def remove_permission_from_role(request, permission, role):
+    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.permissions
+    return manager.remove_from_role(permission, role)
 
 # APPLICATIONS/CONSUMERS
 def application_create(request, name, redirect_uris, scopes=['all_info'],
                     client_type='confidential', description=None, 
-                    grant_type='authorization_code', extra=None):
+                    grant_type='authorization_code', **kwargs):
     """ Registers a new consumer in the Keystone OAuth2 extension.
 
     In FIWARE applications is the name OAuth2 consumers/clients receive.
@@ -210,7 +232,7 @@ def application_create(request, name, redirect_uris, scopes=['all_info'],
                         scopes=scopes,
                         client_type=client_type,
                         grant_type=grant_type,
-                        extra=extra)
+                        **kwargs)
 
 def application_list(request, user=None):
     manager = api.keystone.keystoneclient(request, admin=True).oauth2.consumers
