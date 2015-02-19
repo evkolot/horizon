@@ -1,21 +1,4 @@
-{% if row.table.show_avatar %}
-  <div class="avatar">
-  	{% if row.table.name == 'members' %}
-  		<img id="{{ row.datum.name }}-avatar" src="/static/dashboard/img/logos/small/user.png">
-  	{% else %}
-	  	{% if row.datum.extra.img %}
-	  		<img id="{{ row.datum.name }}-avatar" src="{{ row.datum.extra.img }}">
-	     {% elif row.datum.img %}
-	     	<img id="{{ row.datum.name }}-avatar" src="{{ row.datum.img }}">
-	     {% else %}
-	     	<img id="{{ row.datum.name }}-avatar" src="/static/dashboard/img/logos/small/group.png">
-	     {% endif %}
-	{% endif %}
-
-  </div>
-
-{% endif %}
-
-{% for cell in row %}  
+{% for cell in row %} 
   {% include "horizon/common/_data_table_cell.html" %}
+	
 {% endfor %}

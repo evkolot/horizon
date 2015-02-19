@@ -116,6 +116,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'openstack_dashboard.fiware_middleware.middleware.UserInfoMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'horizon.middleware.HorizonMiddleware',
     'django.middleware.doc.XViewMiddleware',
@@ -225,9 +226,8 @@ INSTALLED_APPS = [
     'compressor',
     'horizon',
     'openstack_auth',
-    'fiware_auth',
-    'fiware_oauth2',
     'captcha',
+    'django_summernote', 
 ]
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 AUTHENTICATION_BACKENDS = ('openstack_auth.backend.KeystoneBackend',)
@@ -345,7 +345,7 @@ if not SECRET_KEY:
                                                        '.secret_key_store'))
 
 from openstack_dashboard import policy
-POLICY_CHECK_FUNCTION = policy.check
+#POLICY_CHECK_FUNCTION = policy.check
 
 # Add HORIZON_CONFIG to the context information for offline compression
 COMPRESS_OFFLINE_CONTEXT = {

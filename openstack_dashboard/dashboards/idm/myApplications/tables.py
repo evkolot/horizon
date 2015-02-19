@@ -10,24 +10,26 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from django.core.exceptions import ValidationError
+from django.conf import settings
+from django.core import urlresolvers
 from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ungettext_lazy
 
-from keystoneclient.exceptions import Conflict
-
-from horizon import exceptions
-from horizon import forms
 from horizon import tables
 
+from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 
 
 class ProvidingApplicationsTable(tables.DataTable):
     name = tables.Column('name', verbose_name=_('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', None))
+    avatar = tables.Column(lambda obj: settings.MEDIA_URL + getattr(
+        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
+    default_avatar = tables.Column(lambda obj: settings.STATIC_URL + getattr(
+        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
+    
     clickable = True
-    show_avatar = True
+    # show_avatar = True
 
     class Meta:
         name = "providing_table"
@@ -38,8 +40,13 @@ class ProvidingApplicationsTable(tables.DataTable):
 class PurchasedApplicationsTable(tables.DataTable):
     name = tables.Column('name', verbose_name=_('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', None))
+    avatar = tables.Column(lambda obj: settings.MEDIA_URL + getattr(
+        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
+    default_avatar = tables.Column(lambda obj: settings.STATIC_URL + getattr(
+        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
+    
     clickable = True
-    show_avatar = True
+    # show_avatar = True
 
     class Meta:
         name = "purchased_table"
@@ -47,163 +54,80 @@ class PurchasedApplicationsTable(tables.DataTable):
         multi_select = False
 
 
-# class DeleteRolesAction(tables.DeleteAction):
-#     icon = "cross"
+class ManageAuthorizedMembersLink(tables.LinkAction):
+    name = "manage_application_members"
+    verbose_name = _("Manage authorized users")
+    url = "horizon:idm:myApplications:members"
+    classes = ("ajax-modal",)
 
-#     @staticmethod
-#     def action_present(count):
-#         return ungettext_lazy(
-#             u"Delete Role",
-#             u"Delete Roles",
-#             count
-#         )
+    def allowed(self, request, user):
+        # Allowed if your allowed role list is not empty
+        # TODO(garcianavalon) move to fiware_api
+        default_org = request.user.default_project_id
+        allowed = fiware_api.keystone.list_user_allowed_roles_to_assign(
+            request,
+            user=request.user.id,
+            organization=default_org)
+        app_id = self.table.kwargs['application_id']
+        return allowed.get(app_id, False)
 
-#     @staticmethod
-#     def action_past(count):
-#         return ungettext_lazy(
-#             u"Deleted Role",
-#             u"Deleted Roles",
-#             count
-#         )
-#     #policy_rules = (("identity", "identity:delete_role"),)
+    def get_link_url(self, datum=None):
+        app_id = self.table.kwargs['application_id']
+        return  urlresolvers.reverse(self.url, args=(app_id,))
 
-#     def allowed(self, request, role):
-#         #return api.keystone.keystone_can_edit_role()
-#         # TODO(garcianavalon) implement roles/policies for this
-#         return True
 
-#     def delete(self, request, obj_id):
-#         fiware_api.keystone.role_delete(request, obj_id)
-
-# class UpdateRoleRow(tables.Row):
-#     ajax = True
-
-#     def get_data(self, request, role_id):
-#         role_info = fiware_api.keystone.role_get(request, role_id)
-#         return role_info
-
-# class UpdateRoleCell(tables.UpdateAction):
-
-#     def allowed(self, request, role, cell):
-#         # return api.keystone.keystone_can_edit_role() and \
-#         #     policy.check((("identity", "identity:update_role"),),
-#         #                  request)
-#         # TODO(garcianavalon) implement roles/policies for this
-#         return True
-
-#     def update_cell(self, request, datum, role_id,
-#                     cell_name, new_cell_value):
-#         # inline update role info
-#         try:
-#             role_obj = datum
-#             # updating changed value by new value
-#             setattr(role_obj, cell_name, new_cell_value)
-#             fiware_api.keystone.role_update(
-#                 request,
-#                 role_id,
-#                 name=role_obj.name)
-#             # TODO(garcianavalon) application relation, permissions
-#         except Conflict:
-#             # Returning a nice error message about name conflict. The message
-#             # from exception is not that clear for the users.
-#             message = _("A role with this name already exists")
-#             raise ValidationError(message)
-#         except Exception:
-#             exceptions.handle(request, _('Error updating role'))
-#             return False
-#         return True
-
-# class RolesTable(tables.DataTable):
-#     name = tables.Column('name', 
-#                         form_field=forms.CharField(max_length=64),
-#                         update_action=UpdateRoleCell)
-#     id = tables.Column('id', verbose_name=_('Role ID'))
+class MembersTable(tables.DataTable):
+    name = tables.Column('name', verbose_name=_('Members'))
+    avatar = tables.Column(lambda obj: settings.MEDIA_URL + getattr(
+        obj, 'img_medium', 'dashboard/img/logos/medium/user.png'))
+    default_avatar = tables.Column(lambda obj: settings.STATIC_URL + getattr(
+        obj, 'img_medium', 'dashboard/img/logos/medium/user.png'))
     
-#     class Meta:
-#         name = "roles"
-#         verbose_name = _("Roles")
-#         row_class = UpdateRoleRow
-#         row_actions = (DeleteRolesAction,)
-#         table_actions = ()
+    # show_avatar = True
+    clickable = True
+
+    class Meta:
+        name = "members"
+        verbose_name = _("Authorized Members")
+        table_actions = (ManageAuthorizedMembersLink, )
+        multi_select = False
 
 
-# class DeletePermissionsAction(tables.DeleteAction):
+class ManageAuthorizedOrganizationsLink(tables.LinkAction):
+    name = "manage_application_organizations"
+    verbose_name = _("Manage authorized organizations")
+    url = "horizon:idm:myApplications:organizations"
+    classes = ("ajax-modal",)
 
-#     icon = "cross"
+    def allowed(self, request, user):
+        # Allowed if your allowed role list is not empty
+        # TODO(garcianavalon) move to fiware_api
+        default_org = request.user.default_project_id
+        allowed = fiware_api.keystone.list_user_allowed_roles_to_assign(
+            request,
+            user=request.user.id,
+            organization=default_org)
+        app_id = self.table.kwargs['application_id']
+        return allowed.get(app_id, False)
 
-#     @staticmethod
-#     def action_present(count):
-#         return ungettext_lazy(
-#             u"Delete Permission",
-#             u"Delete Permissions",
-#             count
-#         )
+    def get_link_url(self, datum=None):
+        app_id = self.table.kwargs['application_id']
+        return  urlresolvers.reverse(self.url, args=(app_id,))
 
-#     @staticmethod
-#     def action_past(count):
-#         return ungettext_lazy(
-#             u"Deleted Permission",
-#             u"Deleted Permissions",
-#             count
-#         )
-#     #policy_rules = (("identity", "identity:delete_role"),)
 
-#     def allowed(self, request, permission):
-#         #return api.keystone.keystone_can_edit_permission()
-#         # TODO(garcianavalon) implement permissions/policies for this
-#         return True
+class AuthorizedOrganizationsTable(tables.DataTable):
+    name = tables.Column('name', verbose_name=_('Applications'))
+    url = tables.Column(lambda obj: getattr(obj, 'url', None))
+    avatar = tables.Column(lambda obj: settings.MEDIA_URL + getattr(
+        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
+    default_avatar = tables.Column(lambda obj: settings.STATIC_URL + getattr(
+        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
+    
+    # show_avatar = True
+    clickable = True
 
-#     def delete(self, request, obj_id):
-#         fiware_api.keystone.permission_delete(request, obj_id)
-
-# class UpdatePermissionRow(tables.Row):
-#     ajax = True
-
-#     def get_data(self, request, permission_id):
-#         permission_info = fiware_api.keystone.permission_get(request, permission_id)
-#         return permission_info
-
-# class UpdatePermissionCell(tables.UpdateAction):
-
-#     def allowed(self, request, permission, cell):
-#         # return api.keystone.keystone_can_edit_permission() and \
-#         #     policy.check((("identity", "identity:update_permission"),),
-#         #                  request)
-#         # TODO(garcianavalon) implement permissions/policies for this
-#         return True
-
-#     def update_cell(self, request, datum, permission_id,
-#                     cell_name, new_cell_value):
-#         # inline update permission info
-#         try:
-#             permission_obj = datum
-#             # updating changed value by new value
-#             setattr(permission_obj, cell_name, new_cell_value)
-#             fiware_api.keystone.permission_update(
-#                 request,
-#                 permission_id,
-#                 name=permission_obj.name)
-#             # TODO(garcianavalon) application relation, permissions
-#         except Conflict:
-#             # Returning a nice error message about name conflict. The message
-#             # from exception is not that clear for the users.
-#             message = _("A permission with this name already exists")
-#             raise ValidationError(message)
-#         except Exception:
-#             exceptions.handle(request, _('Error updating permission'))
-#             return False
-#         return True
-
-# class PermissionsTable(tables.DataTable):
-#     name = tables.Column('name', 
-#                         form_field=forms.CharField(max_length=64),
-#                         update_action=UpdatePermissionCell)
-#     id = tables.Column('id', verbose_name=_('Permission ID'))
-
-#     class Meta:
-#         name = "permissions"
-#         verbose_name = _("Permissions")
-#         row_class = UpdatePermissionRow
-#         row_actions = (DeletePermissionsAction,)
-#         table_actions = ()
-
+    class Meta:
+        name = "organizations"
+        verbose_name = _("Authorized Organizations")
+        table_actions = (ManageAuthorizedOrganizationsLink, )
+        multi_select = False

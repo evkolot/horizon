@@ -38,18 +38,18 @@ class OrganizationsTab(tabs.TableTab):
         my_organizations = []
         #domain_context = self.request.session.get('domain_context', None)
         try:
-            organizations, self._more = api.keystone.tenant_list(self.request,
-                                                            admin=False)
-            my_organizations, self._more = api.keystone.tenant_list(self.request,
-                                            user=self.request.user.id,
-                                            admin=False)
-            organizations = [t for t in organizations if not t in my_organizations]
+            organizations, self._more = api.keystone.tenant_list(
+                self.request, admin=False)
+            my_organizations, self._more = api.keystone.tenant_list(
+                self.request, user=self.request.user.id, admin=False)
+            organizations = [t for t in organizations if not t 
+                             in my_organizations]
         except Exception as e:
             self._more = False
             exceptions.handle(self.request,
                               _("Unable to retrieve organization list. \
                                     Error message: {0}".format(e)))
-        return idm_utils.filter_default_organizations(organizations)
+        return idm_utils.filter_default(organizations)
 
 
 class MyOrganizationsTab(tabs.TableTab):
@@ -74,7 +74,7 @@ class MyOrganizationsTab(tabs.TableTab):
             self._more = False
             exceptions.handle(self.request,
                               _("Unable to retrieve organization information."))
-        return idm_utils.filter_default_organizations(organizations)
+        return idm_utils.filter_default(organizations)
 
 
 class PanelTabs(tabs.TabGroup):
