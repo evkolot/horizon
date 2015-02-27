@@ -17,11 +17,14 @@ import requests
 
 from django.conf import settings
 from openstack_dashboard import api
+from openstack_dashboard.local import local_settings
+
+from horizon import exceptions
 
 # check that we have the correct version of the keystoneclient
 try:
     from keystoneclient.v3.contrib.oauth2 import core
-except ImportError, e:
+except ImportError as e:
     raise ImportError(e,
                       'You dont have setup correctly the extended keystoneclient. \
                       ask garcianavalon (Kike) or look at the wiki at github')
@@ -32,7 +35,11 @@ else:
     from keystoneclient.v3 import client
     from keystoneclient.v3.contrib.oauth2 import auth as oauth2_auth
 
+
 LOG = logging.getLogger('idm_logger')
+OWNER_ROLE = None
+PROVIDER_ROLE = None
+PURCHASER_ROLE = None
 
 def fiwareclient(session=None, request=None):# TODO(garcianavalon) use this
     """Encapsulates all the logic for communicating with the modified keystone server.
@@ -68,17 +75,17 @@ def _password_session():
     return session.Session(auth=auth)
 
 # USER REGISTRATION
-def _find_user(keystone, email=None, name=None):
+def _find_user(keystone, email=None, username=None):
     # NOTE(garcianavalon) I dont know why but find by email returns a NoUniqueMatch
     # exception so we do it by hand filtering the python dictionary,
     # which is extremely inneficient
-    if name:
-        user = keystone.users.find(name=name)
+    if email:
+        user = keystone.users.find(name=email)
         return user
-    elif email:
+    elif username:
         user_list = keystone.users.list()
         for user in user_list:
-            if hasattr(user, 'email') and user.email == email:
+            if hasattr(user, 'username') and user.username == username:
                 return user
         # consistent behaviour with the keystoneclient api
         msg = "No user matching email=%s." % email
@@ -89,7 +96,7 @@ def _grant_role(keystone, role, user, project):
     keystone.roles.grant(role, user=user, project=project)
     return role
 
-def register_user(name, email, password):
+def register_user(name, username, password):
     keystone = fiwareclient()
     domain = getattr(settings, 'OPENSTACK_KEYSTONE_ADMIN_CREDENTIALS')['DOMAIN']
     default_domain = keystone.domains.get(domain)
@@ -98,7 +105,7 @@ def register_user(name, email, password):
         name,
         domain=default_domain,
         password=password,
-        email=email)
+        username=username)
     return new_user
 
 def activate_user(user, activation_key):
@@ -112,9 +119,9 @@ def change_password(user_email, new_password):
     user = keystone.users.update(user, password=new_password, enabled=True)
     return user
 
-def check_user(name):
+def check_username(username):
     keystone = fiwareclient()
-    user = _find_user(keystone, name=name)
+    user = _find_user(keystone, username=username)
     return user
 
 def check_email(email):
@@ -232,6 +239,18 @@ def list_organization_allowed_applications_to_manage(request, organization):
     manager = api.keystone.keystoneclient(
         request, admin=True).fiware_roles.allowed
     return manager.list_organization_allowed_applications_to_manage(organization)
+
+def list_user_allowed_applications_to_manage_roles(request, user, organization):
+    manager = api.keystone.keystoneclient(
+        request, admin=True).fiware_roles.allowed
+    return manager.list_user_allowed_applications_to_manage_roles(
+        user, organization)
+
+def list_organization_allowed_applications_to_manage_roles(request, organization):
+    manager = api.keystone.keystoneclient(
+        request, admin=True).fiware_roles.allowed
+    return manager.list_organization_allowed_applications_to_manage_roles(
+        organization)
 
 # PERMISSIONS
 def permission_get(request, permission_id):
@@ -425,7 +444,6 @@ def login_with_oauth(request, access_token, project=None):
     # return fiwareclient(session=session,request=request)
 
 # FIWARE-IdM API CALLS
-
 def forward_validate_token_request(request):
     """ Forwards the request to the keystone backend."""
     # TODO(garcianavalon) figure out if this method belongs to keystone client or if
@@ -436,3 +454,79 @@ def forward_validate_token_request(request):
     LOG.debug('API_KEYSTONE: GET to {0}'.format(url))
     response = requests.get(url)
     return response
+
+# SPECIAL ROLES
+def get_owner_role(request):
+    """Gets the owner role object from Keystone and saves it as a global.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    global OWNER_ROLE
+    owner = getattr(local_settings, "KEYSTONE_OWNER_ROLE", None)
+    if owner and OWNER_ROLE is None:
+        try:
+            roles = api.keystone.keystoneclient(request, admin=True).roles.list()
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == owner or role.name == owner:
+                OWNER_ROLE = role
+                break
+    return OWNER_ROLE
+
+def get_provider_role(request):
+    """Gets the provider role object from Keystone and saves it as a global.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    global PROVIDER_ROLE
+    provider = getattr(local_settings, "FIWARE_PROVIDER_ROLE", None)
+    if provider and PROVIDER_ROLE is None:
+        try:
+            roles = api.keystone.keystoneclient(request, 
+                admin=True).fiware_roles.roles.list()
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == provider or role.name == provider:
+                PROVIDER_ROLE = role
+                break
+    return PROVIDER_ROLE
+
+def get_purchaser_role(request):
+    """Gets the purchaser role object from Keystone and saves it as a global.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    global PURCHASER_ROLE
+    purchaser = getattr(local_settings, "FIWARE_PURCHASER_ROLE", None)
+    if purchaser and PURCHASER_ROLE is None:
+        try:
+            roles = api.keystone.keystoneclient(request, 
+                admin=True).fiware_roles.roles.list()
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == purchaser or role.name == purchaser:
+                PURCHASER_ROLE = role
+                break
+    return PURCHASER_ROLE
+
+def get_idm_admin_app(request):
+    idm_admin = getattr(local_settings, "FIWARE_IDM_ADMIN_APP", None)
+    if idm_admin:
+        try:
+            apps = api.keystone.keystoneclient(request, 
+                admin=True).oauth2.consumers.list()
+        except Exception:
+            apps = []
+            exceptions.handle(request)
+        for app in apps:
+            if app.id == idm_admin or app.name == idm_admin:
+                return app

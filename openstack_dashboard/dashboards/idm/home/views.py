@@ -14,8 +14,7 @@
 
 import logging
 
-from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
+from django.shortcuts import redirect
 
 from horizon import exceptions
 from horizon import tables
@@ -33,22 +32,30 @@ class IndexView(tables.MultiTableView):
                      home_tables.ApplicationsTable)
     template_name = 'idm/home/index.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.organization.id != request.user.default_project_id:
+            return redirect("/idm/home_orgs/")
+        return super(IndexView, self).dispatch(request, *args, **kwargs)
+
     def has_more_data(self, table):
         return self._more
 
     def get_organizations_data(self):
         organizations = []
-        # domain_context = self.request.session.get('domain_context', None)
         try:
             organizations, self._more = api.keystone.tenant_list(
                 self.request,
                 user=self.request.user.id,
                 admin=False)
-            LOG.debug('Organizations listed: {0}'.format(organizations))
+            switchable_organizations = [org.id for org 
+                                        in self.request.organizations]
+            for org in organizations:
+                if org.id in switchable_organizations:
+                    setattr(org, 'switchable', True)
         except Exception:
             self._more = False
             exceptions.handle(self.request,
-                              _("Unable to retrieve organization list."))
+                              ("Unable to retrieve organization list."))
     
         return idm_utils.filter_default(organizations)
 
@@ -64,5 +71,5 @@ class IndexView(tables.MultiTableView):
                             if app.id in apps_with_roles]
         except Exception:
             exceptions.handle(self.request,
-                              _("Unable to retrieve application list."))
+                              ("Unable to retrieve application list."))
         return idm_utils.filter_default(applications)

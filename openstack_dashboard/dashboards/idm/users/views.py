@@ -17,7 +17,6 @@ import logging
 
 from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
 from horizon import forms
@@ -42,34 +41,47 @@ class DetailUserView(tables.MultiTableView):
     table_classes = (user_tables.OrganizationsTable,
                      user_tables.ApplicationsTable)
 
+    
     def get_organizations_data(self):
         organizations = []
+        LOG.debug(self.request.path)
+        path = self.request.path
+        user_id = path.split('/')[3]
+
         #domain_context = self.request.session.get('domain_context', None)
         try:
             organizations, self._more = api.keystone.tenant_list(
                 self.request,
-                user=self.request.user.id,
+                user=user_id,
                 admin=False)
         except Exception:
             self._more = False
             exceptions.handle(self.request,
-                              _("Unable to retrieve organization information."))
+                              ("Unable to retrieve organization information."))
         return idm_utils.filter_default(organizations)
 
     def get_applications_data(self):
         applications = []
+        path = self.request.path
+        user_id = path.split('/')[3]
+
         try:
-            applications = fiware_api.keystone.application_list(
-                self.request)
-                # user=self.request.user.id)
+            # TODO(garcianavalon) extract to fiware_api
+            all_apps = fiware_api.keystone.application_list(self.request)
+            apps_with_roles = [a.application_id for a 
+                               in fiware_api.keystone.user_role_assignments(
+                               self.request, user=user_id)]
+            applications = [app for app in all_apps 
+                            if app.id in apps_with_roles]
         except Exception:
             exceptions.handle(self.request,
-                              _("Unable to retrieve application list."))
-        return applications
+                              ("Unable to retrieve application list."))
+        return idm_utils.filter_default(applications)
 
     def _can_edit(self):
         # Allowed if its the same user
-        return self.request.user.id == self.kwargs['user_id']
+        return (self.request.user.id == self.kwargs['user_id']
+            and self.request.organization.id == self.request.user.default_project_id)
 
     def get_context_data(self, **kwargs):
         context = super(DetailUserView, self).get_context_data(**kwargs)
@@ -77,7 +89,7 @@ class DetailUserView(tables.MultiTableView):
         user = api.keystone.user_get(self.request, user_id, admin=True)
         context['about_me'] = getattr(user, 'description', '')
         context['user_id'] = user_id
-        context['user_name'] = user.name
+        context['user_name'] = getattr(user, 'username', user.name)
         if hasattr(user, 'img_original'):
             image = getattr(user, 'img_original')
             image = settings.MEDIA_URL + image
@@ -85,7 +97,7 @@ class DetailUserView(tables.MultiTableView):
             image = settings.STATIC_URL + 'dashboard/img/logos/original/user.png'
         context['image'] = image
         context['city'] = getattr(user, 'city', '')
-        context['email'] = getattr(user, 'email', '')
+        context['email'] = getattr(user, 'name', '')
         context['website'] = getattr(user, 'website', '')
         if self._can_edit():
             context['edit'] = True
@@ -115,17 +127,17 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
         except Exception:
             redirect = reverse("horizon:idm:users:index")
             exceptions.handle(self.request, 
-                    _('Unable to update user'), redirect=redirect)
+                    ('Unable to update user'), redirect=redirect)
 
     def get_initial(self, form_class):
         initial = super(BaseUsersMultiFormView, self).get_initial(form_class)  
         # Existing data from organizations
         initial.update({
             "userID": self.object.id,
-            "name": self.object.name,
+            "name": getattr(self.object, 'name', ' '),
+            "username": getattr(self.object, 'username', ' '),
             "description": getattr(self.object, 'description', ' '),    
             "city": getattr(self.object, 'city', ' '),
-            "email": getattr(self.object, 'email', ' '),
             "website":getattr(self.object, 'website', ' '),
             "password": '',
         })

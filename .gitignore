@@ -8,6 +8,7 @@ fiwaredb
 .coverage*
 .noseids
 .DS_STORE
+*.mo
 coverage.xml
 nosetests.xml
 pep8.txt

@@ -15,7 +15,7 @@
 import logging
 
 from django.core.urlresolvers import reverse
-from django.utils.translation import ugettext_lazy as _
+
 from django.conf import settings
 
 from horizon import exceptions
@@ -24,7 +24,6 @@ from horizon import tables
 from horizon import tabs
 from horizon import workflows
 from horizon.utils import memoized
-
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
@@ -85,7 +84,12 @@ class AvatarStepView(forms.ModalFormView):
 
 class RolesView(workflows.WorkflowView):
     workflow_class = application_workflows.ManageApplicationRoles
-    template_name = 'idm/myApplications/roles/_workflow_base.html'
+
+    def __init__(self, *args, **kwargs):
+        # NOTE(garcianavalon) call grandfather's method instead of
+        # parents because parent (WorkflowView) overrides it with
+        # out super and **kwargs
+        super(workflows.WorkflowView, self).__init__(*args, **kwargs)
 
     def get_initial(self):
         initial = super(RolesView, self).get_initial()
@@ -94,18 +98,18 @@ class RolesView(workflows.WorkflowView):
 
     def get_workflow(self):
         workflow = super(RolesView, self).get_workflow()
-        workflow.finalize_button_name = _("Finish")
+        workflow.finalize_button_name = ("Finish")
         return workflow
 
 
 class CreateRoleView(forms.ModalFormView):
     form_class = application_forms.CreateRoleForm
     template_name = 'idm/myApplications/roles/role_create.html'
-    success_url = 'horizon:idm:myApplications:roles_index'
+    success_url = ''
 
     def get_success_url(self):
-        return reverse(self.success_url,
-                kwargs={'application_id': self.kwargs['application_id']})
+        """Redirects to the url it was called from."""
+        return self.request.META['HTTP_REFERER']
 
     def get_context_data(self, **kwargs):
         context = super(CreateRoleView, self).get_context_data(**kwargs)
@@ -143,11 +147,11 @@ class EditRoleView(forms.ModalFormView):
 class DeleteRoleView(forms.ModalFormView):
     form_class = application_forms.DeleteRoleForm
     template_name = 'idm/myApplications/roles/role_delete.html'
-    success_url = 'horizon:idm:myApplications:roles_index'
+    success_url = ''
 
     def get_success_url(self):
-        return reverse(self.success_url,
-                kwargs={'application_id': self.kwargs['application_id']})
+        """Redirects to the url it was called from."""
+        return self.request.META['HTTP_REFERER']
 
     def get_context_data(self, **kwargs):
         context = super(DeleteRoleView, self).get_context_data(**kwargs)
@@ -164,16 +168,16 @@ class DeleteRoleView(forms.ModalFormView):
 class CreatePermissionView(forms.ModalFormView):
     form_class = application_forms.CreatePermissionForm
     template_name = 'idm/myApplications/roles/permission_create.html'
-    success_url = 'horizon:idm:myApplications:roles_index'
+    success_url = ''
+
+    def get_success_url(self):
+        """Redirects to the url it was called from."""
+        return self.request.META['HTTP_REFERER']
 
     def get_context_data(self, **kwargs):
         context = super(CreatePermissionView, self).get_context_data(**kwargs)
         context['application_id'] = self.kwargs['application_id']
         return context
-
-    def get_success_url(self):
-        return reverse(self.success_url,
-                kwargs={'application_id': self.kwargs['application_id']})
 
     def get_initial(self):
         initial = super(CreatePermissionView, self).get_initial()
@@ -198,7 +202,7 @@ class DetailApplicationView(tables.MultiTableView):
                      in set([a.user_id for a in role_assignments])]
         except Exception:
             exceptions.handle(self.request,
-                              _("Unable to retrieve member information."))
+                              ("Unable to retrieve member information."))
         return users
 
     def get_organizations_data(self):
@@ -214,7 +218,7 @@ class DetailApplicationView(tables.MultiTableView):
                      in set([a.organization_id for a in role_assignments])]
         except Exception:
             exceptions.handle(self.request,
-                              _("Unable to retrieve member information."))
+                              ("Unable to retrieve member information."))
         return organizations
 
     def _can_edit(self):
@@ -227,6 +231,25 @@ class DetailApplicationView(tables.MultiTableView):
         app_id = self.kwargs['application_id']
         return app_id in allowed_applications
 
+    def _can_manage_roles(self):
+        # Allowed to manage roles if owns a role with the
+        # 'Manage roles' permission.
+        user = self.request.user
+        allowed_applications = \
+            fiware_api.keystone.list_user_allowed_applications_to_manage_roles(
+                self.request, user=user.id, organization=user.default_project_id)
+        app_id = self.kwargs['application_id']
+        return app_id in allowed_applications
+
+    def allowed(self, request, user, application):
+        # Allowed if your allowed role list is not empty
+        # TODO(garcianavalon) move to fiware_api
+        default_org = request.user.default_project_id
+        allowed = fiware_api.keystone.list_user_allowed_roles_to_assign(
+            request,
+            user=request.user.id,
+            organization=default_org)
+        return allowed.get(application.id, False)
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
@@ -234,22 +257,19 @@ class DetailApplicationView(tables.MultiTableView):
         application_id = self.kwargs['application_id']
         application = fiware_api.keystone.application_get(
             self.request, application_id)
-        context['description'] = application.description
-        context['url'] = getattr(application, 'url', None)
+        context['application'] = application
         if hasattr(application, 'img_original'):
             image = getattr(application, 'img_original')
             image = settings.MEDIA_URL + image
         else:
             image = settings.STATIC_URL + 'dashboard/img/logos/original/app.png'
         context['image'] = image
-        callback_url = application.redirect_uris[0] \
-                        if application.redirect_uris else None
-        context['callbackurl'] = callback_url
-        context['application_name'] = application.name
-        context['application_id'] = application_id
-        context['application_secret'] = application.secret
         if self._can_edit():
             context['edit'] = True
+        if self._can_manage_roles():
+            context['manage_roles'] = True
+        if self.allowed(self.request, self.request.user, application):
+            context['viewCred'] = True
         return context
 
 
@@ -260,6 +280,7 @@ class AuthorizedMembersView(workflows.WorkflowView):
         initial = super(AuthorizedMembersView, self).get_initial()
         initial['superset_id'] = self.kwargs['application_id']
         return initial
+
 
 class AuthorizedOrganizationsView(workflows.WorkflowView):
     workflow_class = application_workflows.ManageAuthorizedOrganizations
@@ -293,15 +314,16 @@ class BaseApplicationsMultiFormView(idm_views.BaseMultiFormView):
     @memoized.memoized_method
     def get_object(self):
         try:
-            return fiware_api.keystone.application_get(self.request,
-                                                    self.kwargs['application_id'])
+            return fiware_api.keystone.application_get(
+                self.request, self.kwargs['application_id'])
         except Exception:
             redirect = reverse("horizon:idm:myApplications:index")
-            exceptions.handle(self.request, _('Unable to update application'),
-                                redirect=redirect)
+            exceptions.handle(self.request, ('Unable to update application'),
+                redirect=redirect)
 
     def get_initial(self, form_class):
-        initial = super(BaseApplicationsMultiFormView, self).get_initial(form_class)
+        initial = super(BaseApplicationsMultiFormView, 
+            self).get_initial(form_class)
         # Existing data from applciation
         callback_url = self.object.redirect_uris[0] \
                         if self.object.redirect_uris else None
@@ -316,8 +338,8 @@ class BaseApplicationsMultiFormView(idm_views.BaseMultiFormView):
         return initial
 
     def get_context_data(self, **kwargs):
-
-        context = super(BaseApplicationsMultiFormView, self).get_context_data(**kwargs)
+        context = super(BaseApplicationsMultiFormView, 
+            self).get_context_data(**kwargs)
         if hasattr(self.object, 'img_original'):
             image = getattr(self.object, 'img_original')
             image = settings.MEDIA_URL + image
@@ -340,4 +362,5 @@ class CancelFormHandleView(BaseApplicationsMultiFormView):
 
     def handle_form(self, form):
         """ Wrapper for form.handle for easier overriding."""
-        return form.handle(self.request, form.cleaned_data, application=self.object)
+        return form.handle(self.request, form.cleaned_data, 
+            application=self.object)

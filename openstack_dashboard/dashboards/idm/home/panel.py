@@ -12,16 +12,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from django.utils.translation import ugettext_lazy as _
-
 import horizon
 
 from openstack_dashboard.dashboards.idm import dashboard
 
 
 class Home(horizon.Panel):
-    name = _("Home")
+    name = ("Home")
     slug = "home"
+
+    def nav(self, context):
+	# NOTE(garcianavalon) hide it always for the IdM
+	# dash = context['request'].horizon.get('dashboard', None)
+	# if dash and dash.slug == self.slug:
+	#     return True
+		return context['request'].organization.id == context['request'].user.default_project_id
 
 
 dashboard.Idm.register(Home)

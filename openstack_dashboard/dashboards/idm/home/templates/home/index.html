@@ -3,7 +3,7 @@
 {% block title %}{% trans "Home" %}{% endblock %}
 
 {% block page_header %}
-  {% include "horizon/common/_domain_page_header.html" with title=_("Home") %}
+  {% include "horizon/common/_domain_page_header.html" with title="Home" %}
 {% endblock page_header %}
 
 {% block main %}
@@ -24,8 +24,10 @@
     </div> {# TODO(garcianavalon) change this to organizations #}
     <div class="panel panel-default tenants"> 
         <div class="panel-heading">
-            {{ organizations_table }}
-            <a href="/idm/organizations/create/">Create</a>
+            <div>
+              {{ organizations_table }}
+              <a href="/idm/organizations/create/">Create</a>
+            </div>
         </div>    
       
         <div class="panel-body">

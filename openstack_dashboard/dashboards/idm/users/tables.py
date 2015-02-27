@@ -14,39 +14,39 @@
 
 import logging
 
-from django.core import urlresolvers
-from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
 from horizon import tables
+
+from openstack_dashboard.dashboards.idm import utils as idm_utils
+from openstack_dashboard.dashboards.idm import tables as idm_tables
 
 
 LOG = logging.getLogger('idm_logger')
 
 class OrganizationsTable(tables.DataTable):
-    name = tables.Column('name', verbose_name=_('Name'))
+    avatar = tables.Column(lambda obj: idm_utils.get_avatar(
+        obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
+    name = tables.Column('name', verbose_name=('Name'))
     description = tables.Column(lambda obj: getattr(obj, 'description', None),
-                                verbose_name=_('Description'))
-    avatar = tables.Column(lambda obj: settings.MEDIA_URL + getattr(obj, 'img_medium', 'dashboard/img/logos/medium/group.png'))
-    default_avatar = tables.Column(lambda obj: settings.STATIC_URL + getattr(obj, 'img_medium','dashboard/img/logos/medium/group.png'))
-    
-    clickable = True
-    switch = True
-    show_avatar = True
+                                verbose_name=('Description'))
 
     class Meta:
         name = "organizations"
-        verbose_name = _("Organizations")
+        verbose_name = ("Organizations")
+        row_class = idm_tables.OrganizationClickableRow
+        table_actions = (tables.FilterAction,)
 
 
 class ApplicationsTable(tables.DataTable):
-    name = tables.Column('name', verbose_name=_('Applications'))
-    avatar = tables.Column(lambda obj: settings.MEDIA_URL + getattr(obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
-    default_avatar = tables.Column(lambda obj: settings.STATIC_URL + getattr(obj, 'img_medium','dashboard/img/logos/medium/app.png'))
+    avatar = tables.Column(lambda obj: idm_utils.get_avatar(
+        obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
+    name = tables.Column('name', verbose_name=('Applications'))
+    url = tables.Column(lambda obj: getattr(obj, 'url', None))
     
-    clickable = True
-    show_avatar = True
 
     class Meta:
         name = "applications"
-        verbose_name = _("Applications")
+        verbose_name = ("Applications")
+        row_class = idm_tables.ApplicationClickableRow
+        table_actions = (tables.FilterAction,)

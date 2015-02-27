@@ -13,17 +13,18 @@
 # under the License.
 
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
 
 from horizon import tables
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.dashboards.idm import utils as idm_utils
+from openstack_dashboard.dashboards.idm import tables as idm_tables
 
 
 class ManageAuthorizedMembersLink(tables.LinkAction):
     name = "manage_administrators"
-    verbose_name = _("Manage administrators")
+    verbose_name = ("Manage administrators")
     url = "horizon:idm_admin:administrators:members"
     classes = ("ajax-modal",)
 
@@ -41,14 +42,14 @@ class ManageAuthorizedMembersLink(tables.LinkAction):
 
 
 class MembersTable(tables.DataTable):
-    name = tables.Column('name', verbose_name=_('Members'))
-    avatar = tables.Column(lambda obj: settings.MEDIA_URL + getattr(
-        obj, 'img_medium', 'dashboard/img/logos/medium/user.png'))
-    default_avatar = tables.Column(lambda obj: settings.STATIC_URL + getattr(
-        obj, 'img_medium', 'dashboard/img/logos/medium/user.png'))
+    avatar = tables.Column(lambda obj: idm_utils.get_avatar(
+        obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
+    name = tables.Column('name', verbose_name=('Members'))
 
     class Meta:
         name = "members"
-        verbose_name = _("Authorized Administrators")
+        verbose_name = ("Authorized Administrators")
         table_actions = (ManageAuthorizedMembersLink, )
         multi_select = False
+        row_class = idm_tables.UserClickableRow
+        table_actions = (tables.FilterAction,)

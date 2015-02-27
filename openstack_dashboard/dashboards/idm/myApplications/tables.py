@@ -10,53 +10,57 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from django.conf import settings
 from django.core import urlresolvers
-from django.utils.translation import ugettext_lazy as _
 
 from horizon import tables
 
-from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.dashboards.idm import utils as idm_utils
+from openstack_dashboard.dashboards.idm import tables as idm_tables
 
 
 class ProvidingApplicationsTable(tables.DataTable):
-    name = tables.Column('name', verbose_name=_('Name'))
+    avatar = tables.Column(lambda obj: idm_utils.get_avatar(
+        obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
+    name = tables.Column('name', verbose_name=('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', None))
-    avatar = tables.Column(lambda obj: settings.MEDIA_URL + getattr(
-        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
-    default_avatar = tables.Column(lambda obj: settings.STATIC_URL + getattr(
-        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
     
-    clickable = True
-    # show_avatar = True
-
     class Meta:
         name = "providing_table"
-        verbose_name = _("Providing Applications")
+        verbose_name = ("")
         multi_select = False
+        row_class = idm_tables.ApplicationClickableRow
         
 
 class PurchasedApplicationsTable(tables.DataTable):
-    name = tables.Column('name', verbose_name=_('Name'))
-    url = tables.Column(lambda obj: getattr(obj, 'url', None))
-    avatar = tables.Column(lambda obj: settings.MEDIA_URL + getattr(
-        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
-    default_avatar = tables.Column(lambda obj: settings.STATIC_URL + getattr(
-        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
+    avatar = tables.Column(lambda obj: idm_utils.get_avatar(
+        obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
+    name = tables.Column('name', verbose_name=('Name'))
+    url = tables.Column(lambda obj: getattr(obj, 'url', None))  
     
-    clickable = True
-    # show_avatar = True
-
     class Meta:
         name = "purchased_table"
-        verbose_name = _("Purchased Applications")
+        verbose_name = ("")
         multi_select = False
+        row_class = idm_tables.ApplicationClickableRow
+
+
+class AuthorizedApplicationsTable(tables.DataTable):
+    avatar = tables.Column(lambda obj: idm_utils.get_avatar(
+        obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
+    name = tables.Column('name', verbose_name=('Name'))
+    url = tables.Column(lambda obj: getattr(obj, 'url', None))  
+
+    class Meta:
+        name = "authorized_table"
+        verbose_name = ("")
+        multi_select = False
+        row_class = idm_tables.ApplicationClickableRow
 
 
 class ManageAuthorizedMembersLink(tables.LinkAction):
     name = "manage_application_members"
-    verbose_name = _("Manage authorized users")
+    verbose_name = ("Manage authorized users")
     url = "horizon:idm:myApplications:members"
     classes = ("ajax-modal",)
 
@@ -77,25 +81,21 @@ class ManageAuthorizedMembersLink(tables.LinkAction):
 
 
 class MembersTable(tables.DataTable):
-    name = tables.Column('name', verbose_name=_('Members'))
-    avatar = tables.Column(lambda obj: settings.MEDIA_URL + getattr(
-        obj, 'img_medium', 'dashboard/img/logos/medium/user.png'))
-    default_avatar = tables.Column(lambda obj: settings.STATIC_URL + getattr(
-        obj, 'img_medium', 'dashboard/img/logos/medium/user.png'))
+    avatar = tables.Column(lambda obj: idm_utils.get_avatar(
+        obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
+    username = tables.Column('username', verbose_name=('Members'))
     
-    # show_avatar = True
-    clickable = True
-
     class Meta:
         name = "members"
-        verbose_name = _("Authorized Members")
-        table_actions = (ManageAuthorizedMembersLink, )
+        verbose_name = ("Authorized Members")
+        table_actions = (tables.FilterAction, ManageAuthorizedMembersLink, )
         multi_select = False
+        row_class = idm_tables.UserClickableRow
 
 
 class ManageAuthorizedOrganizationsLink(tables.LinkAction):
     name = "manage_application_organizations"
-    verbose_name = _("Manage authorized organizations")
+    verbose_name = ("Manage authorized organizations")
     url = "horizon:idm:myApplications:organizations"
     classes = ("ajax-modal",)
 
@@ -116,18 +116,15 @@ class ManageAuthorizedOrganizationsLink(tables.LinkAction):
 
 
 class AuthorizedOrganizationsTable(tables.DataTable):
-    name = tables.Column('name', verbose_name=_('Applications'))
+    avatar = tables.Column(lambda obj: idm_utils.get_avatar(
+        obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
+    name = tables.Column('name', verbose_name=('Applications'))
     url = tables.Column(lambda obj: getattr(obj, 'url', None))
-    avatar = tables.Column(lambda obj: settings.MEDIA_URL + getattr(
-        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
-    default_avatar = tables.Column(lambda obj: settings.STATIC_URL + getattr(
-        obj, 'img_medium', 'dashboard/img/logos/medium/app.png'))
     
-    # show_avatar = True
-    clickable = True
 
     class Meta:
         name = "organizations"
-        verbose_name = _("Authorized Organizations")
-        table_actions = (ManageAuthorizedOrganizationsLink, )
-        multi_select = False
+        verbose_name = ("Authorized Organizations")
+        table_actions = (tables.FilterAction, 
+            ManageAuthorizedOrganizationsLink, )
+        row_class = idm_tables.OrganizationClickableRow
