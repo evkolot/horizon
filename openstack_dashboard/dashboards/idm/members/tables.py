@@ -20,21 +20,22 @@ from openstack_dashboard.dashboards.idm import tables as idm_tables
 
 class ManageMembersLink(tables.LinkAction):
     name = "manage_members"
-    verbose_name = ("Manage members")
+    verbose_name = ("Manage")
     url = "horizon:idm:members:edit"
     classes = ("ajax-modal",)
-
+    icon = "cogs"
 
 class ManageAuthorizedMembersLink(tables.LinkAction):
     name = "manage_authorized_members"
-    verbose_name = ("Authorize members")
+    verbose_name = ("Authorize")
     url = "horizon:idm:members:authorize"
     classes = ("ajax-modal",)
+    icon = "check-square-o"
 
     
 class MembersTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
-        obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
+        obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
     username = tables.Column('username', verbose_name=('Members'))
     
 
