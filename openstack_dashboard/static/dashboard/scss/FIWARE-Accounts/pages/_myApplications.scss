@@ -16,6 +16,8 @@
       .steps-group {
         position: relative;
         z-index: 100;
+        min-height: 30px;
+        margin-bottom: 13px;
         .step{
           display: inline-block;
           background-color: $white;
@@ -133,6 +135,7 @@
     height: 34px;
     padding-top: 7px;
     padding-left: 6px;
+    box-shadow: none;
     a{
       position: absolute;
     }
@@ -145,6 +148,14 @@
     }
     label{
       font-weight: normal;
+    }
+  }
+  .role.active{
+    color: $white;
+    background-color: $brand-primary;
+    border-color: $brand-primary;
+    i{
+      color: $white;
     }
   }
 }
