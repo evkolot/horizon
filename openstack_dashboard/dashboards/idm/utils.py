@@ -88,10 +88,8 @@ def get_counter(self, organization=None, application=None):
     if organization:
         role_assignments = api.keystone.get_project_users_roles(
             self.request, project=organization)
-        LOG.debug(role_assignments)
         for user in all_users:
             for a in role_assignments:
-                LOG.debug('a: ' + a)
                 if (user.id == a):
                     users_with_roles.add(user.id)
     elif application:

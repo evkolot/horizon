@@ -86,7 +86,7 @@ class DetailOrganizationView(tables.MultiTableView):
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
             for app in applications:
-                users = idm_utils.get_counter(self, applications=app)
+                users = idm_utils.get_counter(self, application=app)
                 setattr(app, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
