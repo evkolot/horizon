@@ -62,8 +62,7 @@ class CreateApplicationForm(forms.SelfHandlingForm):
                 provider = fiware_api.keystone.get_provider_role(request)
                 user = request.user
                 organization = request.organization
-                import pdb
-                pdb.set_trace()
+                
                 if request.organization.id == request.user.default_project_id:
                     fiware_api.keystone.add_role_to_user(request,
                                                          role=provider,
