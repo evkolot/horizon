@@ -1,5 +1,5 @@
 /* Namespace for core functionality related to Role-Permission Workflow Step.
- * Based on the role step. 
+ * Based on the role step.
  */
 horizon.fiware_roles_workflow = {
 
@@ -7,7 +7,7 @@ horizon.fiware_roles_workflow = {
   data: [],
   permissions: [],
   //has_permissions: [],
-  
+
   //default_permission_id: [],
 
   /* Parses the form field selector's ID to get either the
@@ -157,13 +157,8 @@ horizon.fiware_roles_workflow = {
     horizon.fiware_roles_workflow.update_permission_lists(step_slug, permission_id, permission_list);
   },
 
-  update_role_permission_list: function(step_slug, data_id) {
-    //if (typeof(permission_ids) === 'undefined') {
+  update_role_permission_list: function(step_slug, data_id, no_editable) {
     permission_ids = horizon.fiware_roles_workflow.get_role_permissions(step_slug, data_id);
-    //}
-    /*if (typeof(role_el) === 'undefined') {
-      role_el = horizon.fiware_roles_workflow.get_role_element(step_slug, data_id);
-    }*/
 
     var $permission_items = $("ul."+step_slug+"_permissions").children('li');
     $permission_items.each(function (idx, el) {
@@ -171,9 +166,17 @@ horizon.fiware_roles_workflow = {
         $(el).addClass('active');
       } else {
         $(el).removeClass('active');
-      }
+      };
+      // if the role is no-editable, hide de internal permissions
+      if (no_editable && !$(el).hasClass('is-internal')) {
+        $(el).hide();
+      } else {
+        $(el).show();
+      };
     });
   },
+
+
 
   /*
    * Triggers on selecting a role to show its permissions
@@ -181,15 +184,22 @@ horizon.fiware_roles_workflow = {
   show_role_permissions: function(step_slug) {
     $("input[type=radio]").on('change', function (evt) {
       if (!($(this).is(':checked'))) {
-        return
+        return;
       }
       // hide the message
-      $("#" + step_slug + "_info_message").hide()
+      $("#" + step_slug + "_info_message").hide();
       // show permissions
-      $("#" + step_slug + "_permissions").show()
+      $("#" + step_slug + "_permissions").show();
+      // mark disabled if it's a non editable role
+      var no_editable = $(this).parent().hasClass('no-editable');
+      if (no_editable) {
+        $("#" + step_slug + "_permissions").find('ul').addClass('disabled-list');
+      } else {
+        $("#" + step_slug + "_permissions").find('ul').removeClass('disabled-list');
+      };
       // mark active the ones owned
       var data_id = $(this).attr("data-" + step_slug + "-id");
-      horizon.fiware_roles_workflow.update_role_permission_list(step_slug, data_id);
+      horizon.fiware_roles_workflow.update_role_permission_list(step_slug, data_id, no_editable);
     });
   },
   /*
@@ -199,9 +209,15 @@ horizon.fiware_roles_workflow = {
     $("." + step_slug + "_permissions").on('click', 'li', function (evt) {
       evt.preventDefault();
       evt.stopPropagation();
+      // check if the selected role is editable
+      var role = $("#" + step_slug + "_roles").find('input[type=radio]:checked');
+      var no_editable = role.parent().hasClass('no-editable')
+      if (no_editable) {
+        return;
+      }
       // get the newly selected permission and the role's name
       var new_permission_id = $(this).attr("data-permission-id");
-      var id_str = $("#" + step_slug + "_roles").find('input[type=radio]:checked').attr("data-" + step_slug + "-id");
+      var id_str = role.attr("data-" + step_slug + "-id");
       var data_id = horizon.fiware_roles_workflow.get_field_id(id_str);
       // update permission lists
       if ($(this).hasClass('active')) {
@@ -211,7 +227,7 @@ horizon.fiware_roles_workflow = {
         $(this).addClass('active');
         horizon.fiware_roles_workflow.add_role_to_permission(step_slug, data_id, new_permission_id);
       }
-      horizon.fiware_roles_workflow.update_role_permission_list(step_slug, data_id);
+      horizon.fiware_roles_workflow.update_role_permission_list(step_slug, data_id, no_editable);
     });
   },
   /*
