@@ -245,6 +245,14 @@ textarea {
   }
 }
 
+.counter{
+  position: absolute;
+  right: 0;
+  top: 0;
+  margin-right: 15px;
+  color: #ABABAB;
+}
+
 @media (min-width: 768px){
   .workflow.modal{
     .modal-dialog {
