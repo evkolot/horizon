@@ -43,6 +43,7 @@ class ApplicationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', None))
+    counter = tables.Column('counter')
 
     class Meta:
         name = "applications"

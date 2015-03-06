@@ -52,7 +52,8 @@ class OrganizationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
     switch = tables.Column(lambda obj: idm_utils.get_switch_url(obj))
-    
+    counter = tables.Column('counter')
+
     class Meta:
         name = "organizations"
         verbose_name = ("Organizations")
@@ -66,7 +67,8 @@ class ApplicationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', None))
-    
+    counter = tables.Column('counter')
+  
     class Meta:
         name = "applications"
         verbose_name = ("Applications")
