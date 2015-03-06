@@ -118,7 +118,7 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
                                     % data['name'])
             return False
     
-        response = shortcuts.redirect('horizon:idm:organizations:index')
+        response = shortcuts.redirect('horizon:idm:organizations:detail', organization_id)
         return response
 
 

@@ -17,6 +17,9 @@ import logging
 from django.conf import settings
 from django.core import urlresolvers
 
+from openstack_dashboard import api
+from openstack_dashboard import fiware_api
+
 
 LOG = logging.getLogger('idm_logger')
 DEFAULT_ORG_MEDIUM_AVATAR = 'dashboard/img/logos/medium/group.png'
@@ -58,6 +61,7 @@ def swap_dict(old_dict):
             new_dict[value].append(key)
     return new_dict
 
+
 def get_avatar(obj, avatar_type, default_avatar):
     """Gets the object avatar or a default one."""
     avatar = getattr(obj, avatar_type, None)
@@ -66,8 +70,37 @@ def get_avatar(obj, avatar_type, default_avatar):
     else:
         return settings.STATIC_URL + default_avatar
 
+
 def get_switch_url(organization, check_switchable=True):
     if check_switchable and not getattr(organization, 'switchable', False):
         return False
-    return urlresolvers.reverse('switch_tenants', 
-                                kwargs={'tenant_id':organization.id})
+    return urlresolvers.reverse('switch_tenants',
+                                kwargs={'tenant_id': organization.id})
+
+
+def get_counter(self, organization=None, application=None):
+    users = []
+    # NOTE(garcianavalon) Get all the users' ids that belong to
+    # the application (they have one or more roles in their default
+    # organization)
+    all_users = api.keystone.user_list(self.request)
+    users_with_roles = set()
+    if organization:
+        role_assignments = api.keystone.get_project_users_roles(
+            self.request, project=organization)
+        for user in all_users:
+            for a in role_assignments:
+                if (user.id == a):
+                    users_with_roles.add(user.id)
+    elif application:
+        role_assignments = fiware_api.keystone.user_role_assignments(
+            self.request, application=application)
+        for user in all_users:
+            for a in role_assignments:
+                if (user.id == a.user_id
+                    and user.default_project_id == a.organization_id):
+                        users_with_roles.add(user.id)
+    users = [user for user in all_users
+             if user.id in users_with_roles]
+
+    return len(users)

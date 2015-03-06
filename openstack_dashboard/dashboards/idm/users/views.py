@@ -54,6 +54,9 @@ class DetailUserView(tables.MultiTableView):
                 self.request,
                 user=user_id,
                 admin=False)
+            for org in organizations:
+                users = idm_utils.get_counter(self, organization=org)
+                setattr(org, 'counter', users)
         except Exception:
             self._more = False
             exceptions.handle(self.request,
@@ -73,6 +76,9 @@ class DetailUserView(tables.MultiTableView):
                                self.request, user=user_id)]
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
+            for app in applications:
+                users = idm_utils.get_counter(self, application=app)
+                setattr(app, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))

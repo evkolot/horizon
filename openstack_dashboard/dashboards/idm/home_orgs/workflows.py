@@ -95,7 +95,7 @@ class ManageOrganizationMembers(idm_workflows.RelationshipWorkflow):
     finalize_button_name = ("Save")
     success_message = ('Modified users.')
     failure_message = ('Unable to modify users.')
-    success_url = "horizon:idm:members:index"
+    success_url = "horizon:idm:home_orgs:index"
     default_steps = (UpdateProjectMembers,)
     RELATIONSHIP_CLASS = UserRoleApi
     member_slug = idm_workflows.RELATIONSHIP_SLUG
