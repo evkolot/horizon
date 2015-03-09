@@ -133,7 +133,7 @@ class ManageApplicationRoles(idm_workflows.RelationshipWorkflow):
 
     def get_success_url(self):
         # Overwrite to allow passing kwargs
-        return reverse(self.success_url, 
+        return reverse(self.success_url,
                     kwargs={'application_id':self.context['superset_id']})
 
 
@@ -141,7 +141,7 @@ class ManageApplicationRoles(idm_workflows.RelationshipWorkflow):
 # APPLICATION MEMBERS
 class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
     """FIWARE roles and user logic"""
-    
+
     def _list_all_owners(self, request, superset_id):
         all_users = api.keystone.user_list(request)
         return  [(user.id, user.username) for user in all_users]
@@ -159,7 +159,7 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
             allowed = fiware_api.keystone.list_organization_allowed_roles_to_assign(
                 request,
                 organization=request.organization.id)
-        self.allowed = [role for role in all_roles 
+        self.allowed = [role for role in all_roles
                    if role.id in allowed[superset_id]]
         return self.allowed
 
@@ -244,17 +244,17 @@ class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):
 
     def get_success_url(self):
         # Overwrite to allow passing kwargs
-        return reverse(self.success_url, 
+        return reverse(self.success_url,
                     kwargs={'application_id':self.context['superset_id']})
 
 
 # APPLICATION ORGANIZATIONS
 class AuthorizedOrganizationsApi(idm_workflows.RelationshipApiInterface):
     """FIWARE roles and organization logic"""
-    
+
     def _list_all_owners(self, request, superset_id):
         all_organizations, _more = api.keystone.tenant_list(request)
-        return  [(org.id, org.name) for org 
+        return  [(org.id, org.name) for org
                  in idm_utils.filter_default(all_organizations)]
 
 
@@ -270,14 +270,14 @@ class AuthorizedOrganizationsApi(idm_workflows.RelationshipApiInterface):
             allowed = fiware_api.keystone.list_organization_allowed_roles_to_assign(
                 request,
                 organization=request.organization.id)
-        self.allowed = [role for role in all_roles 
+        self.allowed = [role for role in all_roles
                    if role.id in allowed[superset_id]]
         return self.allowed
 
 
     def _list_current_assignments(self, request, superset_id):
         # NOTE(garcianavalon) logic for this part:
-        # load all the organization-scoped application roles for every 
+        # load all the organization-scoped application roles for every
         # organization but only the ones the user can assign
         application_organizations_roles = {}
         allowed_ids = [r.id for r in self.allowed]
@@ -350,5 +350,5 @@ class ManageAuthorizedOrganizations(idm_workflows.RelationshipWorkflow):
 
     def get_success_url(self):
         # Overwrite to allow passing kwargs
-        return reverse(self.success_url, 
+        return reverse(self.success_url,
                     kwargs={'application_id':self.context['superset_id']})

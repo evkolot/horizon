@@ -29,9 +29,9 @@ class OtherOrganizationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
-    description = tables.Column(lambda obj: getattr(obj, 'description', None),
+    description = tables.Column(lambda obj: getattr(obj, 'description', ''),
                                 verbose_name=('Description'))
-    
+    counter = tables.Column('counter')
 
     class Meta:
         name = "other_organizations"
@@ -43,11 +43,11 @@ class OwnedOrganizationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
-    description = tables.Column(lambda obj: getattr(obj, 'description', None),
+    description = tables.Column(lambda obj: getattr(obj, 'description', ''),
                                 verbose_name=('Description'))
     switch = tables.Column(lambda obj: idm_utils.get_switch_url(
         obj, check_switchable=False))
-
+    counter = tables.Column('counter')
 
     class Meta:
         name = "owned_organizations"
@@ -108,8 +108,8 @@ class AuthorizingApplicationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Applications'))
-    url = tables.Column(lambda obj: getattr(obj, 'url', None))
-    
+    url = tables.Column(lambda obj: getattr(obj, 'url', ''))
+    counter = tables.Column('counter')
 
     class Meta:
         name = "applications"

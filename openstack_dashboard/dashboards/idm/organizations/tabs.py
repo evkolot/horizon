@@ -37,6 +37,9 @@ class OtherOrganizationsTab(tabs.TableTab):
                 self.request, user=self.request.user.id, admin=False)
             organizations = [t for t in organizations if not t 
                              in my_organizations]
+            for org in organizations:
+                users = idm_utils.get_counter(self, organization=org)
+                setattr(org, 'counter', users)
         except Exception as e:
             self._more = False
             exceptions.handle(self.request,
@@ -59,6 +62,9 @@ class OwnedOrganizationsTab(tabs.TableTab):
             # are already in the request object by the middleware
             organizations = self.request.organizations
             self._more = False
+            for org in organizations:
+                users = idm_utils.get_counter(self, organization=org)
+                setattr(org, 'counter', users)
         except Exception:
             self._more = False
             exceptions.handle(self.request,

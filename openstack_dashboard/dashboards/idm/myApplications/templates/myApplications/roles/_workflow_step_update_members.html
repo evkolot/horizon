@@ -31,10 +31,10 @@
   <div class="" id="{{ step.slug }}_permissions">
     <ul class="permissions {{ step.slug }}_permissions list-group">
     {% for permission in form.relationship.application_permissions %}
-      <li class="list-group-item" data-permission-id="{{ permission.id }}">
+      <li class="list-group-item {% if permission.is_internal%}is-internal{% endif %}" data-permission-id="{{ permission.id }}">
         <i class="fa fa-check" disabled=""></i>
           {{ permission.name }}
-        </li>    
+        </li>
     {% endfor %}
     </ul>
   </div>

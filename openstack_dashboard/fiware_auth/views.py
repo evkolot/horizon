@@ -15,16 +15,18 @@ import logging
 
 from django import http
 from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 from django.core.urlresolvers import reverse, reverse_lazy
+from django.contrib.auth.decorators import login_required  # noqa
 from django.shortcuts import redirect
+from django.template.loader import render_to_string
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
-from django.utils.translation import ugettext_lazy as _
-from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives
 
 from horizon import messages
 from horizon import exceptions
+
+from openstack_auth import views as openstack_auth_views
 
 from openstack_dashboard import fiware_api
 from openstack_dashboard.fiware_auth import forms as fiware_forms
@@ -126,7 +128,7 @@ class RegistrationView(_RequestPassingFormView):
             return new_user
 
         except Exception:
-            msg = _('Unable to create user.')
+            msg = ('Unable to create user.')
             LOG.warning(msg)
             exceptions.handle(request, msg)
 
@@ -143,7 +145,6 @@ class RegistrationView(_RequestPassingFormView):
                              content=content)
 
 class ActivationView(TemplateView):
-
     http_method_names = ['get']
     template_name = 'auth/activation/activate.html'
     success_url = reverse_lazy('login')
@@ -166,10 +167,10 @@ class ActivationView(TemplateView):
         try:
             activated_user = fiware_api.keystone.activate_user(user, activation_key)
             LOG.debug('User {0} was successfully activated.'.format(activated_user.username))
-            messages.success(request, _('User "%s" was successfully activated.') %activated_user.username)
+            messages.success(request, ('User "%s" was successfully activated.') %activated_user.username)
             return activated_user
         except Exception:
-            msg = _('Unable to activate user.')
+            msg = ('Unable to activate user.')
             LOG.warning(msg)
             exceptions.handle(request, msg)
 
@@ -194,9 +195,9 @@ class RequestPasswordResetView(_RequestPassingFormView):
             reset_password_token = fiware_api.keystone.get_reset_token(user)
             token = base.getid(reset_password_token)
             self.send_reset_email(email, token)
-            messages.success(request, _('Reset mail send to %s') % email)
+            messages.success(request, ('Reset mail send to %s') % email)
         else:
-            messages.error(request, _('No email %s registered') % email)
+            messages.error(request, ('No email %s registered') % email)
 
     def send_reset_email(self, email, token):
         # TODO(garcianavalon) subject, message and from_email as settings/files
@@ -244,12 +245,13 @@ class ResetPasswordView(_RequestPassingFormView):
         try:
             user = fiware_api.keystone.reset_password(user, token, password)
             if user:
-                messages.success(request, _('password successfully changed.'))
+                messages.success(request, ('password successfully changed.'))
                 return user
         except Exception:
-            msg = _('Unable to change password.')
+            msg = ('Unable to change password.')
             LOG.warning(msg)
             exceptions.handle(request, msg)
+
 
 class ResendConfirmationInstructionsView(_RequestPassingFormView):
     form_class = fiware_forms.EmailForm
@@ -269,14 +271,14 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         user = fiware_api.keystone.check_email(email)
         if not user:
             LOG.debug('The email address {0} is not registered'.format(email))
-            msg = _('Sorry. You have specified an email address that is not registered \
+            msg = ('Sorry. You have specified an email address that is not registered \
                  to any our our user accounts. If your problem persits, please contact: \
                  fiware-lab-help@lists.fi-ware.org')
             messages.error(request, msg)
             return False
 
         if user.enabled:
-            msg = _('Email was already confirmed, please try signing in')
+            msg = ('Email was already confirmed, please try signing in')
             LOG.debug('The email address {0} was already confirmed'.format(email))
             messages.error(request, msg)
             return False
@@ -284,7 +286,7 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         activation_key = fiware_api.keystone.new_activation_key(user)
 
         self.send_reactivation_email(user, activation_key)
-        msg = _('Resended confirmation instructions to %s') %email
+        msg = ('Resended confirmation instructions to %s') %email
         messages.success(request, msg)
         return True
 
@@ -299,3 +301,19 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
                              from_email='admin@fiware-idm-test.dit.upm.es',
                              subject=subject,
                              content=content)
+
+@login_required
+def switch(request, tenant_id, **kwargs):
+    """Wrapper for ``openstack_auth.views.switch`` to add a message
+    for the user.
+    """
+    user_organization = request.user.default_project_id
+    response = openstack_auth_views.switch(request, tenant_id, **kwargs)
+    if tenant_id != user_organization:
+        organization_name = next(o.name for o in request.organizations 
+                         if o.id == tenant_id)
+        msg = ("Your identity has changed. Now you are acting on behalf of the \
+            \"{0}\" organization. Use the top-right menu to regain your \
+            identity as individual user.").format(organization_name)
+        messages.info(request, msg)
+    return response

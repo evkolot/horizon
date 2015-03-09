@@ -49,7 +49,11 @@ class IndexView(tables.MultiTableView):
                 admin=False)
             switchable_organizations = [org.id for org 
                                         in self.request.organizations]
+
             for org in organizations:
+                users = idm_utils.get_counter(self, organization=org)
+                setattr(org, 'counter', users)
+
                 if org.id in switchable_organizations:
                     setattr(org, 'switchable', True)
         except Exception:
@@ -69,6 +73,10 @@ class IndexView(tables.MultiTableView):
                                self.request, user=self.request.user.id)]
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
+            for app in applications:
+                users = idm_utils.get_counter(self, application=app)
+                setattr(app, 'counter', users)
+
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))

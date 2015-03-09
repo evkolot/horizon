@@ -66,12 +66,14 @@ textarea {
     }
   }
   .name,
-  .description {
+  .description,
+  .url {
     @include text-overflow;
     margin-left: 10px;
   }
   .name{color: $black;}
-  .description{color: $gray; display:none;}
+  .description,
+  .url{color: $gray;font-size:12px;}
 
 
   .switch{
@@ -79,7 +81,8 @@ textarea {
     margin-top: 14px;
     margin-left: 45px;
     a{
-      text-align: left;
+      text-align: right;
+      margin-top: 1px;
     }
   }
 
@@ -200,6 +203,15 @@ textarea {
       text-decoration: none;
     }    
   }
+  .modal-footer{
+    border-top: none !important;
+    .panel-collapse{
+      border-top: 1px solid $border-color;
+      button.btn-danger{
+        margin-top: 15px
+      }
+    }
+  }
 }
 
 .panel-heading{ 
@@ -243,6 +255,14 @@ textarea {
       font-size: 17px;
     }
   }
+}
+
+.counter{
+  position: absolute;
+  right: 0;
+  top: 0;
+  margin-right: 15px;
+  color: #ABABAB;
 }
 
 @media (min-width: 768px){

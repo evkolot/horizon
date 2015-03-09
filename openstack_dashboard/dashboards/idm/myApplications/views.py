@@ -27,6 +27,7 @@ from horizon.utils import memoized
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import views as idm_views
 from openstack_dashboard.dashboards.idm.myApplications \
     import tables as application_tables
@@ -227,6 +228,9 @@ class DetailApplicationView(tables.MultiTableView):
                 self.request, application=self.kwargs['application_id'])
             organizations = [org for org in all_organizations if org.id
                      in set([a.organization_id for a in role_assignments])]
+            for org in organizations:
+                users = idm_utils.get_counter(self, organization=org)
+                setattr(org, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))

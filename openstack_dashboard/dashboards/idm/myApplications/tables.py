@@ -23,7 +23,8 @@ class ProvidingApplicationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
-    url = tables.Column(lambda obj: getattr(obj, 'url', None))
+    url = tables.Column(lambda obj: getattr(obj, 'url', ''))
+    counter = tables.Column('counter')
     
     class Meta:
         name = "providing_table"
@@ -36,8 +37,9 @@ class PurchasedApplicationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
-    url = tables.Column(lambda obj: getattr(obj, 'url', None))  
-    
+    url = tables.Column(lambda obj: getattr(obj, 'url', ''))  
+    counter = tables.Column('counter')
+
     class Meta:
         name = "purchased_table"
         verbose_name = ("")
@@ -49,7 +51,8 @@ class AuthorizedApplicationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
-    url = tables.Column(lambda obj: getattr(obj, 'url', None))  
+    url = tables.Column(lambda obj: getattr(obj, 'url', ''))  
+    counter = tables.Column('counter')
 
     class Meta:
         name = "authorized_table"
@@ -63,12 +66,11 @@ class ManageAuthorizedMembersLink(tables.LinkAction):
     verbose_name = ("Authorize")
     url = "horizon:idm:myApplications:members"
     classes = ("ajax-modal",)
-    icon = "check-square-o"
+    icon = "key"
 
     def allowed(self, request, user):
         # Allowed if your allowed role list is not empty
         # TODO(garcianavalon) move to fiware_api
-        default_org = request.user.default_project_id
         if request.user.default_project_id == request.organization.id:
             allowed = fiware_api.keystone.list_user_allowed_roles_to_assign(
                 request,
@@ -104,12 +106,11 @@ class ManageAuthorizedOrganizationsLink(tables.LinkAction):
     verbose_name = ("Authorize")
     url = "horizon:idm:myApplications:organizations"
     classes = ("ajax-modal",)
-    icon = "check-square-o"
+    icon = "key"
 
     def allowed(self, request, user):
         # Allowed if your allowed role list is not empty
         # TODO(garcianavalon) move to fiware_api
-        default_org = request.user.default_project_id
         if request.user.default_project_id == request.organization.id:
             allowed = fiware_api.keystone.list_user_allowed_roles_to_assign(
                 request,
@@ -131,8 +132,8 @@ class AuthorizedOrganizationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Applications'))
-    url = tables.Column(lambda obj: getattr(obj, 'url', None))
-    
+    description = tables.Column(lambda obj: getattr(obj, 'description', ''))
+    counter = tables.Column('counter')
 
     class Meta:
         name = "organizations"

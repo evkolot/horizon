@@ -60,8 +60,9 @@ class DetailOrganizationView(tables.MultiTableView):
     def get_members_data(self):
         users = []
         try:
-            # NOTE(garcianavalon) Filtering by project doesn't work anymore
-            # in v3 API >< We need to get the role_assignments for the user's
+            # NOTE(garcianavalon) Filtering by project in user_list
+            # filters by default_project_id.
+            # We need to get the role_assignments for the user's
             # id's and then filter the user list ourselves
             all_users = api.keystone.user_list(self.request)
             project_users_roles = api.keystone.get_project_users_roles(
@@ -85,6 +86,9 @@ class DetailOrganizationView(tables.MultiTableView):
             ]
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
+            for app in applications:
+                users = idm_utils.get_counter(self, application=app)
+                setattr(app, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))

@@ -51,6 +51,9 @@ class ProvidingTab(tabs.TableTab):
                                    if a.role_id == provider_role.id]       
             applications = [app for app in all_apps
                             if app.id in apps_with_roles]
+            for app in applications:
+                users = idm_utils.get_counter(self, application=app)
+                setattr(app, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))
@@ -84,6 +87,9 @@ class PurchasedTab(tabs.TableTab):
            
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
+            for app in applications:
+                users = idm_utils.get_counter(self, application=app)
+                setattr(app, 'counter', users)
             
         except Exception:
             exceptions.handle(self.request,
@@ -119,6 +125,9 @@ class AuthorizedTab(tabs.TableTab):
                                    and a.role_id != provider_role.id]
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
+            for app in applications:
+                users = idm_utils.get_counter(self, application=app)
+                setattr(app, 'counter', users)
             
         except Exception:
             exceptions.handle(self.request,
