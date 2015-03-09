@@ -10,6 +10,8 @@
       {{ cell.value }} users
     {% elif  cell.column.name == 'description' %}
       {{ cell.value }}
+    {% elif  cell.column.name == 'url' %}
+      {{ cell.value }}
     {% elif cell.column.name == 'avatar' %}
       <img src="{{cell.value}}">
     {% endif %}

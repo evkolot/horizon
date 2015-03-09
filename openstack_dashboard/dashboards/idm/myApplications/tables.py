@@ -23,8 +23,7 @@ class ProvidingApplicationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
-    description = tables.Column(lambda obj: getattr(obj, 'description', ''))
-    url = tables.Column(lambda obj: getattr(obj, 'url', None))
+    url = tables.Column(lambda obj: getattr(obj, 'url', ''))
     counter = tables.Column('counter')
     
     class Meta:
@@ -37,9 +36,8 @@ class ProvidingApplicationsTable(tables.DataTable):
 class PurchasedApplicationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
-    description = tables.Column(lambda obj: getattr(obj, 'description', ''))
     name = tables.Column('name', verbose_name=('Name'))
-    url = tables.Column(lambda obj: getattr(obj, 'url', None))  
+    url = tables.Column(lambda obj: getattr(obj, 'url', ''))  
     counter = tables.Column('counter')
 
     class Meta:
@@ -53,8 +51,7 @@ class AuthorizedApplicationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
-    description = tables.Column(lambda obj: getattr(obj, 'description', ''))
-    url = tables.Column(lambda obj: getattr(obj, 'url', None))  
+    url = tables.Column(lambda obj: getattr(obj, 'url', ''))  
     counter = tables.Column('counter')
 
     class Meta:
@@ -136,7 +133,6 @@ class AuthorizedOrganizationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Applications'))
     description = tables.Column(lambda obj: getattr(obj, 'description', ''))
-    url = tables.Column(lambda obj: getattr(obj, 'url', None))
     counter = tables.Column('counter')
 
     class Meta:
