@@ -30,7 +30,7 @@ class ManageAuthorizedMembersLink(tables.LinkAction):
     verbose_name = ("Authorize")
     url = "horizon:idm:members:authorize"
     classes = ("ajax-modal",)
-    icon = "check-square-o"
+    icon = "key"
 
     
 class MembersTable(tables.DataTable):

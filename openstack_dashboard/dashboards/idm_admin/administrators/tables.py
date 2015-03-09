@@ -27,7 +27,7 @@ class ManageAuthorizedMembersLink(tables.LinkAction):
     verbose_name = ("Authorize")
     url = "horizon:idm_admin:administrators:members"
     classes = ("ajax-modal",)
-    icon = "check-square-o"
+    icon = "key"
 
     def allowed(self, request, user):
         # Allowed if your allowed role list is not empty
