@@ -32,6 +32,14 @@ class ManageAuthorizedMembersLink(tables.LinkAction):
     classes = ("ajax-modal",)
     icon = "key"
 
+    def allowed(self, request, user):
+        # Allowed if your allowed role list is not empty
+        # TODO(garcianavalon) move to fiware_api
+        allowed = fiware_api.keystone.list_organization_allowed_roles_to_assign(
+            request,
+            organization=request.organization.id)
+        return allowed
+
     
 class MembersTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(

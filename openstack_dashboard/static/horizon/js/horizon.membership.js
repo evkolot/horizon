@@ -420,18 +420,9 @@ horizon.membership = {
           return false;
         }
       });
-
       // add filtering + styling to the inline obj creation btn
-      //horizon.membership.add_new_member_styling(step_slug);
       horizon.membership.list_filtering(step_slug);
       horizon.membership.detect_no_results(step_slug);
-
-      // fix initial striping of rows
-      /*$form.find('.fake_' + step_slug + '_table').each( function () {
-        var filter = "." + $(this).attr('id');
-        $(filter + ' .btn-group:even').addClass('dark_stripe');
-        $(filter + ' .btn-group:last').addClass('last_stripe');
-      });*/
     });
   }
 };

@@ -114,8 +114,9 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
     """FIWARE roles and user logic"""
     
     def _list_all_owners(self, request, superset_id):
-        # NOTE(garcianavalon) Filtering by project doesn't work anymore
-        # in v3 API >< We need to get the role_assignments for the user's
+        # NOTE(garcianavalon) Filtering by project in user_list
+        # filters by default_project_id.
+        # We need to get the role_assignments for the user's
         # id's and then filter the user list ourselves
         all_users = api.keystone.user_list(request)
         project_users_roles = api.keystone.get_project_users_roles(
