@@ -14,6 +14,9 @@
 from django.conf.urls import patterns
 from django.conf.urls import url
 
+from openstack_auth import views as openstack_auth_views
+
+from openstack_dashboard.fiware_auth import forms as fiware_auth_forms
 from openstack_dashboard.fiware_auth import views
 
 
@@ -29,4 +32,9 @@ urlpatterns = patterns(
                             name='fiware_auth_reset'),
     url(r'^confirmation/$', views.ResendConfirmationInstructionsView.as_view(),
                             name='fiware_auth_confirmation'),
+    # NOTE(garcianavalon) override to use our form
+    url(r'^auth/login/$', openstack_auth_views.login, 
+        {'form_class': fiware_auth_forms.LoginWithEmailForm}, name='login'),
+    # NOTE(garcianavalon) override to add a message
+    url(r'^auth/switch/(?P<tenant_id>[^/]+)/$', views.switch, name='switch_tenants'),
 )
