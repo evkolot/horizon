@@ -73,7 +73,7 @@ textarea {
   }
   .name{color: $black;}
   .description,
-  .url{color: $gray;}
+  .url{color: $gray;font-size:12px;}
 
 
   .switch{
@@ -202,6 +202,15 @@ textarea {
       display: block !important;
       text-decoration: none;
     }    
+  }
+  .modal-footer{
+    border-top: none !important;
+    .panel-collapse{
+      border-top: 1px solid $border-color;
+      button.btn-danger{
+        margin-top: 15px
+      }
+    }
   }
 }
 
