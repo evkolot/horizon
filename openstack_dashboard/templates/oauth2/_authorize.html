@@ -7,21 +7,25 @@
 
 {% block modal_id %}authorize_application_modal{% endblock %}
 {% block modal-header %}
-<h4>
+<h3>
   nombre de esto
-</h4>
+</h3>
 {% endblock %}
 
 {% block modal-body %}
-  <p>
-    <b>Credentials:</b> {{ application_credentials }}
-  </p>
-  <p>
-	<b>Data:</b> {{ oauth_data.data }}
-  </p>
-  <p>
-	<b>Error:</b> {{ oauth_data.error }}
-  </p>
+
+<dl class="dl-horizontal">
+  <dt>Credentials:</dt>
+  <dd>{{ application_credentials }}</dd>
+</dl>
+<dl class="dl-horizontal">
+  <dt>Data:</dt>
+  <dd>{{ oauth_data.data }}</dd>
+</dl>
+<dl class="dl-horizontal">  <dt>Error:</dt>
+  <dd>{{ oauth_data.error }}</dd>
+</dl>
+
   <fieldset>
     {% include "horizon/common/_form_fields.html" %}
   </fieldset>

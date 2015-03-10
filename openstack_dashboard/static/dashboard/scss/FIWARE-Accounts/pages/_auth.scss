@@ -218,3 +218,37 @@
   @extend .fa-eye;
 }
 
+
+#authorize_application_modal{
+  .modal-header{
+    border: none;
+    padding: 0;
+    h3{
+      color: #48b9c9;
+      font-size: 17px !important;
+    }
+  }
+  .modal-footer{
+    padding: 15px 0 0;
+  }
+}
+
+@media (min-width: 768px){
+  .dl-horizontal{ 
+    dt {
+      width: 88px;
+    }
+    dd {
+      margin-left: 98px;
+    }
+  }
+}
+
+@media (max-width: 767px){
+  .dl-horizontal{ 
+    dd {
+      margin-left: 0px;
+      margin-bottom: 15px; 
+    }
+  }
+}
