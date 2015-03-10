@@ -66,12 +66,14 @@ textarea {
     }
   }
   .name,
-  .description {
+  .description,
+  .url {
     @include text-overflow;
     margin-left: 10px;
   }
   .name{color: $black;}
-  .description{color: $gray; display:none;}
+  .description,
+  .url{color: $gray;font-size:12px;}
 
 
   .switch{
@@ -79,7 +81,8 @@ textarea {
     margin-top: 14px;
     margin-left: 45px;
     a{
-      text-align: left;
+      text-align: right;
+      margin-top: 1px;
     }
   }
 
@@ -199,6 +202,15 @@ textarea {
       display: block !important;
       text-decoration: none;
     }    
+  }
+  .modal-footer{
+    border-top: none !important;
+    .panel-collapse{
+      border-top: 1px solid $border-color;
+      button.btn-danger{
+        margin-top: 15px
+      }
+    }
   }
 }
 

@@ -14,9 +14,6 @@
     @include make-lg-column-offset(1);
     .list-group-item{
       @include switch-hover;
-      a.btn-link{
-        text-align: left;
-      }
     }
   }
   .applications,
