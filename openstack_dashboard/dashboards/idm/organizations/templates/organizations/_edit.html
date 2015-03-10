@@ -20,7 +20,7 @@
 {% elif form.title == 'Cancel' %}
 <a class="panel-title" data-toggle="collapse" data-parent="#accordion" href="#destroy_organization">
     <h3>
-      Unhappy? <span>Cancel my account</span>
+      Unhappy? <span>Delete organization and all its data</span>
     </h3>
 </a>
 
@@ -36,7 +36,7 @@
 {% block modal-footer %}
 
 {% if form.title == 'Cancel'%}
-<div id="destroy_organization" class="">
+<div id="destroy_organization" class="panel-collapse collapse">
   <button type="submit" class="btn btn-danger">{% trans "Delete Organization" %} </button>
 </div>  
 
