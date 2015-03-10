@@ -46,22 +46,22 @@ class AuthorizeView(FormView):
         if not self.application_credentials:
             self._store_credentials(request)
 
+        self.application = fiware_api.keystone.application_get(
+            request,
+            self.application_credentials['application_id'],
+            use_idm_account=True)
         if request.user.is_authenticated():
             return super(AuthorizeView, self).dispatch(request, *args, **kwargs)
         else:
             LOG.debug('OAUTH2: Login page with consumer details')
             # redirect to the login page but showing some info about the application
-            application = fiware_api.keystone.application_get(
-                request,
-                self.application_credentials['application_id'],
-                use_idm_account=True)
-            application.avatar = idm_utils.get_avatar(
-                application, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR)
+            self.application.avatar = idm_utils.get_avatar(
+                self.application, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR)
             context = {
                 'next':reverse('fiware_oauth2_authorize'),
                 'redirect_field_name': auth.REDIRECT_FIELD_NAME,
                 'show_application_details':True,
-                'application':application,
+                'application':self.application,
             }
             return auth_views.login(request, 
                                 extra_context=context, 
@@ -123,6 +123,7 @@ class AuthorizeView(FormView):
         context = super(AuthorizeView, self).get_context_data(**kwargs)
         context['oauth_data'] = self.oauth_data
         context['application_credentials'] = self.application_credentials
+        context['application'] = self.application
         return context
 
     def post(self, request, *args, **kwargs):

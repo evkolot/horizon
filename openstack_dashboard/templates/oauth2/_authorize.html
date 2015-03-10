@@ -7,24 +7,22 @@
 
 {% block modal_id %}authorize_application_modal{% endblock %}
 {% block modal-header %}
-<h3>
-  nombre de esto
-</h3>
+  <h3>Authorize {{ application.name }}?</h3>
 {% endblock %}
 
 {% block modal-body %}
-
-<dl class="dl-horizontal">
-  <dt>Credentials:</dt>
-  <dd>{{ application_credentials }}</dd>
-</dl>
-<dl class="dl-horizontal">
-  <dt>Data:</dt>
-  <dd>{{ oauth_data.data }}</dd>
-</dl>
-<dl class="dl-horizontal">  <dt>Error:</dt>
-  <dd>{{ oauth_data.error }}</dd>
-</dl>
+  <dl class="dl-horizontal">
+    <p>
+      The application <a href="{% url 'horizon:idm:myApplications:detail' application.id %}">{{ application.name }}</a> will be able to:
+    </p>
+    • Read your public information
+  </dl>
+  {% if oauth_data.error %}
+  <dl class="dl-horizontal">
+    <dt>An error occurred:</dt> 
+    <dd>{{ oauth_data.error }}</dd>
+  </dl>
+  {% endif %}
 
   <fieldset>
     {% include "horizon/common/_form_fields.html" %}
