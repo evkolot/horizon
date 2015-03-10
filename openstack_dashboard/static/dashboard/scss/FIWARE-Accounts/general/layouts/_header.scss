@@ -28,6 +28,7 @@ header.navbar{
   }
   .navbar-toggle{
     padding: 5px 0 5px;
+    font-size: 13px;
   }
   .navbar-collapse.in {
     .navbar-nav>li {
@@ -42,6 +43,9 @@ header.navbar{
   background-color: transparent
 }
 
+ul.navbar-nav > li:hover {
+  background-color: #E8E8E8;
+}
 
 nav.container-fluid{
   max-width: 1200px;
@@ -49,15 +53,33 @@ nav.container-fluid{
   padding: 3px 15px 2px;
 }
 
-.logo-header{
+.logo-fl-header,
+.logo-f-header{
+  float: left;
+}
+.logo-fl-header{
+  width: 158px;
+}
+.logo-f-header{
+  width: 118px;
+}
+.logo-fl-header{
+  width: 158px;
+}
+
+.logo-f-header,
+.logo-fl-header{
     float: left;
-    width: 158px;
     .brand{
       margin: 0 0 0 -8px !important;
       padding: 0 !important;
-      img {
+      img.fiware-lab {
         margin-top: 4px;
         width: 158px !important;
+      }
+      img.fiware {
+        margin-top: 4px;
+        width: 118px !important;
       }
     }
   }
