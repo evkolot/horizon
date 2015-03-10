@@ -11,9 +11,6 @@ header.navbar{
   background-color: $navbar-default-bg;
   padding: 0;
   @media (min-width: 768px){
-    .navbar-collapse.in {
-      padding-bottom: 20px;
-    }
     .navbar-nav>li>a {
       line-height: 0;
       padding-top: 24px;
@@ -21,12 +18,28 @@ header.navbar{
       font-size: 14px;
     }
   }
+  @media (max-width: 768px){
+    .navbar-collapse.in {
+      padding-bottom: 20px;
+      .switcher_bar.open a {
+        background: rgba(0, 0, 0, 0);
+      }
+    }
+  }
   .navbar-toggle{
-    padding: 9px 0 8px;
+    padding: 5px 0 5px;
   }
   .navbar-collapse.in {
-    padding-bottom: 20px;
+    .navbar-nav>li {
+      &:hover{
+        background: #E8E8E8;
+      }
+    }
   }
+}
+
+.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus {
+  background-color: transparent
 }
 
 
@@ -42,19 +55,12 @@ nav.container-fluid{
     .brand{
       margin: 0 0 0 -8px !important;
       padding: 0 !important;
-      .fiware-logo {
-        margin-top: 3px;
+      img {
+        margin-top: 4px;
         width: 158px !important;
       }
     }
   }
-
-
-.nav-tabs, .nav-tabs li a, 
-.nav-tabs > .active > a, 
-.nav-tabs > .active > a:hover {
-  //margin: 2px 0px 1px 0px;//
-}
 
 .nav-tabs > .active > a, .nav-tabs > .active > a:hover {
   color: $brand-secundary;
@@ -67,10 +73,10 @@ nav.container-fluid{
 }
 
 #profile_editor_switcher{
-  margin-top: 7px;
-  border: 5px solid transparent;
-   a img {
+  margin-top: 9px;
+  a img {
     width: 24px;
+    margin-top: -1px;
   }
   &:hover{
     @include border-top-radius (3px);
@@ -86,10 +92,13 @@ nav.container-fluid{
         @include rotate (270deg)
       }
     }
+    a{
+      background: transparent;
+    }
     .dropdown-menu{
       li{
         &:hover{
-          background: #FAFAFA;
+          background: #E8E8E8;
         }
       }
     }
@@ -101,41 +110,21 @@ nav.container-fluid{
   header .navbar ul.nav{
     margin-top: 0px;
   }
-
   .logo-header{
     width: 152px !important;
   }
-
-  .mobile .dropdown-menu li a{
-    padding: 9px 8px 6px;
-  }
-
-  .mobile{
-    display: inline-block;
-    float: left;
-  }
-
   .brand{
     padding: 0px 4px 0 0px !important;
     float: left !important;
   }
-
   .dropdown i {
     margin-left: 2px;
   }
 }
-
 @media (min-width: 768px) and (max-width: 979px){
-
-
   header.navbar ul{
     margin-top: 0px    
   }
-
-  .mobile{
-    display: none !important;
-  }
-
   .brand{
     padding: 0px 4px 0 0px !important;
     float: left !important;
