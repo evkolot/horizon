@@ -46,10 +46,14 @@ class AuthorizeView(FormView):
         if not self.application_credentials:
             self._store_credentials(request)
 
-        self.application = fiware_api.keystone.application_get(
-            request,
-            self.application_credentials['application_id'],
-            use_idm_account=True)
+        try:
+            self.application = fiware_api.keystone.application_get(
+                request,
+                self.application_credentials['application_id'],
+                use_idm_account=True)
+        except Exception:
+            pass
+
         if request.user.is_authenticated():
             return super(AuthorizeView, self).dispatch(request, *args, **kwargs)
         else:
@@ -176,6 +180,7 @@ class AccessTokenView(View):
                             content_type=response.headers['content-type'], 
                             status=response.status_code, 
                             reason=response.reason)
+
 
 class UserInfoView(View):
     """ Forwards to the Keystone backend the validate token request (access the user info).
