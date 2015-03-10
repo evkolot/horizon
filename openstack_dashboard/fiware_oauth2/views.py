@@ -24,6 +24,7 @@ from django.views.generic.edit import FormView
 
 from openstack_auth import views as auth_views
 from openstack_dashboard import fiware_api
+from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.fiware_oauth2 import forms
 
 
@@ -50,13 +51,17 @@ class AuthorizeView(FormView):
         else:
             LOG.debug('OAUTH2: Login page with consumer details')
             # redirect to the login page but showing some info about the application
+            application = fiware_api.keystone.application_get(
+                request,
+                self.application_credentials['application_id'],
+                use_idm_account=True)
+            application.avatar = idm_utils.get_avatar(
+                application, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR)
             context = {
                 'next':reverse('fiware_oauth2_authorize'),
                 'redirect_field_name': auth.REDIRECT_FIELD_NAME,
                 'show_application_details':True,
-                'application':fiware_api.keystone.application_get(request,
-                                    self.application_credentials['application_id'],
-                                    use_idm_account=True),
+                'application':application,
             }
             return auth_views.login(request, 
                                 extra_context=context, 
