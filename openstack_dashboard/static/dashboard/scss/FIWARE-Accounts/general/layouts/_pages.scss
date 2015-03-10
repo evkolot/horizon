@@ -223,6 +223,10 @@ textarea {
     .filter{
       margin-left: 10px;
       float: left;
+      @media (max-width: $screen-xs-min){
+        @include make-xs-column(3, $gutter: $grid-gutter-width);
+        padding: 0;
+      }
     }
     .form-control{
       height: 28px;
@@ -263,6 +267,14 @@ textarea {
   top: 0;
   margin-right: 15px;
   color: #ABABAB;
+}
+
+.panel-heading .btn-default{
+  span {
+    float: none;
+    padding-top: 0px;
+    @extend .hidden-xs;
+  }
 }
 
 @media (min-width: 768px){
