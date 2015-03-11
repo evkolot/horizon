@@ -207,6 +207,10 @@ textarea {
     border-top: none !important;
     .panel-collapse{
       border-top: 1px solid $border-color;
+      span{
+        margin-top: 11px;
+        float: left;
+      }
       button.btn-danger{
         margin-top: 15px
       }
