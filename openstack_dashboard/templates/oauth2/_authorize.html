@@ -11,18 +11,19 @@
 {% endblock %}
 
 {% block modal-body %}
-  <dl class="dl-horizontal">
+  <div>
+  {% if oauth_data.error %}
+    <div class="alert alert-warning">
+      {{ oauth_data.error }}
+    </div>
+  {% endif %}
     <p>
       The application <a href="{% url 'horizon:idm:myApplications:detail' application.id %}">{{ application.name }}</a> will be able to:
     </p>
-    • Read your public information
-  </dl>
-  {% if oauth_data.error %}
-  <dl class="dl-horizontal">
-    <dt>An error occurred:</dt> 
-    <dd>{{ oauth_data.error }}</dd>
-  </dl>
-  {% endif %}
+    <div class="alert alert-info">
+      Read your public information.
+    </div>
+  </div>
 
   <fieldset>
     {% include "horizon/common/_form_fields.html" %}
@@ -30,7 +31,7 @@
 {% endblock %}
 
 {% block modal-footer %}
-  <a href="{% url 'fiware_oauth2_cancel_authorize' %}" class="secondary cancel btn btn-danger">{% trans "Cancel" %}</a>
-  <button type="submit" class="btn btn-primary">{% trans "Accept" %}</button>
+  <a href="{% url 'fiware_oauth2_cancel_authorize' %}" class="secondary cancel btn btn-default">{% trans "Deny" %}</a>
+  <button type="submit" class="btn btn-primary">{% trans "Authorize" %}</button>
   
 {% endblock %}
