@@ -320,6 +320,22 @@
   } 
 }
 
+ul.disabled-list{
+  li{
+    &:hover{
+      background: $white;
+      color: #C5C5C5;
+      cursor: no-drop;
+    }
+  }
+  li.active{
+    &:hover{
+      background: #F1F1F2;
+      cursor: no-drop;
+    }
+  }
+}
+
 #collapse_oauth2_credentials {
   .btn-link{
     margin-top: -6px;
