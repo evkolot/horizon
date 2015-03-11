@@ -11,22 +11,39 @@ nav.container-fluid{
   background-image: none;
   padding: 3px 15px 2px;
 }
-nav.container-fluid .logo-header{
-  float: left;
-  width: 158px;
-}
 
 
-.fiware-logo {
+.logo-fl-header,
+.logo-f-header{
   margin-left: 0px;
   margin-left: 0px;
   margin-top: 2px;
-  width: 158px !important;
+  float: left;
+}
+.logo-fl-header{
+  width: 158px;
+}
+.logo-f-header{
+  width: 118px;
 }
 
-.logo-header .brand{
-  margin: 0 0 0 -8px !important;
-  padding: 0 !important;
+
+.logo-fl-header, .logo-f-header{ 
+  .brand{
+    margin: 0 0 0 -8px !important;
+    padding: 0 !important;
+  }
+}
+
+.brand img.fiware-lab,
+.brand img.fiware {
+  margin-top: 2px;
+}
+.brand img.fiware-lab {
+  width: 158px !important;
+}
+.brand img.fiware {
+  width: 118px !important;
 }
 
 
