@@ -19,7 +19,7 @@
 	{% elif form.title == 'Cancel' %}
 		<a class="panel-title" data-toggle="collapse" data-parent="#accordion" href="#destroy_application">
 		    <h3>
-		      Remove the application and all its data 
+		      Remove application
 		    </h3>
 		</a>
 
@@ -34,10 +34,11 @@
 
 {% block modal-footer %}
 	{% if form.title == 'Cancel'%}
-		<div id="destroy_application" class="panel-collapse collapse">  
-	    	<button type="submit" class="btn btn-danger">
-	    	    {% trans "Delete Application" %} 
-	    	</button>
+		<div id="destroy_application" class="panel-collapse collapse">
+      <span>This will remove the application and all its data</span>
+    	<button type="submit" class="btn btn-danger">
+  	    {% trans "Delete Application" %} 
+    	</button>
 		</div>  
 
 	{% else %}
