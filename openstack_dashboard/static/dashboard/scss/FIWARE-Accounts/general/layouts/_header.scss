@@ -11,10 +11,6 @@ nav.container-fluid{
   background-image: none;
   padding: 3px 15px 2px;
 }
-nav.container-fluid .logo-header{
-  float: left;
-  width: 158px;
-}
 
 
 .logo-fl-header,
@@ -22,6 +18,7 @@ nav.container-fluid .logo-header{
   margin-left: 0px;
   margin-left: 0px;
   margin-top: 2px;
+  float: left;
 }
 .logo-fl-header{
   width: 158px;
