@@ -1,3 +1,4 @@
+
 .presentation{
   @include make-sm-column(5, $gutter: $grid-gutter-width);
   @include make-md-column(6, $gutter: $grid-gutter-width);
@@ -31,6 +32,16 @@
     .sign_up{
       float: right;
       margin-top: 4px;
+    }
+  }
+  
+  .media-app{
+    img.media-object{
+      float: left;
+    }
+    .media-body{
+      padding-left: 15px;
+      padding-top: 2px;
     }
   }
 }
