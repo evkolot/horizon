@@ -70,10 +70,12 @@ textarea {
   .url {
     @include text-overflow;
     margin-left: 10px;
+    padding-right: 64px;
   }
   .name{color: $black;}
   .description,
   .url{color: $gray;font-size:12px;}
+
 
 
   .switch{

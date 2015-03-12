@@ -98,9 +98,10 @@
 }
 
 .site_client_roles header{
-    position: absolute;
-    margin-top: -23px;
+  position: absolute;
+  margin-top: -23px;
 }
+
 #new_relation{
   h4{
     margin-bottom: 10px;
@@ -159,7 +160,11 @@
     }
   }
 }
-
+.members-list{
+  .alert{
+    margin-top: 15px;
+  }
+}
 #update_owners_roles{
   .modal-header{
     display: none;
@@ -334,6 +339,12 @@ ul.disabled-list{
       cursor: no-drop;
     }
   }
+}
+
+.dropdown_empty .btn-default{
+  border: 1px solid #FAEBCC;
+  background-color: #FCF8E3;
+  color: #8A6D3B;
 }
 
 #collapse_oauth2_credentials {
