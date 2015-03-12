@@ -176,6 +176,8 @@ class RelationshipWorkflow(workflows.Workflow,
     default_steps = (UpdateRelationshipStep,)
     member_slug = RELATIONSHIP_SLUG
     current_user_editable = True
+    no_roles_message = 'Some users don\'t have any role assigned. If you save now \
+        they won\'t be authorized in the application'
 
     def handle(self, request, data):
         superset_id = data['superset_id']

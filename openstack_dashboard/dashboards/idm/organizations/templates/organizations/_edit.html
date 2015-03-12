@@ -18,12 +18,11 @@
 	<img id="avatar-update" src="{{ image }}" alt="your image"   />
 </div>
 {% elif form.title == 'Cancel' %}
-<a class="panel-title" data-toggle="collapse" data-parent="#accordion" href="#destroy_organization">
-    <h3>
-      Unhappy? <span>Delete organization and all its data</span>
-    </h3>
-</a>
-
+	<a class="panel-title" data-toggle="collapse" data-parent="#accordion" href="#destroy_organization">
+	    <h3>
+	      <span>Delete organization</span>
+	    </h3>
+	</a>
 {% endif %}
 <div >
   <fieldset>
@@ -37,6 +36,7 @@
 
 {% if form.title == 'Cancel'%}
 <div id="destroy_organization" class="panel-collapse collapse">
+  <span>This will delete the organization and all its data</span>
   <button type="submit" class="btn btn-danger">{% trans "Delete Organization" %} </button>
 </div>  
 
