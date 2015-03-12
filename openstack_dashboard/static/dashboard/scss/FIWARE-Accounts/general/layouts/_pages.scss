@@ -81,8 +81,10 @@ textarea {
     margin-top: 14px;
     margin-left: 45px;
     a{
-      text-align: right;
+      position: absolute;
+      right: 0;
       margin-top: 1px;
+      width: auto;
     }
   }
 
