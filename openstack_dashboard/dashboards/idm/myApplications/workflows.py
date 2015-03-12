@@ -190,7 +190,7 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
 
 
     def _add_object_to_owner(self, request, superset, owner, obj):
-        default_org = request.user.default_project_id
+        default_org = api.keystone.user_get(request, owner).default_project_id
         fiware_api.keystone.add_role_to_user(request,
                                              application=superset,
                                              user=owner,
@@ -199,7 +199,7 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
 
 
     def _remove_object_from_owner(self, request, superset, owner, obj):
-        default_org = request.user.default_project_id
+        default_org = api.keystone.user_get(request, owner).default_project_id
         fiware_api.keystone.remove_role_from_user(request,
                                                   application=superset,
                                                   user=owner,
@@ -260,7 +260,6 @@ class AuthorizedOrganizationsApi(idm_workflows.RelationshipApiInterface):
 
     def _list_all_objects(self, request, superset_id):
         all_roles = fiware_api.keystone.role_list(request)
-        default_org = request.user.default_project_id
         if request.user.default_project_id == request.organization.id:
             allowed = fiware_api.keystone.list_user_allowed_roles_to_assign(
                 request,
