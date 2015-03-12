@@ -52,7 +52,7 @@
 }
 
 //#members, 
-//#applications {
+//#applications  {
 //  max-height: 232px;
 //  overflow-x: hidden;
 //  overflow-y: scroll;
@@ -156,6 +156,15 @@
       display: inline-block;
       padding-top: 4px;
     } 
+  }
+}
+
+.all-users,
+.members-list{
+  ul.list-group{
+    max-height: 301px;
+    overflow-x: hidden;
+    overflow-y: scroll;
   }
 }
 .role_dropdown li.app-roles-list{
