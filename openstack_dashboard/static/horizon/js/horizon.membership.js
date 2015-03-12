@@ -421,6 +421,10 @@ horizon.membership = {
         // submit normally
       }
     });
+    $(form).find('a.cancel').click(function (){
+      // reset the users_without_roles
+      horizon.membership.users_without_roles = []
+    });
   },
 
   /*
