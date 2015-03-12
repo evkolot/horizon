@@ -346,6 +346,8 @@ class ManageAuthorizedOrganizations(idm_workflows.RelationshipWorkflow):
     default_steps = (UpdateAuthorizedOrganizations,)
     RELATIONSHIP_CLASS = AuthorizedOrganizationsApi
     member_slug = idm_workflows.RELATIONSHIP_SLUG + '_organizations'
+    no_roles_message = 'Some organizations don\'t have any role assigned. \
+        If you save now they won\'t be authorized in the application'
 
     def get_success_url(self):
         # Overwrite to allow passing kwargs
