@@ -7,6 +7,7 @@ horizon.membership = {
   has_roles: [],
   default_role_id: [],
   app_names: [],
+  users_without_roles: [],
 
   /* Parses the form field selector's ID to get either the
    * role or user id (i.e. returns "id12345" when
@@ -385,8 +386,24 @@ horizon.membership = {
   },
 
   /*
+   * Detect users with out roles
+   */
+  detect_no_roles: function(form, step_slug) {
+    $(form).submit(function( event ){
+      if (true) {
+        console.log('prevent submission and show warning')
+        $('div.' + step.slug + '_membership' ).find('div.no_roles_warning').show();
+        event.preventDefault();
+      } else {
+        // submit normally
+        console.log('normal submit, no users without roles')
+      }
+    });
+  },
+
+  /*
    * Calls set-up functions upon loading the workflow.
-   **/
+   */
   workflow_init: function(modal, step_slug, step_id) {
     $(modal).find('form').each( function () {
       var $form = $(this);
@@ -420,9 +437,15 @@ horizon.membership = {
           return false;
         }
       });
-      // add filtering + styling to the inline obj creation btn
+      // add filtering
       horizon.membership.list_filtering(step_slug);
       horizon.membership.detect_no_results(step_slug);
+
+      // hide the no roles message
+      $form.find('div.no_roles_warning').hide();
+
+      // add the on submit handler to check for users without roles
+      horizon.membership.detect_no_roles($form, step_slug);
     });
   }
 };
