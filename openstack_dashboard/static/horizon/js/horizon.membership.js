@@ -413,8 +413,14 @@ horizon.membership = {
           && button.attr('value') != 'Confirm') {
         event.preventDefault();
         event.stopPropagation();
-        // show the warning message
+        // show warnings
         $('div.' + step_slug + '_membership' ).find('div.no_roles_warning').show();
+        for (var i in horizon.membership.users_without_roles) {
+          var data_id = horizon.membership.users_without_roles[i];
+          var $element = horizon.membership.get_member_element(step_slug, data_id);
+          console.log($element)
+          var dropdown = $element.find('div.dropdown').addClass('dropdown-empty');
+        }
         // Rename to confirm and enable
         button.attr('value', 'Confirm');
       } else {
