@@ -146,6 +146,11 @@ horizon.membership = {
       horizon.membership.remove_member(
         step_slug, data_id, role_id, membership[role_id]
       );
+      // check if this was the last role and keep track
+      var roles = horizon.membership.get_member_roles(step_slug, data_id);
+      if (roles.length == 0) {
+        horizon.membership.users_without_roles.push(data_id);
+      }
     }
     else {
       // search for membership in role lists
@@ -166,6 +171,12 @@ horizon.membership = {
     var role_list = horizon.membership.current_membership[step_slug][role_id];
     role_list.push(data_id);
     horizon.membership.update_role_lists(step_slug, role_id, role_list);
+    // remove the user from users_without_roles if present
+    var index = horizon.membership.users_without_roles.indexOf(data_id);
+    if (index > -1) {
+      console.log('remove from users_without_roles')
+      horizon.membership.users_without_roles.splice(index, 1);
+    }
   },
 
   update_member_role_dropdown: function(step_slug, data_id, role_ids, member_el) {
@@ -265,6 +276,9 @@ horizon.membership = {
         $("." + step_slug + "_members").append(member_el);
         if (default_role) {
           horizon.membership.add_member_to_role(step_slug, data_id, default_role);
+        } else {
+          // keep track of users added but with out roles
+          horizon.membership.users_without_roles.push(data_id);
         }
 
         if (horizon.membership.has_roles[step_slug]) {
@@ -278,6 +292,9 @@ horizon.membership = {
         $(this).parent().parent().siblings(".role_options").hide();
         $(".available_" + step_slug).append(member_el);
         horizon.membership.remove_member_from_role(step_slug, data_id);
+        // remove the user from the no roles list
+        var index = horizon.membership.users_without_roles.indexOf(data_id);
+        horizon.membership.users_without_roles.splice(index, 1);
       }
 
       // update lists
@@ -390,13 +407,18 @@ horizon.membership = {
    */
   detect_no_roles: function(form, step_slug) {
     $(form).submit(function( event ){
-      if (true) {
-        console.log('prevent submission and show warning')
-        $('div.' + step.slug + '_membership' ).find('div.no_roles_warning').show();
+      var $form = $(this);
+      var button = $form .find('[type="submit"]');
+      if (horizon.membership.users_without_roles.length != 0
+          && button.attr('value') != 'Confirm') {
         event.preventDefault();
+        event.stopPropagation();
+        // show the warning message
+        $('div.' + step_slug + '_membership' ).find('div.no_roles_warning').show();
+        // Rename to confirm and enable
+        button.attr('value', 'Confirm');
       } else {
         // submit normally
-        console.log('normal submit, no users without roles')
       }
     });
   },

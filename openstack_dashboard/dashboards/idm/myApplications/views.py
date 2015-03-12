@@ -203,15 +203,8 @@ class DetailApplicationView(tables.MultiTableView):
             all_users = api.keystone.user_list(self.request)
             role_assignments = fiware_api.keystone.user_role_assignments(
                 self.request, application=self.kwargs['application_id'])
-            users_with_roles = set()
-            for user in all_users:
-                for a in role_assignments:
-                    if (user.id == a.user_id 
-                        and user.default_project_id == a.organization_id):
-                            users_with_roles.add(user.id)
-            users = [user for user in all_users 
-                     if user.id in users_with_roles]
-
+            users_with_roles = [a.user_id for a in role_assignments]
+            users = [user for user in all_users if user.id in users_with_roles]
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
