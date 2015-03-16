@@ -17,40 +17,8 @@
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="header-navbar-collapse">
-      <ul class="nav navbar-nav">
-        <li class="">
-          <a href="http://cloud.lab.fi-ware.org/">
-            Cloud
-          </a>
-        </li>
-        <li class="">
-          <a href="http://store.lab.fi-ware.org/">
-            Store
-          </a>
-        </li>
-        <li class="">
-          <a href="http://mashup.lab.fi-ware.org/">
-            Mashup
-          </a>
-        </li>
-        <li class="">
-          <a href="https://data.lab.fi-ware.org">
-            Data
-          </a>
-        </li>
-        <li class="active">
-          <a href="#">
-            Account
-          </a>
-        </li>
-        <li class="">
-          <a href="http://help.lab.fi-ware.org/">
-            Help&info
-          </a>
-        </li>
-      </ul>
 
-      <div id="user_info" class="nav navbar-nav navbar-right">
+      <div id="user_info" class="col-md-pull-3 nav navbar-nav navbar-right">
 
         <div id="profile_editor_switcher" class="dropdown switcher_bar" tabindex='1'> 
           {% if request.user.is_authenticated %}
@@ -123,6 +91,40 @@
           </ul>
         </div>        
       </div>
+
+
+      <ul class="nav navbar-nav col-md-push-9">
+        <li class="">
+          <a href="http://cloud.lab.fi-ware.org/">
+            Cloud
+          </a>
+        </li>
+        <li class="">
+          <a href="http://store.lab.fi-ware.org/">
+            Store
+          </a>
+        </li>
+        <li class="">
+          <a href="http://mashup.lab.fi-ware.org/">
+            Mashup
+          </a>
+        </li>
+        <li class="">
+          <a href="https://data.lab.fi-ware.org">
+            Data
+          </a>
+        </li>
+        <li class="active">
+          <a href="#">
+            Account
+          </a>
+        </li>
+        <li class="">
+          <a href="http://help.lab.fi-ware.org/">
+            Help&info
+          </a>
+        </li>
+      </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </header>
