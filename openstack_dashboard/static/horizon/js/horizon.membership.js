@@ -7,6 +7,7 @@ horizon.membership = {
   has_roles: [],
   default_role_id: [],
   app_names: [],
+  users_without_roles: [],
 
   /* Parses the form field selector's ID to get either the
    * role or user id (i.e. returns "id12345" when
@@ -145,6 +146,11 @@ horizon.membership = {
       horizon.membership.remove_member(
         step_slug, data_id, role_id, membership[role_id]
       );
+      // check if this was the last role and keep track
+      var roles = horizon.membership.get_member_roles(step_slug, data_id);
+      if (roles.length == 0) {
+        horizon.membership.users_without_roles.push(data_id);
+      }
     }
     else {
       // search for membership in role lists
@@ -165,6 +171,12 @@ horizon.membership = {
     var role_list = horizon.membership.current_membership[step_slug][role_id];
     role_list.push(data_id);
     horizon.membership.update_role_lists(step_slug, role_id, role_list);
+    // remove the user from users_without_roles if present
+    var index = horizon.membership.users_without_roles.indexOf(data_id);
+    if (index > -1) {
+      console.log('remove from users_without_roles')
+      horizon.membership.users_without_roles.splice(index, 1);
+    }
   },
 
   update_member_role_dropdown: function(step_slug, data_id, role_ids, member_el) {
@@ -264,6 +276,9 @@ horizon.membership = {
         $("." + step_slug + "_members").append(member_el);
         if (default_role) {
           horizon.membership.add_member_to_role(step_slug, data_id, default_role);
+        } else {
+          // keep track of users added but with out roles
+          horizon.membership.users_without_roles.push(data_id);
         }
 
         if (horizon.membership.has_roles[step_slug]) {
@@ -277,6 +292,9 @@ horizon.membership = {
         $(this).parent().parent().siblings(".role_options").hide();
         $(".available_" + step_slug).append(member_el);
         horizon.membership.remove_member_from_role(step_slug, data_id);
+        // remove the user from the no roles list
+        var index = horizon.membership.users_without_roles.indexOf(data_id);
+        horizon.membership.users_without_roles.splice(index, 1);
       }
 
       // update lists
@@ -385,8 +403,39 @@ horizon.membership = {
   },
 
   /*
+   * Detect users with out roles
+   */
+  detect_no_roles: function(form, step_slug) {
+    $(form).submit(function( event ){
+      var $form = $(this);
+      var button = $form .find('[type="submit"]');
+      if (horizon.membership.users_without_roles.length != 0
+          && button.attr('value') != 'Confirm') {
+        event.preventDefault();
+        event.stopPropagation();
+        // show warnings
+        $('div.' + step_slug + '_membership' ).find('div.no_roles_warning').show();
+        for (var i in horizon.membership.users_without_roles) {
+          var data_id = horizon.membership.users_without_roles[i];
+          var $element = horizon.membership.get_member_element(step_slug, data_id);
+          console.log($element)
+          var dropdown = $element.find('div.dropdown').addClass('dropdown-empty');
+        }
+        // Rename to confirm and enable
+        button.attr('value', 'Confirm');
+      } else {
+        // submit normally
+      }
+    });
+    $(form).find('a.cancel').click(function (){
+      // reset the users_without_roles
+      horizon.membership.users_without_roles = []
+    });
+  },
+
+  /*
    * Calls set-up functions upon loading the workflow.
-   **/
+   */
   workflow_init: function(modal, step_slug, step_id) {
     $(modal).find('form').each( function () {
       var $form = $(this);
@@ -420,9 +469,15 @@ horizon.membership = {
           return false;
         }
       });
-      // add filtering + styling to the inline obj creation btn
+      // add filtering
       horizon.membership.list_filtering(step_slug);
       horizon.membership.detect_no_results(step_slug);
+
+      // hide the no roles message
+      $form.find('div.no_roles_warning').hide();
+
+      // add the on submit handler to check for users without roles
+      horizon.membership.detect_no_roles($form, step_slug);
     });
   }
 };
