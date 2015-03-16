@@ -242,6 +242,7 @@ header.navbar{
 
 header.navbar .container-fluid{
   margin-top: 2px;
+  max-width: 1200px;
 }
 
 .navbar-fixed-top{
@@ -459,7 +460,7 @@ footer.footer-main {
 }      
 .footer-main .cred{
   padding-top: 12px;
-  max-height: 1200px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 .footer-main .cred a{
