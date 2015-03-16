@@ -585,7 +585,7 @@ SUMMERNOTE_CONFIG = {
 
 
 # KEYSTONE admin role for projects
-KEYSTONE_OWNER_ROLE = 'admin'
+KEYSTONE_OWNER_ROLE = 'owner'
 
 # Default FIWARE roles
 FIWARE_PURCHASER_ROLE = 'purchaser'
