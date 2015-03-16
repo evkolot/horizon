@@ -19,6 +19,7 @@ from django.core import urlresolvers
 from horizon import tables
 
 from openstack_dashboard import api
+from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import tables as idm_tables
 
@@ -78,12 +79,13 @@ class ManageMembersLink(tables.LinkAction):
     icon = "cogs"
 
     def allowed(self, request, user):
-        # Allowed if he is an admin in the organization
+        # Allowed if he is an owner in the organization
         # TODO(garcianavalon) move to fiware_api
         org_id = self.table.kwargs['organization_id']
         user_roles = api.keystone.roles_for_user(
             request, request.user.id, project=org_id)
-        return 'admin' in [r.name for r in user_roles]
+        owner_role = fiware_api.keystone.get_owner_role(request)
+        return owner_role.id in [r.id for r in user_roles]
 
     def get_link_url(self, datum=None):
         org_id = self.table.kwargs['organization_id']
