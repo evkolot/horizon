@@ -586,6 +586,10 @@ SUMMERNOTE_CONFIG = {
 
 # KEYSTONE admin role for projects
 KEYSTONE_OWNER_ROLE = 'owner'
+OPENSTACK_KEYSTONE_ADMIN_ROLES = [
+    KEYSTONE_OWNER_ROLE,
+    'admin',
+]
 
 # Default FIWARE roles
 FIWARE_PURCHASER_ROLE = 'purchaser'
