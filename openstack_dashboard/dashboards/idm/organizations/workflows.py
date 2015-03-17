@@ -100,6 +100,8 @@ class ManageOrganizationMembers(idm_workflows.RelationshipWorkflow):
     RELATIONSHIP_CLASS = UserRoleApi
     member_slug = idm_workflows.RELATIONSHIP_SLUG
     current_user_editable = False
+    no_roles_message = 'Some users don\'t have any role assigned. \
+        If you save now they won\'t be part of the organization'
     
     def get_success_url(self):
         # Overwrite to allow passing kwargs
