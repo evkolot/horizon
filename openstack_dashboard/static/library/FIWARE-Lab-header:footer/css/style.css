@@ -460,6 +460,7 @@ footer.footer-main {
 }      
 .footer-main .cred{
   padding-top: 12px;
+  padding-bottom: 15px;
   max-width: 1200px;
   margin: 0 auto;
 }
