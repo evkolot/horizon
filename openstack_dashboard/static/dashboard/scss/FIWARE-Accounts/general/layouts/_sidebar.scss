@@ -9,6 +9,8 @@
     position: relative;
     margin-bottom: 0;
     border-bottom: 1px solid $border-color;
+    padding-right: 0px;
+    padding-left: 0px;
   }
   @media (max-width: $screen-xs-min){
     position: relative;
@@ -45,6 +47,11 @@
     @media (max-width: $screen-xs-min){
       width: 100%;
     }
+    a.home{
+      @media (max-width: $screen-sm-min){
+        padding: 0 1rem 0 0 !important;
+      }
+    }
     a.home,
     a.organizations,
     a.myApplications,
@@ -53,6 +60,11 @@
       line-height: 42px;
       display: block;
       margin-bottom: 9px;
+      margin-top: 3px;
+      @media (max-width: $screen-sm-min){
+        border-right: 1px solid $border-color;
+        padding: 0 1.5rem;
+      }
       @media (max-width: $screen-xs-min){
         line-height: 37px;
         &:first-child{
@@ -64,7 +76,6 @@
       }
       @media (max-width: $screen-sm-min){
         float: left;
-        margin: 0 1rem;
       }
       h4,
       i{
@@ -80,8 +91,6 @@
         font-size: 1.3rem;
         @media (max-width: $screen-sm-min){
           float: left;
-          border-right: 1px solid $border-color;
-          padding-right: 15px;
           font-size: 16px;
           &:first-child{
             padding-left: 0px;
