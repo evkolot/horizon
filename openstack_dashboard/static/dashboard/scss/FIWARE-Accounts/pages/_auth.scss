@@ -1,4 +1,6 @@
-
+#splash #user_info{
+  display: none;
+}
 .presentation{
   @include make-sm-column(5, $gutter: $grid-gutter-width);
   @include make-md-column(6, $gutter: $grid-gutter-width);
@@ -123,6 +125,7 @@
   @extend .well;
   @include border-top-radius (0);
   @include border-bottom-radius (0);
+  float: right;
   @media (max-width: $screen-sm-min){
     margin-top: 40px; 
   }

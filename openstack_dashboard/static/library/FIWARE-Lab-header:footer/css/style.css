@@ -26,6 +26,10 @@ a:hover {
   border-color: #E5E5E5;
 }
 
+.navbar-header{
+  margin-bottom: 4px;
+}
+
 .navbar-search .search-query {
   font-family: "Verdana", Arial, sans-serif;
   color: #000000;
@@ -85,6 +89,10 @@ ul.navbar-nav > li {
   list-style: none;
 }
 
+/** for frontpage, when the user not logged **/
+#splash #user_info{
+  display: none;
+}
 
 /*************______________navs___*******/
 
@@ -249,15 +257,6 @@ header.navbar .container-fluid{
   padding: 0;
 }
 
-.navbar-fixed-top .navbar-toggle{
-  padding: 5px 0 5px;
-  font-size: 13px;
-}
-
-.navbar-default .navbar-toggle {
-  border-color: rgba(0, 0, 0, 0);
-}
-
 .navbar-collapse.in .navbar-nav > li:hover{
   background: #E8E8E8;
 }
@@ -266,11 +265,13 @@ header.navbar .container-fluid{
   background-color: transparent;
 }
 .navbar-toggle {
+  font-size: 20px;
+  border-color: rgba(0, 0, 0, 0);
   position: relative;
   float: right;
-  margin-right: 0;
-  margin-top: 5.5px;
-  margin-bottom: 5.5px;
+  padding: 0;
+  line-height: 0;
+  margin: 10px 0 4px;
   background-color: rgba(0, 0, 0, 0);
   background-image: none;
   border: 1px solid rgba(0, 0, 0, 0);

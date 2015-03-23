@@ -8,6 +8,9 @@ header.navbar{
   .container-fluid{
     max-width: 1200px;
   }
+  .navbar-header{
+    margin-bottom: 4px;
+  }
 }
 
 .navbar-fixed-top{
@@ -30,8 +33,11 @@ header.navbar{
     }
   }
   .navbar-toggle{
-    padding: 5px 0 5px;
-    font-size: 13px;
+    font-size: 20px;
+    padding: 0;
+    line-height: 0;
+    margin: 10px 0 4px;
+
   }
   .navbar-collapse.in {
     .navbar-nav>li {
