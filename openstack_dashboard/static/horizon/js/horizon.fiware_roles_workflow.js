@@ -162,7 +162,7 @@ horizon.fiware_roles_workflow = {
 
     var $permission_items = $("ul."+step_slug+"_permissions").children('li');
     $permission_items.each(function (idx, el) {
-      if ($.inArray(($(el).data('permission-id')), permission_ids) !== -1) {
+      if ($.inArray(($(el).attr('data-permission-id')), permission_ids) !== -1) {
         $(el).addClass('active');
       } else {
         $(el).removeClass('active');

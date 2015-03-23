@@ -190,7 +190,7 @@ horizon.membership = {
     var $dropdown = member_el.find("div.member").siblings('.dropdown');
     var $role_items = $dropdown.children('.role_dropdown').find('li.role_dropdown_role');
     $role_items.each(function (idx, el) {
-      if ($.inArray(($(el).data('role-id')), role_ids) !== -1) {
+      if ($.inArray(($(el).attr('data-role-id')), role_ids) !== -1) {
         $(el).addClass('active');
       } else {
         $(el).removeClass('active');
