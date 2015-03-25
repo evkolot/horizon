@@ -17,15 +17,17 @@ footer.footer-main {
   font-size: 12px;
   border-top: 1px solid $brand-secundary;
   padding-top: 1px;
-  margin: 0 auto;
   left: 0;
   right: 0;
-  max-width: 1200px;
-  .footer-content{
+  .container-fluid{
     border-top: 1px solid $brand-primary;
-    .container-fluid{
+    .footer-content{
       border-top: 1px solid #F2E826;
-      padding-top: 12px;
+      .cred{
+        padding-top: 12px;
+        max-height: 1200px;
+        margin: 0 auto;
+      }
     }
   }
   a{

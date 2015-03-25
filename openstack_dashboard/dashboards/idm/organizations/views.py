@@ -95,12 +95,13 @@ class DetailOrganizationView(tables.MultiTableView):
         return idm_utils.filter_default(applications)
 
     def _can_edit(self):
-        # Allowed if he is an admin in the organization
+        # Allowed if he is an owner in the organization
         # TODO(garcianavalon) move to fiware_api
         org_id = self.kwargs['organization_id']
         user_roles = api.keystone.roles_for_user(
             self.request, self.request.user.id, project=org_id)
-        return 'admin' in [r.name for r in user_roles]
+        owner_role = fiware_api.keystone.get_owner_role(self.request)
+        return owner_role.id in [r.id for r in user_roles]
 
     def get_context_data(self, **kwargs):
         context = super(DetailOrganizationView, self).get_context_data(**kwargs)

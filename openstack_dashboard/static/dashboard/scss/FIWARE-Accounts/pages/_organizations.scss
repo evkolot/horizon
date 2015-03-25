@@ -159,14 +159,14 @@
   }
 }
 
-.all-users,
-.members-list{
-  ul.list-group{
-    max-height: 301px;
-    overflow-x: hidden;
-    overflow-y: hidden;
-  }
-}
+//.all-users,
+//.members-list{
+//  .filterable{
+//    max-height: 301px;
+//    overflow-x: hidden;
+//    overflow-y: scroll;
+//  }
+//}
 .role_dropdown li.app-roles-list{
   display: block;
   clear: both;
