@@ -1,1 +1,34 @@
 <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.js" type="text/javascript" charset="utf-8"></script>
+
+<script src="{{ STATIC_URL }}library/expander/js/jquery.expander.js"></script>
+
+<script>
+  $(document).ready(function() {
+    var opts = {collapseTimer: 1000};
+
+    $.each(['beforeExpand', 'afterExpand', 'onCollapse'], function(i, callback) {
+      opts[callback] = function(byUser) {
+        var msg = '<div class="success">' + callback;
+
+        if (callback === 'onCollapse') {
+          msg += ' (' + (byUser ? 'user' : 'timer') + ')';
+        }
+        msg += '</div>';
+
+        $(this).parent().parent().append(msg);
+      };
+    });
+
+    $('dl.expander dd').eq(0).expander();
+    $('dl.expander dd').slice(1).expander(opts);
+
+    $('ul.expander li').expander({
+      slicePoint: 50,
+      widow: 2,
+      expandSpeed: 10000,
+      userCollapseText: '[^]'
+    });
+
+    $('div.expander').expander();
+  });
+</script>
