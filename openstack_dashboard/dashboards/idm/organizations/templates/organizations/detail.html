@@ -21,23 +21,23 @@
   </header>
   <div class="panel panel-default">
     <div class="panel-body">
-      <h5>
-        Contact us
-      </h5>
-      <div>
-        <p>{{ city }}</p>
-        <p>{{ email }}</p>
-        <p>{{ website }}</p>
-      </div>
-      <!-- div que contiene la información de la org, cuando no esté relleno este campo, ocultar -->
-      <div class="extra">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" data-parent="#accordion" href="#description">
-            Description
-          </a>
-        </h4>
-        <div id="description" class="collapse">
+      <div class="description">
+        <h5>
+          Description
+        </h5>
+
+        <div class="info expander">
           <p>{{ contact_info }}</p>
+        </div>
+      </div> 
+      <div class="contac_us">
+        <h5>
+          Contact us
+        </h5>
+        <div>
+          <p>{{ city }}</p>
+          <p>{{ email }}</p>
+          <p>{{ website }}</p>
         </div>
       </div>
     </div>
