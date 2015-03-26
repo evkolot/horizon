@@ -34,7 +34,8 @@ from openstack_dashboard.fiware_oauth2 import urls as fiware_oauth2_urls
 
 urlpatterns = patterns(
     '',
-    url(r'^$', 'openstack_auth.views.login', name='splash'),
+    url(r'^$', 'openstack_dashboard.views.splash', 
+        {'template_name': 'auth/login.html'}, name='splash'),
     url(r'', include(fiware_auth_urls)),
     url(r'', include(fiware_oauth2_urls)),
     url(r'^auth/', include('openstack_auth.urls')),
