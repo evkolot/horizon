@@ -1,5 +1,5 @@
 <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.js" type="text/javascript" charset="utf-8"></script>
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="{{ STATIC_URL }}library/expander/js/jquery.expander.js"></script>
 
 <script>
@@ -30,5 +30,7 @@
     });
 
     $('div.expander').expander();
+    
+    $('.dropdown-toggle').dropdown();
   });
 </script>
