@@ -104,11 +104,6 @@ class ManageOrganizationMembers(idm_workflows.RelationshipWorkflow):
     current_user_editable = False
     no_roles_message = 'Some users don\'t have any role assigned. \
         If you save now they won\'t be part of the organization'
-    
-    def get_success_url(self):
-        # Overwrite to allow passing kwargs
-        return reverse(self.success_url, 
-                    kwargs={'organization_id':self.context['superset_id']})
 
 
 # APPLICATION MEMBERS
