@@ -5,7 +5,7 @@ Dear FIWARE Lab user,
 ------------
 
 {% if massive_footer == True %}
-	{% include "_massive_email_footer.html" %}
+	{% include "email/_massive_email_footer.html" %}
 {% endif %}
 
 2014 © FIWARE
