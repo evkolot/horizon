@@ -155,7 +155,7 @@ def role_create(request, name, is_internal=False, application=None, **kwargs):
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
     return manager.create(name=name,
                           is_internal=is_internal,
-                          application_id=application,
+                          application=application,
                           **kwargs)
 
 def role_update(request, role, name=None, is_internal=False, 
@@ -164,7 +164,7 @@ def role_update(request, role, name=None, is_internal=False,
     return manager.update(role,
                           name=name,
                           is_internal=is_internal,
-                          application_id=application,
+                          application=application,
                           **kwargs)
 
 def role_delete(request, role_id):
@@ -257,7 +257,7 @@ def permission_create(request, name, is_internal=False, application=None, **kwar
         request, admin=True).fiware_roles.permissions
     return manager.create(name=name,
                           is_internal=is_internal,
-                          application_id=application,
+                          application=application,
                           **kwargs)
 
 def permission_update(request, permission, name=None, is_internal=False, 
@@ -267,7 +267,7 @@ def permission_update(request, permission, name=None, is_internal=False,
     return manager.update(permission,
                           name=name,
                           is_internal=is_internal,
-                          application_id=application,
+                          application_=application,
                           **kwargs)
 
 def permission_delete(request, permission_id):
