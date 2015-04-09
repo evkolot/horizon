@@ -8,6 +8,8 @@ horizon.membership = {
   default_role_id: [],
   app_names: [],
   users_without_roles: [],
+  timestamp_query: new Date().getTime(),
+  pending_request: undefined,
 
   /* Parses the form field selector's ID to get either the
    * role or user id (i.e. returns "id12345" when
@@ -174,7 +176,6 @@ horizon.membership = {
     // remove the user from users_without_roles if present
     var index = horizon.membership.users_without_roles.indexOf(data_id);
     if (index > -1) {
-      console.log('remove from users_without_roles')
       horizon.membership.users_without_roles.splice(index, 1);
     }
   },
@@ -405,16 +406,44 @@ horizon.membership = {
    * Sets up server filtering through ajax for long lists
    */
   server_filtering: function (step_slug) {
+    var MIN_TIME_BETWEEN_QUERIES = 600; // ms
+    var MIN_LETTERS_TO_QUERY = 3;
     $('input.' + step_slug + '_server_filter').on('input', function() {
-      console.log('filter!')
-      var $imput = $(this)
-      horizon.ajax.queue({
+      var $imput = $(this);
+      var filter_data = $imput.attr('value');
+      console.log(filter_data)
+      if (filter_data.length < MIN_LETTERS_TO_QUERY){
+        return;
+      }
+      var dif =  new Date().getTime() - horizon.membership.timestamp_query;
+      if(dif < MIN_TIME_BETWEEN_QUERIES){
+        if (horizon.membership.pending_request !== undefined) {
+          // kill previous request
+          window.clearTimeout(horizon.membership.pending_request);
+        }
+        
+        horizon.membership.pending_request = window.setTimeout(function() {
+            horizon.membership.perform_server_filtering(
+              $imput.attr('data-url'), filter_data);
+          }, MIN_TIME_BETWEEN_QUERIES);
+
+      } else {
+        horizon.membership.perform_server_filtering(
+          $imput.attr('data-url'), filter_data);
+      }
+    });
+  },
+
+  perform_server_filtering: function (filter_url, filter_data) {
+    horizon.ajax.queue({
         type: 'POST',
-        url: $imput.attr('data-url'),
+        url: filter_url,
         data: {
-          filter_by: $imput.attr('value')
+          filter_by: filter_data
         },
         beforeSend: function () {
+          //store query time
+          horizon.membership.timestamp_query = new Date().getTime();
         },
         complete: function () {
         },
@@ -424,8 +453,7 @@ horizon.membership = {
           console.log(data)
         }
       });
-    });
-  }, 
+  },
 
   /*
    * Detect users with out roles
@@ -443,7 +471,6 @@ horizon.membership = {
         for (var i in horizon.membership.users_without_roles) {
           var data_id = horizon.membership.users_without_roles[i];
           var $element = horizon.membership.get_member_element(step_slug, data_id);
-          console.log($element)
           var dropdown = $element.find('div.dropdown').addClass('dropdown-empty');
         }
         // Rename to confirm and enable
