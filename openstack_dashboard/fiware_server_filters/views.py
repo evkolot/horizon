@@ -15,6 +15,7 @@
 import json
 
 from django import http
+from django.core.cache import cache
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 
@@ -22,6 +23,7 @@ from horizon import exceptions
 
 from openstack_dashboard import api
 
+SHORT_CACHE_TIME = 10 # seconds
 
 class AjaxKeystoneFilter(generic.View):
     """view to handle ajax filtering in modals. 
@@ -71,27 +73,41 @@ class AjaxKeystoneFilter(generic.View):
         raise NotImplementedError
 
     def _obj_to_jsonable_dict(self, obj, attrs):
-	    """converts a object into a json-serializable dict, geting the
-	    specified attributes.
-	    """
-	    as_dict = {}
-	    for attr in attrs:
-	        if hasattr(obj, attr):
-	            as_dict[attr] = getattr(obj, attr)
-	    return as_dict
+        """converts a object into a json-serializable dict, geting the
+        specified attributes.
+        """
+        as_dict = {}
+        for attr in attrs:
+            if hasattr(obj, attr):
+                as_dict[attr] = getattr(obj, attr)
+        return as_dict
 
 
 class UsersWorkflowFilter(AjaxKeystoneFilter):
-    filter_key = 'name__startswith'
+    filter_key = 'username__startswith'
 
     def api_call(self, request, filters=None):
-        users = api.keystone.user_list(request, filters=filters)
-        attrs = [
-            'id',
-            'username',
-            'img_small'
-        ]
-        return [self._obj_to_jsonable_dict(u, attrs) for u in users]
+        # NOTE(garcianavalon) because we chose to store the display
+        # name in extra to use the email as name for login, we can't
+        # use keystone filters, we need to filter locally.
+        # We cache the query to save some petitions here
+        json_users = cache.get('json_users')
+        if json_users is None:
+            users = api.keystone.user_list(request, filters=filters)
+            attrs = [
+                'id',
+                'username',
+                'img_small'
+            ]
+            json_users = [self._obj_to_jsonable_dict(u, attrs) for u in users]
+            cache.set('json_users', json_users, SHORT_CACHE_TIME)
+        # now filter by username
+        if filters:
+            filter_by = filters[self.filter_key]
+            return [u for u in json_users 
+                if u['username'].startswith(filter_by)]
+        else:
+            return json_users
 
 class OrganizationsWorkflowFilter(AjaxKeystoneFilter):
     filter_key = 'name__startswith'
