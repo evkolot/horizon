@@ -12,17 +12,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+
 from django import http
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.encoding import force_text
-from django.views.generic.base import TemplateResponseMixin, ContextMixin, View
+from django.views import generic
+from django.views.generic import base as generic_base
 
 from horizon import exceptions
 from horizon.utils import memoized
-from openstack_dashboard.dashboards.idm import utils
+# from openstack_dashboard.dashboards.idm import utils
 
 
-class MultiFormMixin(ContextMixin):
+class MultiFormMixin(generic_base.ContextMixin):
     """Similiar behaviour of django's FormMixin but for multiple forms on display."""
     initials = {}
     forms_classes = []
@@ -117,7 +120,9 @@ class MultiFormMixin(ContextMixin):
         return url
 
 
-class BaseMultiFormView(MultiFormMixin, TemplateResponseMixin, View):
+class BaseMultiFormView(MultiFormMixin, 
+                        generic_base.TemplateResponseMixin, 
+                        generic_base.View):
     """View to display of multiple forms on a single page and handle the post
     of one of those forms. Heavily inspired by django's ProcessFormView.
 
@@ -189,3 +194,46 @@ class BaseMultiFormView(MultiFormMixin, TemplateResponseMixin, View):
             # If handled didn't return, we can assume something went
             # wrong, and we should send back the form as-is.
             return self.form_invalid(form)
+
+
+class AjaxKeystoneFilter(generic.View):
+    """view to handle ajax filtering in modals. 
+    Uses API filtering in Keystone.
+
+    To use it set the filter key, for example:
+    
+        filter_key='name__contains'
+
+    and the view will populate the filters dictionarywith the 
+    ajax data sent.
+    """
+    http_method_names = ['post']
+    filter_key = None
+
+    def post(self, request, *args, **kwargs):
+        # NOTE(garcianavalon) replace with JsonResponse when 
+        # Horizon uses Django 1.7+
+        filters = self.set_filter(request.POST['data'])
+        try:
+            response_data = self.api_call(request, filters=filters)
+            return http.HttpResponse(
+                json.dumps(response_data), 
+                content_type="application/json")
+            
+        except Exception:
+            exceptions.handle(self.request,
+                              'Unable to filter.')
+    
+    def set_filter(self, filter_by):
+        if filter_by:
+            filters = {}
+            filters[self.filter_key] = filter_by
+        else:
+            filters = None
+        return filters
+
+    def api_call(self, request, filters=None):
+        """Override to add the corresponding api call, for example:
+            api.keystone.users_list(request, filters=filters)
+        """
+        raise NotImplementedError

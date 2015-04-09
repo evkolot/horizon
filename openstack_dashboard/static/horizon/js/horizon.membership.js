@@ -360,9 +360,9 @@ horizon.membership = {
    **/
   list_filtering: function (step_slug) {
     // remove previous lists' quicksearch events
-    $('input.' + step_slug + '_filter').unbind();
+    $('input.' + step_slug + '_client_filter').unbind();
     // set up quicksearch to filter on input
-    $('.' + step_slug + '_filterable').each(function () {
+    $('.' + step_slug + '_client_filterable').each(function () {
       var css_class = $(this).children('ul').attr('class');
       // Example value: members step_slug_members
       // Pick the class name that contains the step_slug
@@ -401,6 +401,28 @@ horizon.membership = {
       });
     });
   },
+  /*
+   * Sets up server filtering through ajax for long lists
+   */
+  server_filtering: function (step_slug) {
+    $('input.' + step_slug + '_server_filter').on('input', function() {
+      console.log('filter!')
+      var $imput = $(this)
+      horizon.ajax.queue({
+        type: 'POST',
+        url: $imput.attr('data-url'),
+        data: $imput.attr('value'),
+        beforeSend: function () {
+        },
+        complete: function () {
+        },
+        error: function(jqXHR, status, errorThrown) {
+        },
+        success: function (data, textStatus, jqXHR) {
+        }
+      });
+    });
+  }, 
 
   /*
    * Detect users with out roles
@@ -471,6 +493,7 @@ horizon.membership = {
       });
       // add filtering
       horizon.membership.list_filtering(step_slug);
+      horizon.membership.server_filtering(step_slug);
       horizon.membership.detect_no_results(step_slug);
 
       // hide the no roles message
