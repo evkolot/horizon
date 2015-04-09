@@ -131,11 +131,7 @@ class OrganizationMembersView(workflows.WorkflowView):
         initial = super(OrganizationMembersView, self).get_initial()
         initial['superset_id'] = self.kwargs['organization_id']
         return initial
-class OrganizationMembersWorkflowFilter(idm_views.AjaxKeystoneFilter):
-    filter_key = 'username__startswith'
 
-    def api_call(self, request, filters=None):
-        return api.keystone.user_list(request, filters=filters)   
 
 class BaseOrganizationsMultiFormView(idm_views.BaseMultiFormView):
     template_name = 'idm/organizations/edit.html'

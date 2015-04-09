@@ -411,7 +411,9 @@ horizon.membership = {
       horizon.ajax.queue({
         type: 'POST',
         url: $imput.attr('data-url'),
-        data: $imput.attr('value'),
+        data: {
+          filter_by: $imput.attr('value')
+        },
         beforeSend: function () {
         },
         complete: function () {
@@ -419,6 +421,7 @@ horizon.membership = {
         error: function(jqXHR, status, errorThrown) {
         },
         success: function (data, textStatus, jqXHR) {
+          console.log(data)
         }
       });
     });
