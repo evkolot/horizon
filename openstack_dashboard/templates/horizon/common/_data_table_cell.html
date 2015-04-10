@@ -1,7 +1,7 @@
 {% if cell.column.name == 'id' %}
   {# do nothing #}
 {% else %}
-  <div class=" {{cell.column.name}}">
+  <div class="{{cell.column.name}} filter_field">
     {% if cell.column.name == 'name' or cell.column.name == 'username' %}
       {{ cell.value }}
     {% elif cell.column.name == 'switch' and cell.value != False %}

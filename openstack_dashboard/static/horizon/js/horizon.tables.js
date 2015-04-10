@@ -81,7 +81,7 @@ horizon.datatables.set_table_query_filter = function (parent) {
           return new RegExp(val, "i");
         },
         testQuery: function (query, txt, _row) {
-          return query.test($(_row).find('div.name:not(.hidden):not(.actions_column)').text());
+          return query.test($(_row).find('div.filter_field:not(.hidden):not(.actions_column)').text());
         }
       });
       //horizon.datatables.qs[$(elm).attr('id')] = qs;
