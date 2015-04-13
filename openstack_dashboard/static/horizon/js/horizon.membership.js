@@ -468,9 +468,14 @@ horizon.membership = {
         error: function(jqXHR, status, errorThrown) {
         },
         success: function (data, textStatus, jqXHR) {
+          console.log(data)
           $(".available_" + step_slug).empty()
           for (var i in data) {
             var display_name = data[i]['username'];
+            if (display_name === undefined) {
+              display_name = data[i]['name'];
+              console.log(display_name)
+            }
             var data_id = data[i]['id'];
             var role_ids = horizon.membership.get_member_roles(step_slug, data_id);
             if (role_ids.length == 0) {

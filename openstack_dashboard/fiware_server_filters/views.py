@@ -113,10 +113,11 @@ class OrganizationsWorkflowFilter(AjaxKeystoneFilter):
     filter_key = 'name__startswith'
 
     def api_call(self, request, filters=None):
-        users = api.keystone.tenant_list(request, filters=filters)
+        organizations, more = api.keystone.tenant_list(request, 
+            filters=filters)
         attrs = [
             'id',
             'name',
             'img_small'
         ]
-        return [self._obj_to_jsonable_dict(u, attrs) for u in users]
+        return [self._obj_to_jsonable_dict(o, attrs) for o in organizations]
