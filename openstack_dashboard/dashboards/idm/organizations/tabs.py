@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import logging
 
 from horizon import exceptions
 from horizon import tabs
@@ -19,6 +20,8 @@ from openstack_dashboard import api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm.organizations \
     import tables as organization_tables
+
+LOG = logging.getLogger('idm_logger')
 
 
 class OtherOrganizationsTab(tabs.TableTab):
@@ -29,31 +32,40 @@ class OtherOrganizationsTab(tabs.TableTab):
     preload = False
 
     def get_marker(self, table):
-        return self._marker
+        LOG.debug(self._tables.get(table.name)._marker)
+        return self._tables.get(table.name)._marker
 
     def get_other_organizations_data(self):
         organizations = []
-        limit = 10
+        limit = 5
         marker_id = self.request.GET.get('marker', None)
-        print marker_id
+        LOG.debug(marker_id)
         try:
             organizations_full, self._more = api.keystone.tenant_list(
                 self.request, admin=False)
             my_organizations, self._more = api.keystone.tenant_list(
                 self.request, user=self.request.user.id, admin=False)
-            organizations_full = idm_utils.filter_default([t for t in organizations_full if not t 
-                             in my_organizations])
+            organizations_full = idm_utils.filter_default([t for t in
+                                                           organizations_full
+                                                           if not t in
+                                                           my_organizations])
             if marker_id:
-                marker = organizations_full.index(api.keystone.tenant_get(self.request, marker_id))
+                marker = organizations_full.index(api.keystone.tenant_get(
+                    self.request, marker_id))
+                LOG.debug('marker_id (index): {0}'.format(marker))
             else:
                 marker = 0
+                LOG.debug('marker_id (index): {0}'.format(marker))
 
-            if (marker + limit)>= len(organizations_full):
+            if (marker + limit) >= len(organizations_full):
                 organizations = organizations_full[marker:len(organizations_full)]
                 self._tables.get('other_organizations')._marker = None
             else:
-                organizations = organizations_full[marker:marker+limit]
-                self._tables.get('other_organizations')._marker = organizations_full[marker + limit].id
+                organizations = organizations_full[marker:(marker+limit)]
+                self._tables.get('other_organizations')._marker = organizations[marker + limit + 1].id
+                mark = self._tables.get('other_organizations')._marker
+                LOG.debug('marker_id (actualizado): {0}'.format(mark))
+                LOG.debug('maker index: {0}'.format(organizations_full.index(api.keystone.tenant_get(self.request,mark))))
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)

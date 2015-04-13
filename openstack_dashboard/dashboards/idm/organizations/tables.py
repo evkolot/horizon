@@ -15,6 +15,7 @@
 import logging
 
 from django.core import urlresolvers
+from django.utils.http import urlencode
 
 from horizon import tables
 
@@ -33,9 +34,10 @@ class NextPage(tables.LinkAction):
     classes = ("ajax-update",)
 
     def get_link_url(self):
-        base_url = reverse('horizon:idm:organizations:index')
+        base_url = urlresolvers.reverse('horizon:idm:organizations:index')
         marker = self.table.get_marker()
         param = urlencode({"marker": marker})
+        LOG.debug('param: {0}'.format(param))
         url = "?".join([base_url, param])
         return url
 
