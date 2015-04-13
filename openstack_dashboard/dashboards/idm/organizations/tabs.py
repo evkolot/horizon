@@ -28,15 +28,32 @@ class OtherOrganizationsTab(tabs.TableTab):
     template_name = ("horizon/common/_detail_table.html")
     preload = False
 
+    def get_marker(self, table):
+        return self._marker
+
     def get_other_organizations_data(self):
         organizations = []
+        limit = 10
+        marker_id = self.request.GET.get('marker', None)
+        print marker_id
         try:
-            organizations, self._more = api.keystone.tenant_list(
+            organizations_full, self._more = api.keystone.tenant_list(
                 self.request, admin=False)
             my_organizations, self._more = api.keystone.tenant_list(
                 self.request, user=self.request.user.id, admin=False)
-            organizations = [t for t in organizations if not t 
-                             in my_organizations]
+            organizations_full = idm_utils.filter_default([t for t in organizations_full if not t 
+                             in my_organizations])
+            if marker_id:
+                marker = organizations_full.index(api.keystone.tenant_get(self.request, marker_id))
+            else:
+                marker = 0
+
+            if (marker + limit)>= len(organizations_full):
+                organizations = organizations_full[marker:len(organizations_full)]
+                self._tables.get('other_organizations')._marker = None
+            else:
+                organizations = organizations_full[marker:marker+limit]
+                self._tables.get('other_organizations')._marker = organizations_full[marker + limit].id
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)
@@ -45,7 +62,7 @@ class OtherOrganizationsTab(tabs.TableTab):
             exceptions.handle(self.request,
                               ("Unable to retrieve organization list. \
                                     Error message: {0}".format(e)))
-        return idm_utils.filter_default(organizations)
+        return organizations
 
 
 class OwnedOrganizationsTab(tabs.TableTab):

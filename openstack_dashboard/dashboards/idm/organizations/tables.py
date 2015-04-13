@@ -26,6 +26,20 @@ from openstack_dashboard.dashboards.idm import tables as idm_tables
 
 LOG = logging.getLogger('idm_logger')
 
+
+class NextPage(tables.LinkAction):
+    name = "nextpage"
+    verbose_name = ("Next Page")
+    classes = ("ajax-update",)
+
+    def get_link_url(self):
+        base_url = reverse('horizon:idm:organizations:index')
+        marker = self.table.get_marker()
+        param = urlencode({"marker": marker})
+        url = "?".join([base_url, param])
+        return url
+
+
 class OtherOrganizationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
@@ -37,6 +51,7 @@ class OtherOrganizationsTable(tables.DataTable):
     class Meta:
         name = "other_organizations"
         verbose_name = ("")
+        table_actions = (NextPage, )
         row_class = idm_tables.OrganizationClickableRow
 
 
