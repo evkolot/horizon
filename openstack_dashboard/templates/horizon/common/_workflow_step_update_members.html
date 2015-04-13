@@ -10,8 +10,11 @@
     </header>
     <div class="filterable {{ step.slug }}_server_filterable" id="available_{{ step.slug }}">
       <ul class="available_members available_{{ step.slug }} list-group"></ul>
-      <ul class="no_results list-group" id="no_available_{{ step.slug }}">
+      <ul class="no_results list-group alert alert-info" id="no_available_{{ step.slug }}">
         <li>{{ step.no_available_text }}</li>
+      </ul>
+      <ul class="no_results list-group alert alert-info" id="perform_filter_available_{{ step.slug }}">
+        <li>{{ step.server_filter_text }}</li>
       </ul>
     </div>   
   </div>
@@ -25,7 +28,7 @@
     </header>
     <div class="filterable {{ step.slug }}_client_filterable" id="{{ step.slug }}_members">
       <ul class="members {{ step.slug }}_members list-group"></ul>
-      <ul class="no_results list-group" id="no_{{ step.slug }}_members">
+      <ul class="no_results list-group alert alert-info" id="no_{{ step.slug }}_members">
         <li>{{ step.no_members_text }}</li>
       </ul>
     </div>

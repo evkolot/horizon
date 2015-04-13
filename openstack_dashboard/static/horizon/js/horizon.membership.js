@@ -255,7 +255,7 @@ horizon.membership = {
           $("." + step_slug + "_members").append(this.generate_member_element(step_slug, display_name, data_id, role_ids, 'fa fa-close'));
         }
         else {
-          $(".available_" + step_slug).append(this.generate_member_element(step_slug, display_name, data_id, role_ids, 'fa fa-plus'));
+          //$(".available_" + step_slug).append(this.generate_member_element(step_slug, display_name, data_id, role_ids, 'fa fa-plus'));
         }
       }
     }
@@ -312,12 +312,12 @@ horizon.membership = {
    * displays a message to the user.
    **/
   detect_no_results: function (step_slug) {
-    $('.' + step_slug +  '_filterable').each( function () {
+    $('.' + step_slug +  '_client_filterable').each( function () {
       var css_class = $(this).find('ul').attr('class');
       // Example value: members step_slug_members
       // Pick the class name that contains the step_slug
       var filter = $.grep(css_class.split(' '), function(val){ return val.indexOf(step_slug) !== -1; })[0];
-
+      
       if (!$('.' + filter).children('li').length) {
         $('#no_' + filter).show();
         $("input[id='" + filter + "']").attr('disabled', 'disabled');
@@ -325,6 +325,27 @@ horizon.membership = {
       else {
         $('#no_' + filter).hide();
         $("input[id='" + filter + "']").removeAttr('disabled');
+      }
+    });
+
+    $('.' + step_slug +  '_server_filterable').each( function () {
+      var css_class = $(this).find('ul').attr('class');
+      // Example value: members step_slug_members
+      // Pick the class name that contains the step_slug
+      var filter = $.grep(css_class.split(' '), function(val){ return val.indexOf(step_slug) !== -1; })[0];
+      
+      if (!$('.' + filter).children('li').length) {
+        if (horizon.membership.pending_request !== undefined) {
+          $('#no_' + filter).show();
+          $('#perform_filter_' + filter).hide();
+        } else {
+          $('#no_' + filter).hide();
+          $('#perform_filter_' + filter).show();
+        }
+      }
+      else {
+        $('#no_' + filter).hide();
+        $('#perform_filter_' + filter).hide();
       }
     });
   },
@@ -411,7 +432,6 @@ horizon.membership = {
     $('input.' + step_slug + '_server_filter').on('input', function() {
       var $imput = $(this);
       var filter_data = $imput.attr('value');
-      console.log(filter_data)
       if (filter_data.length < MIN_LETTERS_TO_QUERY){
         return;
       }
@@ -423,18 +443,16 @@ horizon.membership = {
         }
         
         horizon.membership.pending_request = window.setTimeout(function() {
-            horizon.membership.perform_server_filtering(
-              $imput.attr('data-url'), filter_data);
+            horizon.membership.perform_server_filtering(step_slug, $imput.attr('data-url'), filter_data);
           }, MIN_TIME_BETWEEN_QUERIES);
 
       } else {
-        horizon.membership.perform_server_filtering(
-          $imput.attr('data-url'), filter_data);
+        horizon.membership.perform_server_filtering(step_slug, $imput.attr('data-url'), filter_data);
       }
     });
   },
 
-  perform_server_filtering: function (filter_url, filter_data) {
+  perform_server_filtering: function (step_slug, filter_url, filter_data) {
     horizon.ajax.queue({
         type: 'POST',
         url: filter_url,
@@ -450,7 +468,18 @@ horizon.membership = {
         error: function(jqXHR, status, errorThrown) {
         },
         success: function (data, textStatus, jqXHR) {
-          console.log(data)
+          $(".available_" + step_slug).empty()
+          for (var i in data) {
+            var display_name = data[i]['username'];
+            var data_id = data[i]['id'];
+            var role_ids = horizon.membership.get_member_roles(step_slug, data_id);
+            if (role_ids.length == 0) {
+              $(".available_" + step_slug).append(horizon.membership.generate_member_element(step_slug, display_name, data_id, role_ids, 'fa fa-plus'));
+            }
+          }
+          //hide role dropdowns for available member list
+          $(".available_" +  step_slug + " .role_options").hide();
+          horizon.membership.detect_no_results(step_slug);
         }
       });
   },
