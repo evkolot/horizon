@@ -15,7 +15,7 @@
 import logging
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core import urlresolvers
 
 from horizon import exceptions
 from horizon import forms
@@ -89,6 +89,8 @@ class UpdateProjectMembers(idm_workflows.UpdateRelationshipStep):
     no_available_text = ("No users found.")
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = UserRoleApi
+    server_filter_url = urlresolvers.reverse_lazy(
+        'fiware_server_filters_users')
 
 
 class ManageOrganizationMembers(idm_workflows.RelationshipWorkflow):
@@ -226,6 +228,8 @@ class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
     no_available_text = ("No users found.")
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = AuthorizedMembersApi
+    server_filter_url = urlresolvers.reverse_lazy(
+        'fiware_server_filters_users')
 
     def contribute(self, data, context):
         superset_id = context['superset_id']
