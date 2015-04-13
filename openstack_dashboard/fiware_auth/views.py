@@ -13,10 +13,8 @@
 
 import logging
 
-from django import http
-from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required  # noqa
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
