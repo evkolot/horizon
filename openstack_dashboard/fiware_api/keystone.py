@@ -35,25 +35,10 @@ LOG = logging.getLogger('idm_logger')
 # and other objects
 DEFAULT_OBJECTS_CACHE_TIME = 60 * 15
 
-def fiwareclient(session=None, request=None):# TODO(garcianavalon) use this
-    """Encapsulates all the logic for communicating with the modified keystone server.
-
-    The IdM has its own admin account in the keystone server, and uses it to perform
-    operations like create users, projects, etc. when there is no user with admin rights
-    (for example, when user registration) to overcome the Keystone limitations.
-
-    Also adds the methods to operate with the OAuth2.0 extension.
-    """
-    # TODO(garcianavalon) find a way to integrate this with the existng keystone api
-    # TODO(garcianavalon)caching and efficiency with the client object.
-    if not session:
-        session = _password_session()
-    keystone = client.Client(session=session)
+def internal_keystoneclient():
+    idm_user_session = _password_session()
+    keystone = client.Client(session=idm_user_session)
     return keystone
-
-def _oauth2_session(access_token_id):
-    auth = oauth2_auth.OAuth2(access_token=access_token_id)
-    return session.Session(auth=auth)
 
 def _password_session():
     conf_params = getattr(settings, 'IDM_USER_CREDENTIALS')
@@ -93,7 +78,7 @@ def _grant_role(keystone, role, user, project):
     return role
 
 def register_user(name, username, password):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     #domain_name = getattr(settings, 'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN', 'Default')
     #default_domain = keystone.domains.find(name=domain_name)
     # TODO(garcianavalon) better domain usage
@@ -107,38 +92,38 @@ def register_user(name, username, password):
     return new_user
 
 def activate_user(user, activation_key):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     user = keystone.user_registration.users.activate_user(user, activation_key)
     return user
 
 def change_password(user_email, new_password):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     user = _find_user(keystone, email=user_email)
     user = keystone.users.update(user, password=new_password, enabled=True)
     return user
 
 def check_username(username):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     user = _find_user(keystone, username=username)
     return user
 
 def check_email(email):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     user = _find_user(keystone, email=email)
     return user
 
 def get_reset_token(user):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     token = keystone.user_registration.token.get_reset_token(user)
     return token
 
 def new_activation_key(user):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     activation_key = keystone.user_registration.activation_key.new_activation_key(user)
     return activation_key
 
 def reset_password(user, token, new_password):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
 
     user = keystone.user_registration.users.reset_password(user, token, new_password)
     return user
@@ -313,7 +298,7 @@ def application_list(request, user=None):
 
 def application_get(request, application_id, use_idm_account=False):
     if use_idm_account:
-        manager = fiwareclient().oauth2.consumers
+        manager = internal_keystoneclient().oauth2.consumers
     else:
         manager = api.keystone.keystoneclient(request, admin=True).oauth2.consumers
     return manager.get(application_id)
@@ -400,7 +385,7 @@ def obtain_access_token(request, consumer_id, consumer_secret, code,
     # method intented to be use by the client/consumer. For the IdM is much more 
     # convenient to simply forward the request, see forward_access_token_request method
     LOG.debug('Exchanging code: {0} by application: {1}'.format(code, consumer_id))
-    manager = fiwareclient().oauth2.access_tokens
+    manager = internal_keystoneclient().oauth2.access_tokens
     access_token = manager.create(consumer_id=consumer_id,
                                   consumer_secret=consumer_secret,
                                   authorization_code=code,
@@ -422,14 +407,6 @@ def forward_access_token_request(request):
     response = requests.post(keystone_url, data=body, headers=headers)
     return response
 
-def login_with_oauth(request, access_token, project=None):
-    """ Use an OAuth2 access token to obtain a keystone token, scoped for
-    the authorizing user in one of his projects.
-    """
-    pass
-    # TODO(garcianavalon) find out if we need this method
-    # session = _oauth2_session(access_token, project_id=project)
-    # return fiwareclient(session=session,request=request)
 
 # FIWARE-IdM API CALLS
 def forward_validate_token_request(request):
