@@ -98,7 +98,8 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
             for app in default_apps:
                 fiware_api.keystone.add_role_to_organization(
                     self.request, purchaser_role.id, organization_id, app.id)
-                LOG.debug('Granted role {0} in app {1}'.format(purchaser_role, ))
+                LOG.debug('Granted role {0} in app {1}'.format(
+                    purchaser_role.name, app.name))
         except Exception as e:
             exceptions.handle(self.request,
                               redirect=reverse('horizon:idm:organizations:index'))
