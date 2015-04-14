@@ -58,7 +58,8 @@ def _oauth2_session(access_token_id):
 def _password_session():
     conf_params = getattr(settings, 'IDM_USER_CREDENTIALS')
     conf_params['auth_url'] = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
-    domain = getattr(settings, 'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN')
+    # TODO(garcianavalon) better domain usage
+    domain = 'default'
     LOG.debug('Creating a new keystoneclient password session to \
         {0} for user: {1}'.format(conf_params['auth_url'], conf_params['username']))
     auth = v3.Password(auth_url=conf_params['auth_url'],
@@ -93,8 +94,10 @@ def _grant_role(keystone, role, user, project):
 
 def register_user(name, username, password):
     keystone = fiwareclient()
-    default_domain = getattr(settings, 'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN')
-    #default_domain = keystone.domains.get(domain)
+    #domain_name = getattr(settings, 'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN', 'Default')
+    #default_domain = keystone.domains.find(name=domain_name)
+    # TODO(garcianavalon) better domain usage
+    default_domain = 'default'
     # if not (check_user(name) or check_email(email)):
     new_user = keystone.user_registration.users.register_user(
         name,
