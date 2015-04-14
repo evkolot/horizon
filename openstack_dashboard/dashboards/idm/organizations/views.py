@@ -49,11 +49,14 @@ class IndexView(tabs.TabbedTableView):
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         trial_role = fiware_api.keystone.get_trial_role(self.request)
-        domain = api.keystone.get_default_domain(self.request)
-        user_domain_roles = api.keystone.roles_for_user(
-            self.request, self.request.user, domain=domain)
-        context['show_create_org'] = \
-            trial_role.id not in [r.id for r in user_domain_roles]
+        if not trial_role:
+            context['show_create_org'] = True
+        else:
+            domain = api.keystone.get_default_domain(self.request)
+            user_domain_roles = api.keystone.roles_for_user(
+                self.request, self.request.user, domain=domain)
+            context['show_create_org'] = \
+                trial_role.id not in [r.id for r in user_domain_roles]
         return context
 
 class CreateOrganizationView(forms.ModalFormView):
