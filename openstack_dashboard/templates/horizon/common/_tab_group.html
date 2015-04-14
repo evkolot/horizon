@@ -17,6 +17,11 @@
       <div id="{{ tab.get_id }}" class="tab-pane{% if tab.is_active %} active{% endif %}">
         {{ tab.render }}
       </div>
+      {% if tab.name == "Other Organizations"%}
+        <div class = "panel-footer">
+          {{tab.data.table.render_table_actions}}    
+        </div>
+      {% endif %}
       {% endfor %}
   </div>
 </div>
