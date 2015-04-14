@@ -37,7 +37,7 @@ class OtherOrganizationsTab(tabs.TableTab):
         organizations = []
         limit = LIMIT
         marker_id = self.request.GET.get('marker', None)
-        LOG.debug(marker_id)
+        prev = self.request.GET.get('prev', None)
         try:
             organizations_full, self._more = api.keystone.tenant_list(
                 self.request, admin=False)
@@ -47,20 +47,30 @@ class OtherOrganizationsTab(tabs.TableTab):
                                                            organizations_full
                                                            if not t in
                                                            my_organizations])
-            if marker_id:
-                marker = organizations_full.index(api.keystone.tenant_get(
-                    self.request, marker_id))
-                LOG.debug('marker_id (index): {0}'.format(marker))
-            else:
-                marker = -1
-                LOG.debug('marker_id (index): {0}'.format(marker))
+            if prev:
+                if marker_id:
+                    marker = organizations_full.index(api.keystone.tenant_get(
+                        self.request, marker_id))
+                    LOG.debug('marker_id (index): {0}'.format(marker))
 
-            if (marker + limit) >= (len(organizations_full)-1):
-                organizations = organizations_full[marker:len(organizations_full)-1]
-                self._tables.get('other_organizations')._marker = None
+                    if (marker - limit) <= 0:
+                        organizations = organizations_full[0:marker]
+                    else:
+                        organizations = organizations_full[(marker-limit):(marker)]
             else:
-                organizations = organizations_full[(marker+1):(marker+limit+1)]
-                               
+                if marker_id:
+                    marker = organizations_full.index(api.keystone.tenant_get(
+                        self.request, marker_id))
+                    LOG.debug('marker_id (index): {0}'.format(marker))
+                else:
+                    marker = -1
+                    LOG.debug('marker_id (index): {0}'.format(marker))
+
+                if (marker + limit) >= (len(organizations_full)-1):
+                    organizations = organizations_full[marker:len(organizations_full)-1]
+                else:
+                    organizations = organizations_full[(marker+1):(marker+limit+1)]
+
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)

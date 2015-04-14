@@ -41,6 +41,21 @@ class NextPage(tables.LinkAction):
         url = "?".join([base_url, param])
         return url
 
+class PreviousPage(tables.LinkAction):
+    name = "prevpage"
+    verbose_name = ("Previous Page")
+    classes = ("ajax-update",)
+
+    def get_link_url(self):
+        base_url = urlresolvers.reverse('horizon:idm:organizations:index')
+        marker = self.table.get_prev_marker()
+        param = urlencode({"marker": marker, "prev":"true"})
+        LOG.debug('param: {0}'.format(param))
+        url = "?".join([base_url, param])
+        # param2 = urlencode({"prev":"true"})
+        # url = "?".join([url, param2])
+        return url
+
 
 class OtherOrganizationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
@@ -53,7 +68,7 @@ class OtherOrganizationsTable(tables.DataTable):
     class Meta:
         name = "other_organizations"
         verbose_name = ("")
-        table_actions = (NextPage, )
+        table_actions = (PreviousPage, NextPage, )
         row_class = idm_tables.OrganizationClickableRow
 
 
