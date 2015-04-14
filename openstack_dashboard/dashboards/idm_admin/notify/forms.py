@@ -50,12 +50,13 @@ class EmailForm(forms.SelfHandlingForm):
             text_content = render_to_string(self.EMAIL_TEXT_TEMPLATE, 
                 dictionary={
                     'massive_footer':True,
-                    'content': data['body'],
+                    'content': {'text':data['body']},
                 })
+
             html_content = render_to_string(self.EMAIL_HTML_TEMPLATE, 
                 dictionary={
                     'massive_footer':True,
-                    'content': data['body'],
+                    'content': {'html':data['body']},
                 })
 
             connection = mail.get_connection(fail_silently=True)

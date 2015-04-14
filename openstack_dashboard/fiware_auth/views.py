@@ -32,16 +32,23 @@ from openstack_dashboard.fiware_auth import forms as fiware_forms
 from keystoneclient import base
 
 LOG = logging.getLogger('idm_logger')
+EMAIL_HTML_TEMPLATE = 'email/base_email.html'
+EMAIL_TEXT_TEMPLATE = 'email/base_email.txt'
+
+RESET_PASSWORD_HTML_TEMPLATE = 'email/reset_password.html'
+RESET_PASSWORD_TXT_TEMPLATE = 'email/reset_password.txt'
+
+ACTIVATION_HTML_TEMPLATE = 'email/activation.html'
+ACTIVATION_TXT_TEMPLATE = 'email/activation.txt'
+
 
 class TemplatedEmailMixin(object):
     # TODO(garcianavalon) as settings
-    EMAIL_HTML_TEMPLATE = 'email/base_email.html'
-    EMAIL_TEXT_TEMPLATE = 'email/base_email.txt'
     
     def send_html_email(self, to, from_email, subject, **kwargs):
         LOG.debug('Sending email to {0} with subject {1}'.format(to, subject))
-        text_content = render_to_string(self.EMAIL_TEXT_TEMPLATE, dictionary=kwargs)
-        html_content = render_to_string(self.EMAIL_HTML_TEMPLATE, dictionary=kwargs)
+        text_content = render_to_string(EMAIL_TEXT_TEMPLATE, dictionary=kwargs)
+        html_content = render_to_string(EMAIL_HTML_TEMPLATE, dictionary=kwargs)
         msg = EmailMultiAlternatives(subject, text_content, from_email, to)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
@@ -135,12 +142,17 @@ class RegistrationView(_RequestPassingFormView):
         subject = 'Welcome to FIWARE'
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
-        content = 'New user created at FIWARE :D/n Go to http://localhost:8000/activate/?activation_key={0}&user={1} to activate'.format(user.activation_key, user.id)
+        context = {
+            'activation_url':'activate/?activation_key={0}&user={1}'.format(user.activation_key, user.id),
+            'user_name':user.name,
+        }
+        text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, dictionary=context)
+        html_content = render_to_string(ACTIVATION_HTML_TEMPLATE, dictionary=context)
         #send a mail for activation
         self.send_html_email(to=[user.name],
-                             from_email='admin@fiware-idm-test.dit.upm.es',
+                             from_email='no-reply@account.lab.fiware.org',
                              subject=subject,
-                             content=content)
+                             content={'text': text_content, 'html': html_content})
 
 class ActivationView(TemplateView):
     http_method_names = ['get']
@@ -202,12 +214,17 @@ class RequestPasswordResetView(_RequestPassingFormView):
         subject = 'Reset password instructions - FIWARE'
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
-        content = 'Hello! Go to http://localhost:8000/password/reset/?token={0}&email={1} to reset it!'.format(token, email)
+        context = {
+            'reset_url':'password/reset/?token={0}&email={1}'.format(token, email),
+            'user_name':email,
+        }
+        text_content = render_to_string(RESET_PASSWORD_TXT_TEMPLATE, dictionary=context)
+        html_content = render_to_string(RESET_PASSWORD_HTML_TEMPLATE, dictionary=context)
         #send a mail for activation
         self.send_html_email(to=[email], 
-                            from_email='admin@fiware-idm-test.dit.upm.es',
+                            from_email='no-reply@account.lab.fiware.org',
                             subject=subject, 
-                            content=content)
+                            content={'text': text_content, 'html': html_content})
 
 
 class ResetPasswordView(_RequestPassingFormView):
@@ -293,12 +310,17 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         subject = 'Welcome to FIWARE'
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
-        content = 'New user created at FIWARE :D/n Go to http://localhost:8000/activate/?activation_key={0}&user={1} to activate'.format(base.getid(activation_key), user.id)
+        context = {
+            'activation_url':'activate/?activation_key={0}&user={1}'.format(activation_key.id, user.id),
+            'user_name':user.name,
+        }
+        text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, dictionary=context)
+        html_content = render_to_string(ACTIVATION_HTML_TEMPLATE, dictionary=context)
         #send a mail for activation
         self.send_html_email(to=[user.name],
-                             from_email='admin@fiware-idm-test.dit.upm.es',
-                             subject=subject,
-                             content=content)
+                             from_email='no-reply@account.lab.fiware.org',
+                             subject=subject, 
+                             content={'text': text_content, 'html': html_content})
 
 @login_required
 def switch(request, tenant_id, **kwargs):

@@ -3,7 +3,7 @@
 {% load url from future %}
 
 {% block form_id %}{% endblock %}
-{% block form_action %}{% url 'fiware_oauth2_authorize' %}{% endblock %}
+{% block form_action %}{% url 'fiware_oauth2_authorize' %}{{ query_string }}{% endblock %}
 
 {% block modal_id %}authorize_application_modal{% endblock %}
 {% block modal-header %}
