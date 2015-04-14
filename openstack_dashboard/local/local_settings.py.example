@@ -43,7 +43,7 @@ OPENSTACK_API_VERSIONS = {
 
 # Overrides the default domain used when running on single-domain model
 # with Keystone V3. All entities will be created in the default domain.
-# OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'Default'
+OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'default'
 
 # Set Console type:
 # valid options would be "AUTO"(default), "VNC", "SPICE", "RDP" or None
@@ -548,7 +548,6 @@ IDM_USER_CREDENTIALS = {
     'username': 'idm',
     'password': 'idm',
     'project': 'idm',
-    'domain': 'default',
 }
 
 # if you want to use domain filtering you can set this to whitelist or
