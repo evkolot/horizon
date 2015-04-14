@@ -54,9 +54,11 @@ class OtherOrganizationsTab(tabs.TableTab):
                     LOG.debug('marker_id (index): {0}'.format(marker))
 
                     if (marker - limit) <= 0:
-                        organizations = organizations_full[0:marker]
+                        organizations = organizations_full[0:limit]
                     else:
                         organizations = organizations_full[(marker-limit):(marker)]
+                else:
+                    organizations = organizations_full[0:limit]
             else:
                 if marker_id:
                     marker = organizations_full.index(api.keystone.tenant_get(
