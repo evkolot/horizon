@@ -600,3 +600,6 @@ KEYSTONE_TRIAL_ROLE = 'trial'
 # Default FIWARE roles
 FIWARE_PURCHASER_ROLE = 'purchaser'
 FIWARE_PROVIDER_ROLE = 'provider'
+
+# Table Pagination
+PAGE_LIMIT = 10

@@ -17,7 +17,7 @@ from horizon import exceptions
 from horizon import tabs
 
 from openstack_dashboard import api
-from openstack_dashboard import settings
+from openstack_dashboard.local import local_settings as settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm.organizations \
     import tables as organization_tables
