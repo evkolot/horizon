@@ -85,13 +85,26 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
                               ignore=True)
             return False
 
-        #Set organization and user id
+        # Set organization and user id
         organization_id = self.object.id
         user_id = request.user.id
 
         LOG.debug('Organization {0} created'.format(organization_id))
 
-        #Find owner role id
+        # Grant purchaser in all default apps
+        default_apps = fiware_api.keystone.get_fiware_default_apps(self.request)
+        purchaser_role = fiware_api.keystone.get_purchaser_role(self.request)
+        try:
+            for app in default_apps:
+                fiware_api.keystone.add_role_to_organization(
+                    self.request, purchaser_role.id, organization_id, app.id)
+                LOG.debug('Granted role {0} in app {1}'.format(purchaser_role, ))
+        except Exception as e:
+            exceptions.handle(self.request,
+                              redirect=reverse('horizon:idm:organizations:index'))
+            return False
+
+        # Find owner role id
         try:
             owner_role = fiware_api.keystone.get_owner_role(self.request)
             LOG.debug(owner_role)

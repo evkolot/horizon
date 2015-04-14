@@ -524,3 +524,27 @@ def get_idm_admin_app(request):
                 cache.set('idm_admin', pickle_app, DEFAULT_OBJECTS_CACHE_TIME)
                 break
     return cache.get('idm_admin')
+
+def get_fiware_default_app(request, app_name):
+    if cache.get(app_name) is None:
+        try:
+            apps = api.keystone.keystoneclient(request, 
+                admin=True).oauth2.consumers.list()
+        except Exception:
+            apps = []
+            exceptions.handle(request)
+        for app in apps:
+            if app.name == app_name:
+                pickle_app = PickleObject(name=app.name, id=app.id)
+                cache.set(app_name, pickle_app, DEFAULT_OBJECTS_CACHE_TIME)
+                return cache.get(app_name)
+        return None
+
+def get_fiware_default_apps(request):
+    default_apps_names = getattr(local_settings, "FIWARE_DEFAULT_APPS", [])
+    default_apps = []
+    for app_name in default_apps_names:
+        app = get_fiware_default_app(request, app_name)
+        if app:
+            default_apps.append(app)
+    return default_apps

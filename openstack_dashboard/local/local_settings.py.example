@@ -550,16 +550,21 @@ IDM_USER_CREDENTIALS = {
     'project': 'idm',
     'domain': 'default',
 }
-RESET_PASSWORD_DAYS = 1
-ACCOUNT_ACTIVATION_DAYS = 1
+
 # if you want to use domain filtering you can set this to whitelist or
 # blacklist. Comment out the line for no filtering
 # EMAIL_LIST_TYPE = 'whitelist'
 
 # IdM ADMIN
-# Application ID of the idm in the backend. Used for the administrator
+# Application name of the idm in the backend. Used for the administrator
 # dashboard
 FIWARE_IDM_ADMIN_APP = 'idm'
+# Application name of all the default apps for organizations
+FIWARE_DEFAULT_APPS = [
+    'Cloud',
+    'Mashup',
+    'Store',
+]
 
 # reCAPTCHA
 # Get your keys at: https://www.google.com/recaptcha/admin#createsite
