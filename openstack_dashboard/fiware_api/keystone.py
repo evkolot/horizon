@@ -444,6 +444,7 @@ def forward_validate_token_request(request):
     return response
 
 # SPECIAL ROLES
+# TODO(garcianavalon) refactorize for better reuse
 class PickleObject():
     """Extremely simple class that holds the very little information we need
     to cache. Keystoneclient resource objects are not pickable.
@@ -452,13 +453,14 @@ class PickleObject():
         self.__dict__.update(kwds)
 
 def get_owner_role(request):
-    """Gets the owner role object from Keystone and saves it as a global.
+    """Gets the owner role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.
     """
     owner = getattr(local_settings, "KEYSTONE_OWNER_ROLE", None)
     if owner and cache.get('owner_role') is None:
+        # TODO(garcianavalon) use filters to filter by name
         try:
             roles = api.keystone.keystoneclient(request, admin=True).roles.list()
         except Exception:
@@ -471,8 +473,29 @@ def get_owner_role(request):
                 break
     return cache.get('owner_role')
 
+def get_trial_role(request):
+    """Gets the trial role object from Keystone and caches it.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    trial = getattr(local_settings, "KEYSTONE_TRIAL_ROLE", None)
+    if trial and cache.get('trial_role') is None:
+        # TODO(garcianavalon) use filters to filter by name
+        try:
+            roles = api.keystone.keystoneclient(request, admin=True).roles.list()
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == trial or role.name == trial:
+                pickle_role = PickleObject(name=role.name, id=role.id)
+                cache.set('trial_role', pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get('trial_role')
+
 def get_provider_role(request):
-    """Gets the provider role object from Keystone and saves it as a global.
+    """Gets the provider role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.
@@ -493,7 +516,7 @@ def get_provider_role(request):
     return cache.get('provider_role')
 
 def get_purchaser_role(request):
-    """Gets the purchaser role object from Keystone and saves it as a global.
+    """Gets the purchaser role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.

@@ -594,6 +594,8 @@ OPENSTACK_KEYSTONE_ADMIN_ROLES = [
     KEYSTONE_OWNER_ROLE,
     'admin',
 ]
+# KEYSTONE role for trial users
+KEYSTONE_TRIAL_ROLE = 'trial'
 
 # Default FIWARE roles
 FIWARE_PURCHASER_ROLE = 'purchaser'
