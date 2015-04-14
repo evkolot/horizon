@@ -6,5 +6,10 @@
         {{ row.render }}
       {% endfor %}
     </div>
+  {% if table.has_actions %}
+  <div>
+  	{{table.render_table_actions}}
+  </div>
+  {% endif %}
   {% endwith %}
 {% endwith %}
