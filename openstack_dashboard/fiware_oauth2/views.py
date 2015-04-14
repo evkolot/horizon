@@ -27,6 +27,8 @@ from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.fiware_oauth2 import forms
 
+from horizon import messages
+
 
 LOG = logging.getLogger('idm_logger')
 
@@ -41,62 +43,65 @@ class AuthorizeView(FormView):
     oauth_data = {}
 
     def dispatch(self, request, *args, **kwargs):
-        self.application_credentials = request.session.get('application_credentials', {})
-        # save the credentials in case we have to redirect
-        if not self.application_credentials:
-            self._store_credentials(request)
-
         try:
             self.application = fiware_api.keystone.application_get(
                 request,
-                self.application_credentials['application_id'],
+                request.GET.get('client_id'),
                 use_idm_account=True)
         except Exception:
-            pass
+            msg = ('Unable to retrieve application.')
+            LOG.error(msg)
+            messages.error(request, (msg))
+            return redirect('horizon:user_home')
+
+        # Load credentials from the request
+        self.application_credentials = self.load_credentials(request)
 
         if request.user.is_authenticated():
+            # continue
             return super(AuthorizeView, self).dispatch(request, *args, **kwargs)
         else:
-            LOG.debug('OAUTH2: Login page with consumer details')
-            # redirect to the login page but showing some info about the application
+            # redirect to the login page showing some info about the application
             self.application.avatar = idm_utils.get_avatar(
-                self.application, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR)
+                self.application, 
+                'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR)
             context = {
-                'next':reverse('fiware_oauth2_authorize'),
+                'next':(reverse('fiware_oauth2_authorize') + '?' 
+                    + self.request.GET.urlencode()),
                 'redirect_field_name': auth.REDIRECT_FIELD_NAME,
                 'show_application_details':True,
                 'application':self.application,
             }
+            LOG.debug('OAUTH2: Login page with consumer details')
             return auth_views.login(request, 
                                 extra_context=context, 
                                 **kwargs)
 
-    def _store_credentials(self, request):
-        LOG.debug('OAUTH2: Storing credentials in session')
+    def load_credentials(self, request):
         # TODO(garcianavalon) check it's set to code
-        self.application_credentials = {     
+        credentials = {     
             'response_type':request.GET.get('response_type'),
             'application_id':request.GET.get('client_id'),
             'redirect_uri':request.GET.get('redirect_uri'),
             'state':request.GET.get('state'),
         }
-        request.session['application_credentials'] = self.application_credentials
+        return credentials
 
     def _request_authorization(self, request, credentials):
         # forward the request to the keystone server to store the credentials
         try:
-            # register consumer credentials
-            self.oauth_data = fiware_api.keystone.request_authorization_for_application(
-                                request,
-                                credentials.get('application_id'),
-                                credentials.get('redirect_uri'),
-                                state=credentials.get('state', None))
+            self.oauth_data = \
+                fiware_api.keystone.request_authorization_for_application(
+                    request,
+                    credentials.get('application_id'),
+                    credentials.get('redirect_uri'),
+                    state=credentials.get('state', None))
         except Exception as e:
             LOG.warning('OAUTH2: exception when requesting authorization {0}'.format(e))
             # TODO(garcianavalon) finner exception handling
             self.oauth_data = {
                 'error': e
-            }
+            }   
 
     def _already_authorized(self, request, credentials):
         # check if the user already authorized the app for that redirect uri
@@ -115,7 +120,8 @@ class AuthorizeView(FormView):
         if self.application_credentials:
             # check if user already authorized this app
             if self._already_authorized(request, self.application_credentials):
-                return redirect()
+                # TODO(garcianavalon) fix _already_authorized
+                pass
             # if not, request authorization
             self._request_authorization(request, self.application_credentials)
             return super(AuthorizeView, self).get(request, *args, **kwargs)
@@ -128,6 +134,7 @@ class AuthorizeView(FormView):
         context['oauth_data'] = self.oauth_data
         context['application_credentials'] = self.application_credentials
         context['application'] = self.application
+        context['query_string'] = '?' + self.request.GET.urlencode()
         return context
 
     def post(self, request, *args, **kwargs):
@@ -141,12 +148,20 @@ class AuthorizeView(FormView):
             return self.form_invalid(form)
 
     def form_valid(self, request, form):
-        authorization_code = fiware_api.keystone.authorize_application(request,
+        try:
+            authorization_code = fiware_api.keystone.authorize_application(request,
                         application=self.application_credentials['application_id'])
-        LOG.debug('OAUTH2: Authorization Code obtained {0}'.format(authorization_code.code))
-        # redirect resource owner to client with the authorization code
-        LOG.debug('OAUTH2: Redirecting user back to {0}'.format(authorization_code.redirect_uri))
-        return redirect(authorization_code.redirect_uri, permanent=True)
+            LOG.debug('OAUTH2: Authorization Code obtained {0}'.format(authorization_code.code))
+            # redirect resource owner to client with the authorization code
+            LOG.debug('OAUTH2: Redirecting user back to {0}'.format(authorization_code.redirect_uri))
+            return redirect(authorization_code.redirect_uri, permanent=True)
+
+        except Exception as e:
+            LOG.warning('OAUTH2: exception when authorizing {0}'.format(e))
+            # TODO(garcianavalon) finner exception handling
+            self.oauth_data = {
+                'error': e
+            }
 
     def form_invalid(self, form):
         # NOTE(garcianavalon) there is no case right now where this form would be
@@ -156,9 +171,7 @@ class AuthorizeView(FormView):
         
 
 def cancel_authorize(request, **kwargs):
-    # make sure we clear the session variables
-    LOG.debug('OAUTH2: authorization request dennied, clear variables and redirect to home')
-    request.session['application_credentials'] = None
+    LOG.debug('OAUTH2: authorization request dennied, redirect to home')
     return redirect('horizon:user_home')
 
 
