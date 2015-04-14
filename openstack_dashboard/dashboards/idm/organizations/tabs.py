@@ -67,9 +67,10 @@ class OtherOrganizationsTab(tabs.TableTab):
                 else:
                     marker = -1
                     LOG.debug('marker_id (index): {0}'.format(marker))
-
-                if (marker + limit) >= (len(organizations_full)-1):
-                    organizations = organizations_full[marker:len(organizations_full)-1]
+                if marker == (len(organizations_full)-1):
+                    organizations = organizations_full[marker:len(organizations_full)]
+                elif (marker + limit) > (len(organizations_full)-1):
+                    organizations = organizations_full[marker+1:len(organizations_full)]
                 else:
                     organizations = organizations_full[(marker+1):(marker+limit+1)]
 

@@ -52,8 +52,6 @@ class PreviousPage(tables.LinkAction):
         param = urlencode({"marker": marker, "prev":"true"})
         LOG.debug('param: {0}'.format(param))
         url = "?".join([base_url, param])
-        # param2 = urlencode({"prev":"true"})
-        # url = "?".join([url, param2])
         return url
 
 
