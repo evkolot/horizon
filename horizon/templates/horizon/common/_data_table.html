@@ -16,7 +16,7 @@
   {% endblock table_caption %}
   {% block table_breadcrumb %}
       {% if table.breadcrumb %}
-        <tr>
+         <tr>
           <td class="breadcrumb_td" colspan="{{ table.get_columns|length }}">
             {{ table.breadcrumb.render }}
           </td>
@@ -58,6 +58,7 @@
         {% endfor %}
       </tr>
       {% endif %}
+
       <tr>
         <td colspan="{{ table.get_columns|length }}">
           <span class="table_count">{% blocktrans count counter=rows|length %}Displaying {{ counter }} item{% plural %}Displaying {{ counter }} items{% endblocktrans %}</span>
