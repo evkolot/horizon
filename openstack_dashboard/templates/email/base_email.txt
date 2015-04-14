@@ -2,11 +2,9 @@ Dear FIWARE Lab user,
 
 {{ content }}
 
-------------
-
 {% if massive_footer == True %}
-	{% include "_massive_email_footer.html" %}
+	{% include "email/_massive_email_footer.html" %}
 {% endif %}
 
-2014 © FIWARE
+2015 © FIWARE
 http://www.fi-ware.org/

@@ -58,14 +58,16 @@ def _oauth2_session(access_token_id):
 def _password_session():
     conf_params = getattr(settings, 'IDM_USER_CREDENTIALS')
     conf_params['auth_url'] = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
+    # TODO(garcianavalon) better domain usage
+    domain = 'default'
     LOG.debug('Creating a new keystoneclient password session to \
         {0} for user: {1}'.format(conf_params['auth_url'], conf_params['username']))
     auth = v3.Password(auth_url=conf_params['auth_url'],
                        username=conf_params['username'],
                        password=conf_params['password'],
                        project_name=conf_params['project'],
-                       user_domain_id=conf_params['domain'],
-                       project_domain_id=conf_params['domain'])
+                       user_domain_id=domain,
+                       project_domain_id=domain)
     return session.Session(auth=auth)
 
 # USER REGISTRATION
@@ -92,8 +94,10 @@ def _grant_role(keystone, role, user, project):
 
 def register_user(name, username, password):
     keystone = fiwareclient()
-    domain = getattr(settings, 'IDM_USER_CREDENTIALS')['domain']
-    default_domain = keystone.domains.get(domain)
+    #domain_name = getattr(settings, 'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN', 'Default')
+    #default_domain = keystone.domains.find(name=domain_name)
+    # TODO(garcianavalon) better domain usage
+    default_domain = 'default'
     # if not (check_user(name) or check_email(email)):
     new_user = keystone.user_registration.users.register_user(
         name,
@@ -142,19 +146,16 @@ def reset_password(user, token, new_password):
 
 # ROLES
 def role_get(request, role_id):
-    #manager = fiwareclient().fiware_roles.roles
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
     return manager.get(role_id)
 
 def role_list(request, user=None, organization=None, application=None):
-    #manager = fiwareclient().fiware_roles.roles
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
     return manager.list(user=user,
                         organization=organization,
-                        application=application)
+                        application_id=application)
 
 def role_create(request, name, is_internal=False, application=None, **kwargs):
-    #manager = fiwareclient().fiware_roles.roles
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
     return manager.create(name=name,
                           is_internal=is_internal,
@@ -163,7 +164,6 @@ def role_create(request, name, is_internal=False, application=None, **kwargs):
 
 def role_update(request, role, name=None, is_internal=False, 
                 application=None, **kwargs):
-    #manager = fiwareclient().fiware_roles.roles
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
     return manager.update(role,
                           name=name,
@@ -172,7 +172,6 @@ def role_update(request, role, name=None, is_internal=False,
                           **kwargs)
 
 def role_delete(request, role_id):
-    #manager = fiwareclient().fiware_roles.roles
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
     return manager.delete(role_id)
 
@@ -248,19 +247,16 @@ def list_organization_allowed_applications_to_manage_roles(request, organization
 
 # PERMISSIONS
 def permission_get(request, permission_id):
-    #manager = fiwareclient().fiware_roles.permissions
     manager = api.keystone.keystoneclient(
         request, admin=True).fiware_roles.permissions
     return manager.get(permission_id)
 
 def permission_list(request, role=None, application=None):
-    #manager = fiwareclient().fiware_roles.permissions
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.permissions
     return manager.list(role=role,
-                        application=application)
+                        application_id=application)
 
 def permission_create(request, name, is_internal=False, application=None, **kwargs):
-    #manager = fiwareclient().fiware_roles.permissions
     manager = api.keystone.keystoneclient(
         request, admin=True).fiware_roles.permissions
     return manager.create(name=name,
@@ -270,17 +266,15 @@ def permission_create(request, name, is_internal=False, application=None, **kwar
 
 def permission_update(request, permission, name=None, is_internal=False, 
                       application=None, **kwargs):
-    #manager = fiwareclient().fiware_roles.permissions
     manager = api.keystone.keystoneclient(
         request, admin=True).fiware_roles.permissions
     return manager.update(permission,
                           name=name,
                           is_internal=is_internal,
-                          application=application,
+                          application_=application,
                           **kwargs)
 
 def permission_delete(request, permission_id):
-    #manager = fiwareclient().fiware_roles.permissions
     manager = api.keystone.keystoneclient(
         request, admin=True).fiware_roles.permissions
     return manager.delete(permission_id)
@@ -450,6 +444,7 @@ def forward_validate_token_request(request):
     return response
 
 # SPECIAL ROLES
+# TODO(garcianavalon) refactorize for better reuse
 class PickleObject():
     """Extremely simple class that holds the very little information we need
     to cache. Keystoneclient resource objects are not pickable.
@@ -458,13 +453,14 @@ class PickleObject():
         self.__dict__.update(kwds)
 
 def get_owner_role(request):
-    """Gets the owner role object from Keystone and saves it as a global.
+    """Gets the owner role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.
     """
     owner = getattr(local_settings, "KEYSTONE_OWNER_ROLE", None)
     if owner and cache.get('owner_role') is None:
+        # TODO(garcianavalon) use filters to filter by name
         try:
             roles = api.keystone.keystoneclient(request, admin=True).roles.list()
         except Exception:
@@ -477,8 +473,29 @@ def get_owner_role(request):
                 break
     return cache.get('owner_role')
 
+def get_trial_role(request):
+    """Gets the trial role object from Keystone and caches it.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    trial = getattr(local_settings, "KEYSTONE_TRIAL_ROLE", None)
+    if trial and cache.get('trial_role') is None:
+        # TODO(garcianavalon) use filters to filter by name
+        try:
+            roles = api.keystone.keystoneclient(request, admin=True).roles.list()
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == trial or role.name == trial:
+                pickle_role = PickleObject(name=role.name, id=role.id)
+                cache.set('trial_role', pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get('trial_role')
+
 def get_provider_role(request):
-    """Gets the provider role object from Keystone and saves it as a global.
+    """Gets the provider role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.
@@ -499,7 +516,7 @@ def get_provider_role(request):
     return cache.get('provider_role')
 
 def get_purchaser_role(request):
-    """Gets the purchaser role object from Keystone and saves it as a global.
+    """Gets the purchaser role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.
@@ -534,3 +551,27 @@ def get_idm_admin_app(request):
                 cache.set('idm_admin', pickle_app, DEFAULT_OBJECTS_CACHE_TIME)
                 break
     return cache.get('idm_admin')
+
+def get_fiware_default_app(request, app_name):
+    if cache.get(app_name) is None:
+        try:
+            apps = api.keystone.keystoneclient(request, 
+                admin=True).oauth2.consumers.list()
+        except Exception:
+            apps = []
+            exceptions.handle(request)
+        for app in apps:
+            if app.name == app_name:
+                pickle_app = PickleObject(name=app.name, id=app.id)
+                cache.set(app_name, pickle_app, DEFAULT_OBJECTS_CACHE_TIME)
+                return cache.get(app_name)
+        return None
+
+def get_fiware_default_apps(request):
+    default_apps_names = getattr(local_settings, "FIWARE_DEFAULT_APPS", [])
+    default_apps = []
+    for app_name in default_apps_names:
+        app = get_fiware_default_app(request, app_name)
+        if app:
+            default_apps.append(app)
+    return default_apps

@@ -31,12 +31,16 @@ import horizon
 
 from openstack_dashboard.fiware_auth import urls as fiware_auth_urls
 from openstack_dashboard.fiware_oauth2 import urls as fiware_oauth2_urls
+from openstack_dashboard.fiware_server_filters import urls \
+    as fiware_server_filters_urls
 
 urlpatterns = patterns(
     '',
-    url(r'^$', 'openstack_dashboard.views.splash', name='splash'),
+    url(r'^$', 'openstack_dashboard.views.splash', 
+        {'template_name': 'auth/login.html'}, name='splash'),
     url(r'', include(fiware_auth_urls)),
     url(r'', include(fiware_oauth2_urls)),
+    url(r'^filters/', include(fiware_server_filters_urls)),
     url(r'^auth/', include('openstack_auth.urls')),
     url(r'', include(horizon.urls)),
     url(r'^summernote/', include('django_summernote.urls')),

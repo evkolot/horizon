@@ -511,6 +511,10 @@ textarea {
     border-top: none !important;
     .panel-collapse{
       border-top: 1px solid $border-color;
+      span{
+        margin-top: 11px;
+        float: left;
+      }
       button.btn-danger{
         margin-top: 15px
       }
@@ -589,4 +593,29 @@ textarea {
       margin: 30px auto;
     }
   }
+}
+
+.atlwdg-trigger.atlwdg-RIGHT {
+  left: 100%;
+  top: 204px;
+}
+
+.atlwdg-trigger {
+  position: fixed;
+  background: #013466;
+  padding: 1px 5px;
+  border: 1px solid #FFF;
+  border-top: none;
+  font-weight: normal;
+  color: #FFF !important;
+  display: block;
+  white-space: nowrap;
+  text-decoration: none !important;
+  font-family: verdana;
+  font-size: 10px;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 2px -2px 6px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+  border-radius: 0 0 5px 5px;
+  -moz-border-radius: 0 0 5px 5px;
 }

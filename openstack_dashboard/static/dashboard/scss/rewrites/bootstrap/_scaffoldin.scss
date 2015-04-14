@@ -1,13 +1,35 @@
-hr{
-	margin-top: 15px;
-	margin-bottom: 15px;
-	border-top: 1px solid $border-color !important;
+a{
+  color: $brand-primary;
+  text-decoration: none;
+  &:hover{
+   color: $brand-secundary;
+   text-decoration: none !important;
+ }
+ &:focus{
+   text-decoration: none;
+ }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6{
+  font-family: $corporate-font-family-sans-serif-Regular;
+  font-weight: normal;
+  margin: 1px $zero;
 }
 
 li{
 	list-style: none;
 }
 
+hr{
+  margin-top: 15px;
+  margin-bottom: 15px;
+  border-top: 1px solid $border-color !important;
+}
 
 .page-header h2 {
 	font-family: $corporate-font-family-sans-serif-Regular;
@@ -20,31 +42,8 @@ li{
 	border: none;
 	margin: -1px 0 0px;
 	padding-bottom: 6px;
-    .btn{
-        float: left;
-        margin-top: 2px;
-    }
-}
-
-a{
-    color: $brand-primary;
-    text-decoration: none;
-    &:hover{
-	  color: $brand-secundary;
-	  text-decoration: none !important;
-	}
-	&:focus{
-	  text-decoration: none;
-	}
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6{
-  font-family: $corporate-font-family-sans-serif-Regular;
-  font-weight: normal;
-  margin: 1px $zero;
+  .btn{
+    float: left;
+    margin-top: 2px;
+  }
 }

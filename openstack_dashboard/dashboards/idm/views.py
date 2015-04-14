@@ -15,14 +15,14 @@
 from django import http
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.encoding import force_text
-from django.views.generic.base import TemplateResponseMixin, ContextMixin, View
+from django.views.generic import base as generic_base
 
 from horizon import exceptions
 from horizon.utils import memoized
-from openstack_dashboard.dashboards.idm import utils
+# from openstack_dashboard.dashboards.idm import utils
 
 
-class MultiFormMixin(ContextMixin):
+class MultiFormMixin(generic_base.ContextMixin):
     """Similiar behaviour of django's FormMixin but for multiple forms on display."""
     initials = {}
     forms_classes = []
@@ -117,7 +117,9 @@ class MultiFormMixin(ContextMixin):
         return url
 
 
-class BaseMultiFormView(MultiFormMixin, TemplateResponseMixin, View):
+class BaseMultiFormView(MultiFormMixin, 
+                        generic_base.TemplateResponseMixin, 
+                        generic_base.View):
     """View to display of multiple forms on a single page and handle the post
     of one of those forms. Heavily inspired by django's ProcessFormView.
 

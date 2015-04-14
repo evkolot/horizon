@@ -26,7 +26,9 @@
         <div class="panel-heading">
             <div>
               {{ organizations_table }}
-              <a href="/idm/organizations/create/">Create</a>
+              {% if show_create_org == True %}
+                <a href="/idm/organizations/create/">Create</a>
+              {% endif %}
             </div>
         </div>    
       

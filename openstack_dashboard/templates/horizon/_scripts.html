@@ -23,20 +23,12 @@
 <script src="{{ STATIC_URL }}horizon/lib/spin.js" type="text/javascript" charset="utf-8"></script>
 <script src="{{ STATIC_URL }}horizon/lib/spin.jquery.js" type="text/javascript" charset="utf-8"></script>
 
-<script src="{{ STATIC_URL }}horizon/lib/jquery/jquery.bootstrap.wizard.js" type="text/javascript" charset="utf-8"></script>
-
 <script src="{{ STATIC_URL }}horizon/lib/d3.js" type="text/javascript" charset="utf-8"></script>
 
 <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.js" type="text/javascript" charset="utf-8"></script>
 <script src='{{ STATIC_URL }}horizon/lib/bootstrap_datepicker/bootstrap-datepicker.js' type='text/javascript' charset='utf-8'></script>
 
 <script src="{{ STATIC_URL }}horizon/lib/hogan.js" type="text/javascript" charset='utf-8'></script>
-
-
-
-<!--
-<script src='{{ STATIC_URL }}horizon/js/horizon.accordion_nav.js' type='text/javascript' charset='utf-8'></script> 
--->
 
 <script src='{{ STATIC_URL }}horizon/js/horizon.communication.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/horizon.forms.js' type='text/javascript' charset='utf-8'></script>
@@ -48,27 +40,18 @@
 {# FIWARE js for custom workflow behaviour #}
 <script src='{{ STATIC_URL }}horizon/js/horizon.fiware_roles_workflow.js' type='text/javascript' charset='utf-8'></script>
 {##}
-<script src='{{ STATIC_URL }}horizon/js/horizon.quota.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/horizon.tables.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/horizon.tables_inline_edit.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/horizon.tabs.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/horizon.templates.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/horizon.users.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/horizon.membership.js' type='text/javascript' charset='utf-8'></script>
-<script src='{{ STATIC_URL }}horizon/js/horizon.networktopology.js' type='text/javascript' charset='utf-8'></script>
-<script src='{{ STATIC_URL }}horizon/js/horizon.d3piechart.js' type='text/javascript' charset='utf-8'></script>
-<script src='{{ STATIC_URL }}horizon/js/horizon.heattop.js' type='text/javascript' charset='utf-8'></script>
-<script src='{{ STATIC_URL }}horizon/lib/rickshaw.js' type='text/javascript' charset='utf-8'></script>
-<script src='{{ STATIC_URL }}horizon/js/horizon.d3linechart.js' type='text/javascript' charset='utf-8'></script>
-<script src='{{ STATIC_URL }}horizon/js/horizon.d3barchart.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/horizon.firewalls.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/lib/jsencrypt/jsencrypt.js' type='text/javascript' charset='utf-8'></script>
 
 <script src='{{ STATIC_URL }}horizon/js/horizon.images.js' type='text/javascript' charset='utf-8'></script>
-{% block custom_js_files %}
 
-{% endblock %}
-{% endcompress %}
+<script src="{{ STATIC_URL }}library/expander/js/jquery.expander.js"></script>
 {# FIWARE js for single signout #}
 <script src="{{ STATIC_URL }}fiware/signOut.js"/></script>
 {##}
@@ -80,6 +63,10 @@
 <script src="{{ STATIC_URL }}library/jcrop/js/jquery.Jcrop.js" type="text/javascript" charset='utf-8'></script>
 
 <script src="{{ STATIC_URL }}library/validator/jquery.validate.min.js" type="text/javascript" charset='utf-8'></script>
+{% block custom_js_files %}
+
+{% endblock %}
+{% endcompress %}
 
 {% comment %} Client-side Templates (These should *not* be inside the "compress" tag.) {% endcomment %}
 {% include "horizon/client_side/templates.html" %}

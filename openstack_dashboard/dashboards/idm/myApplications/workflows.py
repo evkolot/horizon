@@ -14,8 +14,7 @@
 
 import logging
 
-from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core import urlresolvers
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
@@ -133,7 +132,7 @@ class ManageApplicationRoles(idm_workflows.RelationshipWorkflow):
 
     def get_success_url(self):
         # Overwrite to allow passing kwargs
-        return reverse(self.success_url,
+        return urlresolvers.reverse(self.success_url,
                     kwargs={'application_id':self.context['superset_id']})
 
 
@@ -229,6 +228,8 @@ class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
     no_available_text = ("No users found.")
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = AuthorizedMembersApi
+    server_filter_url = urlresolvers.reverse_lazy(
+        'fiware_server_filters_users')
 
 
 class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):
@@ -244,7 +245,7 @@ class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):
 
     def get_success_url(self):
         # Overwrite to allow passing kwargs
-        return reverse(self.success_url,
+        return urlresolvers.reverse(self.success_url,
                     kwargs={'application_id':self.context['superset_id']})
 
 
@@ -334,6 +335,8 @@ class UpdateAuthorizedOrganizations(idm_workflows.UpdateRelationshipStep):
     no_available_text = ("No organizations found.")
     no_members_text = ("No organizations.")
     RELATIONSHIP_CLASS = AuthorizedOrganizationsApi
+    server_filter_url = urlresolvers.reverse_lazy(
+        'fiware_server_filters_organizations')
 
 
 class ManageAuthorizedOrganizations(idm_workflows.RelationshipWorkflow):
@@ -351,5 +354,5 @@ class ManageAuthorizedOrganizations(idm_workflows.RelationshipWorkflow):
 
     def get_success_url(self):
         # Overwrite to allow passing kwargs
-        return reverse(self.success_url,
+        return urlresolvers.reverse(self.success_url,
                     kwargs={'application_id':self.context['superset_id']})

@@ -43,7 +43,7 @@ OPENSTACK_API_VERSIONS = {
 
 # Overrides the default domain used when running on single-domain model
 # with Keystone V3. All entities will be created in the default domain.
-# OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'Default'
+OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'Default'
 
 # Set Console type:
 # valid options would be "AUTO"(default), "VNC", "SPICE", "RDP" or None
@@ -236,7 +236,7 @@ IMAGE_RESERVED_CUSTOM_PROPERTIES = []
 # OPENSTACK_ENDPOINT_TYPE specifies the endpoint type to use for the endpoints
 # in the Keystone service catalog. Use this setting when Horizon is running
 # external to the OpenStack environment. The default is 'publicURL'.
-#OPENSTACK_ENDPOINT_TYPE = "publicURL"
+OPENSTACK_ENDPOINT_TYPE = "internalURL"
 
 # SECONDARY_ENDPOINT_TYPE specifies the fallback endpoint type to use in the
 # case that OPENSTACK_ENDPOINT_TYPE is not present in the endpoints
@@ -548,18 +548,22 @@ IDM_USER_CREDENTIALS = {
     'username': 'idm',
     'password': 'idm',
     'project': 'idm',
-    'domain': 'default',
 }
-RESET_PASSWORD_DAYS = 1
-ACCOUNT_ACTIVATION_DAYS = 1
+
 # if you want to use domain filtering you can set this to whitelist or
 # blacklist. Comment out the line for no filtering
 # EMAIL_LIST_TYPE = 'whitelist'
 
 # IdM ADMIN
-# Application ID of the idm in the backend. Used for the administrator
+# Application name of the idm in the backend. Used for the administrator
 # dashboard
 FIWARE_IDM_ADMIN_APP = 'idm'
+# Application name of all the default apps for organizations
+FIWARE_DEFAULT_APPS = [
+    'Cloud',
+    'Mashup',
+    'Store',
+]
 
 # reCAPTCHA
 # Get your keys at: https://www.google.com/recaptcha/admin#createsite
@@ -586,6 +590,12 @@ SUMMERNOTE_CONFIG = {
 
 # KEYSTONE admin role for projects
 KEYSTONE_OWNER_ROLE = 'owner'
+OPENSTACK_KEYSTONE_ADMIN_ROLES = [
+    KEYSTONE_OWNER_ROLE,
+    'admin',
+]
+# KEYSTONE role for trial users
+KEYSTONE_TRIAL_ROLE = 'trial'
 
 # Default FIWARE roles
 FIWARE_PURCHASER_ROLE = 'purchaser'

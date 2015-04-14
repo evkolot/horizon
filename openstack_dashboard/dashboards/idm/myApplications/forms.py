@@ -81,8 +81,7 @@ class CreateApplicationForm(forms.SelfHandlingForm):
                 return False
             response = shortcuts.redirect(
                 'horizon:idm:myApplications:avatar_step', application.id)
-
-
+            return response
         else:
             try:
                 LOG.debug('updating application {0}'.format(data['appID']))
@@ -99,11 +98,11 @@ class CreateApplicationForm(forms.SelfHandlingForm):
                 LOG.debug(msg)
                 response = shortcuts.redirect(
                     'horizon:idm:myApplications:detail', data['appID'])
+                return response
             except Exception as e:
                 LOG.error(e)
                 exceptions.handle(request, ('Unable to update the application.'))
 
-        return response
     
     
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):

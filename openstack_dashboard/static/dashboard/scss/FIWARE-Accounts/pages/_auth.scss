@@ -1,4 +1,6 @@
-
+#splash #user_info{
+  display: none;
+}
 .presentation{
   @include make-sm-column(5, $gutter: $grid-gutter-width);
   @include make-md-column(6, $gutter: $grid-gutter-width);
@@ -8,6 +10,9 @@
   @include make-lg-column-offset(1);
   clear: none;
   padding: 0;
+  @media (max-width: $screen-sm-min){
+    clear: both;  
+  }
   .help-box{
     margin-top: 20px;
     font-size: 12px;
@@ -117,14 +122,30 @@
   @include make-sm-column(4, $gutter: $grid-gutter-width);
   @include make-md-column(3, $gutter: $grid-gutter-width);
   @include make-lg-column(3, $gutter: $grid-gutter-width);
-  @include make-sm-column-offset(1);
-  @include make-md-column-offset(1);
-  @include make-lg-column-offset(1);
   @extend .well;
   @include border-top-radius (0);
   @include border-bottom-radius (0);
+  float: right;
+  @media (min-width: $screen-xs-min){ 
+    margin-right: 0;
+  }
+  @media (max-width: $screen-xs-min){
+    margin: 40px auto 0;
+    width: 100% !important;
+  }
   @media (max-width: $screen-sm-min){
-    margin-top: 40px; 
+    margin: 20px auto 20px;
+    width: 450px;
+    float: none;
+  }
+  @media (min-width: $screen-sm-min){
+    margin-right: 8.33333%;
+  }
+  @media (min-width: $screen-md-min){
+    margin-right: 8.33333%;
+  }
+  @media (min-width: $screen-lg-min){
+    margin-right: 8.33333%;
   }
   .modal-header{
     @include modal-header;

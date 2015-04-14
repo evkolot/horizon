@@ -152,7 +152,8 @@ class UpdateRelationshipStep(workflows.UpdateMembersStep,
                             RelationshipConsumerMixin):
     action_class = UpdateRelationshipAction
     contributes = ("superset_id",)
-
+    server_filter_text = "Use the filter."
+    
     def contribute(self, data, context):
         superset_id = context['superset_id']
         if data:

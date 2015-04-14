@@ -13,10 +13,8 @@
 
 import logging
 
-from django import http
-from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required  # noqa
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
@@ -42,8 +40,8 @@ class TemplatedEmailMixin(object):
     
     def send_html_email(self, to, from_email, subject, **kwargs):
         LOG.debug('Sending email to {0} with subject {1}'.format(to, subject))
-        text_content = render_to_string(self.EMAIL_TEXT_TEMPLATE, **kwargs)
-        html_content = render_to_string(self.EMAIL_HTML_TEMPLATE, **kwargs)
+        text_content = render_to_string(self.EMAIL_TEXT_TEMPLATE, dictionary=kwargs)
+        html_content = render_to_string(self.EMAIL_HTML_TEMPLATE, dictionary=kwargs)
         msg = EmailMultiAlternatives(subject, text_content, from_email, to)
         msg.attach_alternative(html_content, "text/html")
         msg.send()

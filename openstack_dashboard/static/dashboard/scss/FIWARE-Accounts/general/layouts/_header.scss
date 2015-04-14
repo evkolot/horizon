@@ -4,6 +4,56 @@ header.navbar{
   -moz-box-shadow: 0px 1px 8px rgba(50, 51, 51, 0.15);
   -webkit-box-shadow: 0px 1px 8px rgba(50, 51, 51, 0.15);
   box-shadow: 0px 1px 8px rgba(50, 51, 51, 0.15);
+  min-height: 42px;
+  .container-fluid{
+    max-width: 1200px;
+  }
+  .navbar-header{
+    margin-bottom: 4px;
+  }
+}
+
+.navbar-fixed-top{
+  background-color: $navbar-default-bg;
+  padding: 0;
+  @media (min-width: 768px){
+    .navbar-nav>li>a {
+      line-height: 0;
+      padding-top: 24px;
+      padding-bottom: 18px;
+      font-size: 14px;
+    }
+  }
+  @media (max-width: 768px){
+    .navbar-collapse.in {
+      padding-bottom: 20px;
+      .switcher_bar.open a {
+        background: rgba(0, 0, 0, 0);
+      }
+    }
+  }
+  .navbar-toggle{
+    font-size: 20px;
+    padding: 0;
+    line-height: 0;
+    margin: 10px 0 4px;
+
+  }
+  .navbar-collapse.in {
+    .navbar-nav>li {
+      &:hover{
+        background: #E8E8E8;
+      }
+    }
+  }
+}
+
+.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus {
+  background-color: transparent
+}
+
+ul.navbar-nav > li:hover {
+  background-color: #E8E8E8;
 }
 
 nav.container-fluid{
@@ -15,9 +65,6 @@ nav.container-fluid{
 
 .logo-fl-header,
 .logo-f-header{
-  margin-left: 0px;
-  margin-left: 0px;
-  margin-top: 2px;
   float: left;
 }
 .logo-fl-header{
@@ -26,142 +73,26 @@ nav.container-fluid{
 .logo-f-header{
   width: 118px;
 }
+.logo-fl-header{
+  width: 158px;
+}
 
-
-.logo-fl-header, .logo-f-header{ 
-  .brand{
-    margin: 0 0 0 -8px !important;
-    padding: 0 !important;
+.logo-f-header,
+.logo-fl-header{
+    float: left;
+    .brand{
+      margin: 0 0 0 -8px !important;
+      padding: 0 !important;
+      img.fiware-lab {
+        margin-top: 4px;
+        width: 158px !important;
+      }
+      img.fiware {
+        margin-top: 4px;
+        width: 118px !important;
+      }
+    }
   }
-}
-
-.brand img.fiware-lab,
-.brand img.fiware {
-  margin-top: 2px;
-}
-.brand img.fiware-lab {
-  width: 158px !important;
-}
-.brand img.fiware {
-  width: 118px !important;
-}
-
-
-.mobile .dropdown-menu{
-  min-width: 90px;
-  margin: 5px 0 0 -39px;
-  background-color: rgb(244, 244, 244);
-  border: none;
-  -webkit-border-top-left-radius: 0px;
-  -moz-border-top-left-radius: 0px;
-  border-top-left-radius: 0px;
-  -webkit-border-top-right-radius: 0px;
-  -moz-border-top-right-radius: 0px;
-  border-top-right-radius: 0px;
-  -webkit-box-shadow: 2px 3px 6px rgba(0,0,0,0.1);
-  -moz-box-shadow: 2px 3px 6px rgba(0,0,0,0.1);
-  box-shadow: 2px 3px 6px rgba(0,0,0,0.1);
-  color: #333;
-
-}
-
-ul.oil-portal{
-  height: 36px;
-  padding: 0px;
-  margin-bottom: 0px;
-  margin-left: 2px;
-  float: left;
-  @media (max-width: $screen-sm-min){
-    display: none;
-  }
-}
-
-ul.oil-portal li{
-  display: inline-block;
-  padding: 12.7px 15.3px 10px;
-}
-
-ul.oil-portal li:hover{
-  background-color: rgba(152, 152, 152, 0.1);
-  background-image: none;
-}
-
-ul.oil-portal li:hover a{
-  color: $brand-secundary;
-}
-
-ul.oil-portal li a{
-  color: #555;
-  font-family: $corporate-font-family-sans-serif-Regular;
-  font-size: 14px;
-}
-
-ul.oil-portal li a:hover{
-  color: $brand-secundary;
-  text-decoration: none;
-}
-
-ul.oil-portal li.active{
-  background-color: #fff;
-}
-
-ul.oil-portal li.active a{
-  color: $brand-primary;
-  font-family: $corporate-font-family-sans-serif-Medium;
-}
-
-.mobile{
-  display: none;
-  margin-top: 9px;
-  i{
-    font-size: 11px;
-  }
-}
-
-
-.mobile ul li{
-  border-bottom: 2px solid #FFF;
-  text-align: center;
-  &:last-child{
-    border: none;
-  }
-}
-
-.mobile ul li a{
-  color:#555;
-  font-family: $corporate-font-family-sans-serif-Regular; 
-  font-size: 14px;
-}
-  
-.mobile ul li a:hover{
-  background-color: rgba(152, 152, 152, 0.1);
-  color: $brand-secundary;
-}
-
-.mobile ul li.active a{
-  background-color: rgba(152, 152, 152, 0.1);
-  background-image: none;
-  color: $brand-primary;
-  font-family: $corporate-font-family-sans-serif-Medium;
-}
-
-.mobile ul li.active a:hover{
-  background-color: rgba(152, 152, 152, 0.1);
-  background-image: none;
-  color: $brand-primary;
-}
-
-.mobile ul li.active a:focus{
-  background-color: rgba(152, 152, 152, 0.1);
-  background-image: none;
-  color:#333;
-}
-
-.nav-tabs, .nav-tabs li a, 
-.nav-tabs > .active > a, 
-.nav-tabs > .active > a:hover {
-  //margin: 2px 0px 1px 0px;//
-}
 
 .nav-tabs > .active > a, .nav-tabs > .active > a:hover {
   color: $brand-secundary;
@@ -174,9 +105,35 @@ ul.oil-portal li.active a{
 }
 
 #profile_editor_switcher{
-  margin-top: 7px;
-   a img {
+  margin-top: 9px;
+  a img {
     width: 24px;
+    margin-top: -1px;
+  }
+  &:hover{
+    @include border-top-radius (3px);
+    @include border-bottom-radius (3px);
+  }
+  @media (max-width: 767px){
+    margin-top: 0;
+    padding: 5px;
+    border: 5px solid #FAFAFA;
+    background: transparent;
+    .dropdown-submenu{
+      .fa-angle-double-left{
+        @include rotate (270deg)
+      }
+    }
+    a{
+      background: transparent;
+    }
+    .dropdown-menu{
+      li{
+        &:hover{
+          background: #E8E8E8;
+        }
+      }
+    }
   }
 }
 
@@ -185,41 +142,21 @@ ul.oil-portal li.active a{
   header .navbar ul.nav{
     margin-top: 0px;
   }
-
   .logo-header{
     width: 152px !important;
   }
-
-  .mobile .dropdown-menu li a{
-    padding: 9px 8px 6px;
-  }
-
-  .mobile{
-    display: inline-block;
-    float: left;
-  }
-
   .brand{
     padding: 0px 4px 0 0px !important;
     float: left !important;
   }
-
   .dropdown i {
     margin-left: 2px;
   }
 }
-
 @media (min-width: 768px) and (max-width: 979px){
-
-
   header.navbar ul{
     margin-top: 0px    
   }
-
-  .mobile{
-    display: none !important;
-  }
-
   .brand{
     padding: 0px 4px 0 0px !important;
     float: left !important;

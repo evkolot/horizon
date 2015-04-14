@@ -254,7 +254,7 @@ def tenant_delete(request, project):
 
 
 def tenant_list(request, paginate=False, marker=None, domain=None, user=None,
-                admin=True):
+                admin=True, filters=None):
     manager = VERSIONS.get_project_manager(request, admin=admin)
     page_size = utils.get_page_size(request)
 
@@ -263,13 +263,25 @@ def tenant_list(request, paginate=False, marker=None, domain=None, user=None,
         limit = page_size + 1
 
     has_more_data = False
-    if VERSIONS.active < 3:
+
+    # if requesting the projects for the current user,
+    # return the list from the cache
+    if user == request.user.id:
+        tenants = request.user.authorized_tenants
+
+    elif VERSIONS.active < 3:
         tenants = manager.list(limit, marker)
         if paginate and len(tenants) > page_size:
             tenants.pop(-1)
             has_more_data = True
     else:
-        tenants = manager.list(domain=domain, user=user)
+        kwargs = {
+            "domain": domain,
+            "user": user
+        }
+        if filters is not None:
+            kwargs.update(filters)
+        tenants = manager.list(**kwargs)
     return (tenants, has_more_data)
 
 
@@ -283,7 +295,7 @@ def tenant_update(request, project, name=None, description=None,
                               enabled=enabled, domain=domain, **kwargs)
 
 
-def user_list(request, project=None, domain=None, group=None):
+def user_list(request, project=None, domain=None, group=None, filters=None):
     if VERSIONS.active < 3:
         kwargs = {"tenant_id": project}
     else:
@@ -292,6 +304,8 @@ def user_list(request, project=None, domain=None, group=None):
             "domain": domain,
             "group": group
         }
+        if filters is not None:
+            kwargs.update(filters)
     users = keystoneclient(request, admin=True).users.list(**kwargs)
     return [VERSIONS.upgrade_v2_user(user) for user in users]
 
