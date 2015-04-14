@@ -17,11 +17,13 @@ from horizon import exceptions
 from horizon import tabs
 
 from openstack_dashboard import api
+from openstack_dashboard import settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm.organizations \
     import tables as organization_tables
 
 LOG = logging.getLogger('idm_logger')
+LIMIT = getattr(settings, 'PAGE_LIMIT', 5)
 
 
 class OtherOrganizationsTab(tabs.TableTab):
@@ -31,13 +33,9 @@ class OtherOrganizationsTab(tabs.TableTab):
     template_name = ("horizon/common/_detail_table.html")
     preload = False
 
-    def get_marker(self, table):
-        LOG.debug(self._tables.get(table.name)._marker)
-        return self._tables.get(table.name)._marker
-
     def get_other_organizations_data(self):
         organizations = []
-        limit = 5
+        limit = LIMIT
         marker_id = self.request.GET.get('marker', None)
         LOG.debug(marker_id)
         try:
@@ -54,18 +52,15 @@ class OtherOrganizationsTab(tabs.TableTab):
                     self.request, marker_id))
                 LOG.debug('marker_id (index): {0}'.format(marker))
             else:
-                marker = 0
+                marker = -1
                 LOG.debug('marker_id (index): {0}'.format(marker))
 
-            if (marker + limit) >= len(organizations_full):
-                organizations = organizations_full[marker:len(organizations_full)]
+            if (marker + limit) >= (len(organizations_full)-1):
+                organizations = organizations_full[marker:len(organizations_full)-1]
                 self._tables.get('other_organizations')._marker = None
             else:
-                organizations = organizations_full[marker:(marker+limit)]
-                self._tables.get('other_organizations')._marker = organizations[marker + limit + 1].id
-                mark = self._tables.get('other_organizations')._marker
-                LOG.debug('marker_id (actualizado): {0}'.format(mark))
-                LOG.debug('maker index: {0}'.format(organizations_full.index(api.keystone.tenant_get(self.request,mark))))
+                organizations = organizations_full[(marker+1):(marker+limit+1)]
+                               
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)
