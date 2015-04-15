@@ -27,6 +27,7 @@ from openstack_dashboard.dashboards.idm.home import tables as home_tables
 
 LOG = logging.getLogger('idm_logger')
 
+
 class IndexView(tables.MultiTableView):
     table_classes = (home_tables.OrganizationsTable,
                      home_tables.ApplicationsTable)
@@ -47,7 +48,7 @@ class IndexView(tables.MultiTableView):
                 self.request,
                 user=self.request.user.id,
                 admin=False)
-            switchable_organizations = [org.id for org 
+            switchable_organizations = [org.id for org
                                         in self.request.organizations]
 
             for org in organizations:
@@ -60,7 +61,7 @@ class IndexView(tables.MultiTableView):
             self._more = False
             exceptions.handle(self.request,
                               ("Unable to retrieve organization list."))
-    
+
         return idm_utils.filter_default(organizations)
 
     def get_applications_data(self):
@@ -68,10 +69,10 @@ class IndexView(tables.MultiTableView):
         try:
             # TODO(garcianavalon) extract to fiware_api
             all_apps = fiware_api.keystone.application_list(self.request)
-            apps_with_roles = [a.application_id for a 
+            apps_with_roles = [a.application_id for a
                                in fiware_api.keystone.user_role_assignments(
                                self.request, user=self.request.user.id)]
-            applications = [app for app in all_apps 
+            applications = [app for app in all_apps
                             if app.id in apps_with_roles]
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)
@@ -81,3 +82,16 @@ class IndexView(tables.MultiTableView):
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))
         return idm_utils.filter_default(applications)
+
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        trial_role = fiware_api.keystone.get_trial_role(self.request)
+        if not trial_role:
+            context['show_create_org'] = True
+        else:
+            domain = api.keystone.get_default_domain(self.request)
+            user_domain_roles = api.keystone.roles_for_user(
+                self.request, self.request.user, domain=domain)
+            context['show_create_org'] = \
+                trial_role.id not in [r.id for r in user_domain_roles]
+        return context

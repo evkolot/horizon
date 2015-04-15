@@ -15,6 +15,8 @@
 import logging
 
 from django import forms
+from django.core import mail
+from django.template.loader import render_to_string
 
 from django_summernote.widgets import SummernoteWidget
 
@@ -23,13 +25,11 @@ from horizon import forms
 from horizon import messages
 
 from openstack_dashboard import api
-# TODO(garcianavalon) centralize email sending
-from openstack_dashboard.fiware_auth.views import TemplatedEmailMixin
 
 
 LOG = logging.getLogger('idm_logger')
 
-class EmailForm(forms.SelfHandlingForm, TemplatedEmailMixin):
+class EmailForm(forms.SelfHandlingForm):
     subject = forms.CharField(max_length=50,
                                 label=("Subject"),
                                 required=True)
@@ -37,17 +37,37 @@ class EmailForm(forms.SelfHandlingForm, TemplatedEmailMixin):
                                 label=("Body"),
                                 required=True)
 
+    # TODO(garcianavalon) as settings
+    EMAIL_HTML_TEMPLATE = 'email/base_email.html'
+    EMAIL_TEXT_TEMPLATE = 'email/base_email.txt'
     def handle(self, request, data):
+        # TODO(garcianavalon) better email architecture...
         try:
-            to = [u.email for u in api.keystone.user_list(request)
-                if hasattr(u, 'email')]
-            self.send_html_email(
-                to, 
-                ' no-reply@account.lab.fi-ware.org', 
-                data['subject'], 
-                content=data['body'],
-                massive_footer=True)
+
+            all_users = [u.name for u in api.keystone.user_list(request)
+                if hasattr(u, 'name')]
+
+            text_content = render_to_string(self.EMAIL_TEXT_TEMPLATE, 
+                dictionary={
+                    'massive_footer':True,
+                    'content': {'text':data['body']},
+                })
+
+            html_content = render_to_string(self.EMAIL_HTML_TEMPLATE, 
+                dictionary={
+                    'massive_footer':True,
+                    'content': {'html':data['body']},
+                })
+
+            connection = mail.get_connection(fail_silently=True)
+
+            msg = mail.EmailMultiAlternatives(data['subject'], text_content, 
+                'no-reply@account.lab.fi-ware.org', all_users, connection=connection)
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+
             messages.success(request, ('Message sent succesfully.'))
+
         except Exception:
             msg = ('Unable to send message. Please try again later.')
             LOG.warning(msg)

@@ -11,14 +11,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import logging
 
 from horizon import exceptions
 from horizon import tabs
 
 from openstack_dashboard import api
+from openstack_dashboard.local import local_settings as settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm.organizations \
     import tables as organization_tables
+
+LOG = logging.getLogger('idm_logger')
+LIMIT = getattr(settings, 'PAGE_LIMIT', 5)
 
 
 class OtherOrganizationsTab(tabs.TableTab):
@@ -30,13 +35,45 @@ class OtherOrganizationsTab(tabs.TableTab):
 
     def get_other_organizations_data(self):
         organizations = []
+        limit = LIMIT
+        marker_id = self.request.GET.get('marker', None)
+        prev = self.request.GET.get('prev', None)
         try:
-            organizations, self._more = api.keystone.tenant_list(
+            organizations_full, self._more = api.keystone.tenant_list(
                 self.request, admin=False)
             my_organizations, self._more = api.keystone.tenant_list(
                 self.request, user=self.request.user.id, admin=False)
-            organizations = [t for t in organizations if not t 
-                             in my_organizations]
+            organizations_full = idm_utils.filter_default([t for t in
+                                                           organizations_full
+                                                           if not t in
+                                                           my_organizations])
+            if prev:
+                if marker_id:
+                    marker = organizations_full.index(api.keystone.tenant_get(
+                        self.request, marker_id))
+                    LOG.debug('marker_id (index): {0}'.format(marker))
+
+                    if (marker - limit) <= 0:
+                        organizations = organizations_full[0:limit]
+                    else:
+                        organizations = organizations_full[(marker-limit):(marker)]
+                else:
+                    organizations = organizations_full[0:limit]
+            else:
+                if marker_id:
+                    marker = organizations_full.index(api.keystone.tenant_get(
+                        self.request, marker_id))
+                    LOG.debug('marker_id (index): {0}'.format(marker))
+                else:
+                    marker = -1
+                    LOG.debug('marker_id (index): {0}'.format(marker))
+                if marker == (len(organizations_full)-1):
+                    organizations = organizations_full[marker:len(organizations_full)]
+                elif (marker + limit) > (len(organizations_full)-1):
+                    organizations = organizations_full[marker+1:len(organizations_full)]
+                else:
+                    organizations = organizations_full[(marker+1):(marker+limit+1)]
+
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)
@@ -45,7 +82,7 @@ class OtherOrganizationsTab(tabs.TableTab):
             exceptions.handle(self.request,
                               ("Unable to retrieve organization list. \
                                     Error message: {0}".format(e)))
-        return idm_utils.filter_default(organizations)
+        return organizations
 
 
 class OwnedOrganizationsTab(tabs.TableTab):

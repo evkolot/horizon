@@ -43,7 +43,7 @@ OPENSTACK_API_VERSIONS = {
 
 # Overrides the default domain used when running on single-domain model
 # with Keystone V3. All entities will be created in the default domain.
-# OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'Default'
+OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'Default'
 
 # Set Console type:
 # valid options would be "AUTO"(default), "VNC", "SPICE", "RDP" or None
@@ -548,18 +548,22 @@ IDM_USER_CREDENTIALS = {
     'username': 'idm',
     'password': 'idm',
     'project': 'idm',
-    'domain': 'default',
 }
-RESET_PASSWORD_DAYS = 1
-ACCOUNT_ACTIVATION_DAYS = 1
+
 # if you want to use domain filtering you can set this to whitelist or
 # blacklist. Comment out the line for no filtering
 # EMAIL_LIST_TYPE = 'whitelist'
 
 # IdM ADMIN
-# Application ID of the idm in the backend. Used for the administrator
+# Application name of the idm in the backend. Used for the administrator
 # dashboard
 FIWARE_IDM_ADMIN_APP = 'idm'
+# Application name of all the default apps for organizations
+FIWARE_DEFAULT_APPS = [
+    'Cloud',
+    'Mashup',
+    'Store',
+]
 
 # reCAPTCHA
 # Get your keys at: https://www.google.com/recaptcha/admin#createsite
@@ -590,7 +594,12 @@ OPENSTACK_KEYSTONE_ADMIN_ROLES = [
     KEYSTONE_OWNER_ROLE,
     'admin',
 ]
+# KEYSTONE role for trial users
+KEYSTONE_TRIAL_ROLE = 'trial'
 
 # Default FIWARE roles
 FIWARE_PURCHASER_ROLE = 'purchaser'
 FIWARE_PROVIDER_ROLE = 'provider'
+
+# Table Pagination
+PAGE_LIMIT = 10

@@ -15,6 +15,7 @@
 import logging
 
 from django.core import urlresolvers
+from django.utils.http import urlencode
 
 from horizon import tables
 
@@ -25,6 +26,34 @@ from openstack_dashboard.dashboards.idm import tables as idm_tables
 
 
 LOG = logging.getLogger('idm_logger')
+
+
+class NextPage(tables.LinkAction):
+    name = "nextpage"
+    verbose_name = ("Next Page")
+    classes = ("ajax-update",)
+
+    def get_link_url(self):
+        base_url = urlresolvers.reverse('horizon:idm:organizations:index')
+        marker = self.table.get_marker()
+        param = urlencode({"marker": marker})
+        LOG.debug('param: {0}'.format(param))
+        url = "?".join([base_url, param])
+        return url
+
+class PreviousPage(tables.LinkAction):
+    name = "prevpage"
+    verbose_name = ("Previous Page")
+    classes = ("ajax-update",)
+
+    def get_link_url(self):
+        base_url = urlresolvers.reverse('horizon:idm:organizations:index')
+        marker = self.table.get_prev_marker()
+        param = urlencode({"marker": marker, "prev":"true"})
+        LOG.debug('param: {0}'.format(param))
+        url = "?".join([base_url, param])
+        return url
+
 
 class OtherOrganizationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
@@ -37,6 +66,7 @@ class OtherOrganizationsTable(tables.DataTable):
     class Meta:
         name = "other_organizations"
         verbose_name = ("")
+        table_actions = (PreviousPage, NextPage, )
         row_class = idm_tables.OrganizationClickableRow
 
 
