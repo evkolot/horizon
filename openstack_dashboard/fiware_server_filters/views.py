@@ -22,6 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 from horizon import exceptions
 
 from openstack_dashboard import api
+from openstack_dashboard.dashboards.idm import utils as idm_utils
 
 SHORT_CACHE_TIME = 10 # seconds
 
@@ -115,6 +116,7 @@ class OrganizationsWorkflowFilter(AjaxKeystoneFilter):
     def api_call(self, request, filters=None):
         organizations, more = api.keystone.tenant_list(request, 
             filters=filters)
+        organizations = idm_utils.filter_default(organizations)
         attrs = [
             'id',
             'name',
