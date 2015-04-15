@@ -321,6 +321,12 @@ def application_delete(request, application_id):
 
 
 # OAUTH2 FLOW
+def get_user_access_tokens(request, user):
+    """Gets all authorized access_tokens for the user"""
+    manager = internal_keystoneclient().oauth2.access_tokens
+
+    return manager.list_for_user(user=user)
+
 def request_authorization_for_application(request, application, 
                                           redirect_uri, scope=['all_info'], state=None):
     """ Sends the consumer/client credentials to the authorization server to ask

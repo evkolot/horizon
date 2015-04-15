@@ -97,7 +97,8 @@ class AuthorizeView(FormView):
                     credentials.get('redirect_uri'),
                     state=credentials.get('state', None))
         except Exception as e:
-            LOG.warning('OAUTH2: exception when requesting authorization {0}'.format(e))
+            LOG.warning(('OAUTH2: exception when requesting '
+                         'authorization %s'), e)
             # TODO(garcianavalon) finner exception handling
             self.oauth_data = {
                 'error': e
@@ -105,23 +106,33 @@ class AuthorizeView(FormView):
 
     def _already_authorized(self, request, credentials):
         # check if the user already authorized the app for that redirect uri
-        # FIXME(garcianvalon) the api and keystoneclient layers are not ready yet
-        return False
+        app_id = credentials.get('application_id', None)
+        if not app_id:
+            LOG.debug('OAUTH2: no application_id in credentials')
+            return False
         try:
-            fiware_api.keystone.check_authorization_for_application(request,
-                                                credentials.get('application_id'),
-                                                credentials.get('redirect_uri'))
+            access_tokens = fiware_api.keystone.get_user_access_tokens(
+                request, request.user.id)
+            for token in access_tokens: 
+                if token.consumer_id == app_id:
+                    LOG.debug(('OAUTH2: Application %s already '
+                               'authorized'), app_id)
+                    return True
+            LOG.debug(('OAUTH2: Application %s NOT already' 
+                       'authorized'), app_id)
+            return False
         except Exception as e:
-             LOG.warning('OAUTH2: exception when checking if already authorized {0}'.format(e))
+            LOG.error(('OAUTH2: exception when checking'
+                       'access tokens %s'), e)
             # TODO(garcianavalon) finner exception handling
+            return False
 
     def get(self, request, *args, **kwargs):
         """Show a form with info about the scopes and the application to the user"""
         if self.application_credentials:
             # check if user already authorized this app
             if self._already_authorized(request, self.application_credentials):
-                # TODO(garcianavalon) fix _already_authorized
-                pass
+                return self.obtain_access_token(request)
             # if not, request authorization
             self._request_authorization(request, self.application_credentials)
             return super(AuthorizeView, self).get(request, *args, **kwargs)
@@ -148,26 +159,33 @@ class AuthorizeView(FormView):
             return self.form_invalid(form)
 
     def form_valid(self, request, form):
-        try:
-            authorization_code = fiware_api.keystone.authorize_application(request,
-                        application=self.application_credentials['application_id'])
-            LOG.debug('OAUTH2: Authorization Code obtained {0}'.format(authorization_code.code))
-            # redirect resource owner to client with the authorization code
-            LOG.debug('OAUTH2: Redirecting user back to {0}'.format(authorization_code.redirect_uri))
-            return redirect(authorization_code.redirect_uri, permanent=True)
-
-        except Exception as e:
-            LOG.warning('OAUTH2: exception when authorizing {0}'.format(e))
-            # TODO(garcianavalon) finner exception handling
-            self.oauth_data = {
-                'error': e
-            }
+        return self.obtain_access_token(request)
 
     def form_invalid(self, form):
         # NOTE(garcianavalon) there is no case right now where this form would be
         # invalid, because is an empty form. In the future we might use a more complex
         # form (multiple choice scopes for example)
         pass
+
+    def obtain_access_token(self, request):
+        try:
+            authorization_code = fiware_api.keystone.authorize_application(
+                request, 
+                application=self.application_credentials['application_id'])
+            LOG.debug('OAUTH2: Authorization Code obtained %s', 
+                authorization_code.code)
+            # redirect resource owner to client with the authorization code
+            LOG.debug('OAUTH2: Redirecting user back to %s', 
+                authorization_code.redirect_uri)
+            return redirect(authorization_code.redirect_uri, permanent=True)
+
+        except Exception as e:
+            LOG.error('OAUTH2: exception when authorizing %s', e)
+            msg = (('An error occurred when trying to obtain' 
+                    'the authorization code.'))
+            LOG.error(msg, 'Exception message %s', e)
+            messages.error(request, (msg))
+            return redirect('horizon:user_home')
         
 
 def cancel_authorize(request, **kwargs):
