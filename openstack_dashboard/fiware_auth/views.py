@@ -26,6 +26,7 @@ from horizon import exceptions
 
 from openstack_auth import views as openstack_auth_views
 
+from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.fiware_auth import forms as fiware_forms
 
@@ -106,6 +107,11 @@ class RegistrationView(_RequestPassingFormView):
             return redirect("/idm/")
         return super(RegistrationView, self).dispatch(request, *args, **kwargs)
     
+    def get_form_kwargs(self, request=None, form_class=None):
+        kwargs = super(RegistrationView, self).get_form_kwargs()
+        kwargs['request'] = request
+        return kwargs
+        
     def form_valid(self, request, form):
         new_user = self.register(request, **form.cleaned_data)
         if new_user:
@@ -118,18 +124,30 @@ class RegistrationView(_RequestPassingFormView):
     # We have to protect the entire "cleaned_data" dict because it contains the
     # password and confirm_password strings.
     def register(self, request, **cleaned_data):
-        LOG.info('Singup user {0}.'.format(cleaned_data['username']))
-        #delegate to the manager to create all the stuff
+        LOG.info('Singup user %s.', cleaned_data['username'])
+        # delegate to the manager to create all the stuff
         try:
-            # We use the keystoneclient directly here because the keystone api
-            # reuses the request (and therefor the session). We make the normal rest-api
-            # calls, using our own user for our portal
             new_user = fiware_api.keystone.register_user(
                 name=cleaned_data['email'],
                 password=cleaned_data['password1'],
                 username=cleaned_data['username'])
-            LOG.debug('User {0} was successfully created.'.format(cleaned_data['username']))
+            LOG.debug('user %s was successfully created.', 
+                cleaned_data['username'])
+            
+            # Grant trial or basic role in the domain
+            if cleaned_data['trial']:
+                fiware_user_role = fiware_api.keystone.get_trial_role(
+                    request, use_idm_account=True)
+            else:
+                fiware_user_role = fiware_api.keystone.get_basic_role(
+                    request, use_idm_account=True)
+
+            fiware_api.keystone.add_domain_user_role(
+                user=new_user.id, role=fiware_user_role.id)
+            LOG.debug('granted role %s.', fiware_user_role.name)
+
             self.send_activation_email(new_user)
+
             return new_user
 
         except Exception:
@@ -143,16 +161,20 @@ class RegistrationView(_RequestPassingFormView):
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         context = {
-            'activation_url':'activate/?activation_key={0}&user={1}'.format(user.activation_key, user.id),
+            'activation_url':('activate/?activation_key={0}&user={1}'
+                '').format(user.activation_key, user.id),
             'user_name':user.name,
         }
-        text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, dictionary=context)
-        html_content = render_to_string(ACTIVATION_HTML_TEMPLATE, dictionary=context)
+        text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, 
+                                        dictionary=context)
+        html_content = render_to_string(ACTIVATION_HTML_TEMPLATE, 
+                                        dictionary=context)
         #send a mail for activation
-        self.send_html_email(to=[user.name],
-                             from_email='no-reply@account.lab.fiware.org',
-                             subject=subject,
-                             content={'text': text_content, 'html': html_content})
+        self.send_html_email(
+            to=[user.name],
+            from_email='no-reply@account.lab.fiware.org',
+            subject=subject,
+            content={'text': text_content, 'html': html_content})
 
 class ActivationView(TemplateView):
     http_method_names = ['get']
@@ -173,11 +195,15 @@ class ActivationView(TemplateView):
     def activate(self, request):
         activation_key = request.GET.get('activation_key')
         user = request.GET.get('user')
-        LOG.info('Requested activation for key {0}.'.format(activation_key))
+        LOG.info('Requested activation for key %s.', activation_key)
         try:
-            activated_user = fiware_api.keystone.activate_user(user, activation_key)
-            LOG.debug('User {0} was successfully activated.'.format(activated_user.username))
-            messages.success(request, ('User "%s" was successfully activated.') %activated_user.username)
+            activated_user = fiware_api.keystone.activate_user(
+                user, activation_key)
+            LOG.debug('user %s was successfully activated.', 
+                      activated_user.username)
+            messages.success(request, 
+                             ('User "%s" was successfully activated.') 
+                             %activated_user.username)
             return activated_user
         except Exception:
             msg = ('Unable to activate user.')
@@ -192,7 +218,8 @@ class RequestPasswordResetView(_RequestPassingFormView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.username:
             return redirect("/idm/")
-        return super(RequestPasswordResetView, self).dispatch(request, *args, **kwargs)
+        return super(RequestPasswordResetView, self).dispatch(
+            request, *args, **kwargs)
 
     def form_valid(self, request, form):
         self._create_reset_password_token(request, form.cleaned_data['email'])
@@ -215,16 +242,20 @@ class RequestPasswordResetView(_RequestPassingFormView):
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         context = {
-            'reset_url':'password/reset/?token={0}&email={1}'.format(token, email),
+            'reset_url':('password/reset/?token={0}&email={1}'
+                '').format(token, email),
             'user_name':email,
         }
-        text_content = render_to_string(RESET_PASSWORD_TXT_TEMPLATE, dictionary=context)
-        html_content = render_to_string(RESET_PASSWORD_HTML_TEMPLATE, dictionary=context)
+        text_content = render_to_string(RESET_PASSWORD_TXT_TEMPLATE, 
+                                        dictionary=context)
+        html_content = render_to_string(RESET_PASSWORD_HTML_TEMPLATE, 
+                                        dictionary=context)
         #send a mail for activation
-        self.send_html_email(to=[email], 
-                            from_email='no-reply@account.lab.fiware.org',
-                            subject=subject, 
-                            content={'text': text_content, 'html': html_content})
+        self.send_html_email(
+            to=[email], 
+            from_email='no-reply@account.lab.fiware.org',
+            subject=subject, 
+            content={'text': text_content, 'html': html_content})
 
 
 class ResetPasswordView(_RequestPassingFormView):
@@ -237,7 +268,8 @@ class ResetPasswordView(_RequestPassingFormView):
             return redirect("/idm/")
         self.token = request.GET.get('token')
         self.email = request.GET.get('email')
-        return super(ResetPasswordView, self).dispatch(request, *args, **kwargs)
+        return super(ResetPasswordView, self).dispatch(
+            request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(ResetPasswordView, self).get_context_data(**kwargs)
@@ -276,7 +308,8 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.username:
             return redirect("/idm/")
-        return super(ResendConfirmationInstructionsView, self).dispatch(request, *args, **kwargs)
+        return super(ResendConfirmationInstructionsView, self).dispatch(
+            request, *args, **kwargs)
 
     def form_valid(self, request, form):
         self._resend_confirmation_email(request, form.cleaned_data['email'])
@@ -285,16 +318,16 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
     def _resend_confirmation_email(self, request, email):
         user = fiware_api.keystone.check_email(email)
         if not user:
-            LOG.debug('The email address {0} is not registered'.format(email))
-            msg = ('Sorry. You have specified an email address that is not registered \
-                 to any our our user accounts. If your problem persits, please contact: \
-                 fiware-lab-help@lists.fi-ware.org')
+            LOG.debug('email address %s is not registered', email)
+            msg = ('Sorry. You have specified an email address that is not '
+                'registered to any our our user accounts. If your problem '
+                'persits, please contact: fiware-lab-help@lists.fi-ware.org')
             messages.error(request, msg)
             return False
 
         if user.enabled:
             msg = ('Email was already confirmed, please try signing in')
-            LOG.debug('The email address {0} was already confirmed'.format(email))
+            LOG.debug('email address %s was already confirmed', email)
             messages.error(request, msg)
             return False
 
@@ -311,16 +344,20 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         context = {
-            'activation_url':'activate/?activation_key={0}&user={1}'.format(activation_key.id, user.id),
+            'activation_url':('activate/?activation_key={0}&user={1}'
+                '').format(activation_key.id, user.id),
             'user_name':user.name,
         }
-        text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, dictionary=context)
-        html_content = render_to_string(ACTIVATION_HTML_TEMPLATE, dictionary=context)
+        text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, 
+                                        dictionary=context)
+        html_content = render_to_string(ACTIVATION_HTML_TEMPLATE, 
+                                        dictionary=context)
         #send a mail for activation
-        self.send_html_email(to=[user.name],
-                             from_email='no-reply@account.lab.fiware.org',
-                             subject=subject, 
-                             content={'text': text_content, 'html': html_content})
+        self.send_html_email(
+            to=[user.name],
+            from_email='no-reply@account.lab.fiware.org',
+            subject=subject, 
+            content={'text': text_content, 'html': html_content})
 
 @login_required
 def switch(request, tenant_id, **kwargs):
@@ -332,8 +369,9 @@ def switch(request, tenant_id, **kwargs):
     if tenant_id != user_organization:
         organization_name = next(o.name for o in request.organizations 
                          if o.id == tenant_id)
-        msg = ("Your identity has changed. Now you are acting on behalf of the \
-            \"{0}\" organization. Use the top-right menu to regain your \
-            identity as individual user.").format(organization_name)
+        msg = ("Your identity has changed. Now you are acting on behalf "
+               "of the \"{0}\" organization. Use the top-right menu to " 
+               "regain your identity as individual user.").format(
+               organization_name)
         messages.info(request, msg)
     return response

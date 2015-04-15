@@ -45,8 +45,6 @@ def _password_session():
     conf_params['auth_url'] = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
     # TODO(garcianavalon) better domain usage
     domain = 'default'
-    LOG.debug('Creating a new keystoneclient password session to \
-        {0} for user: {1}'.format(conf_params['auth_url'], conf_params['username']))
     auth = v3.Password(auth_url=conf_params['auth_url'],
                        username=conf_params['username'],
                        password=conf_params['password'],
@@ -72,10 +70,17 @@ def _find_user(keystone, email=None, username=None):
         msg = "No user matching email=%s." % email
         raise ks_exceptions.NotFound(404, msg)
 
-def _grant_role(keystone, role, user, project):
-    role = keystone.roles.find(name=role)
-    keystone.roles.grant(role, user=user, project=project)
-    return role
+def add_domain_user_role(role, user, domain='default'):
+    manager = internal_keystoneclient().roles
+    return manager.grant(role, user=user, domain=domain)
+
+def get_trial_role_assignments(request, domain='default'):
+    trial_role = get_trial_role(request, use_idm_account=True)
+    if trial_role:
+        manager = internal_keystoneclient().role_assignments
+        return manager.list(role=trial_role.id, domain=domain)
+    else:
+        return []
 
 def register_user(name, username, password):
     keystone = internal_keystoneclient()
@@ -435,7 +440,7 @@ class PickleObject():
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
-def get_owner_role(request):
+def get_owner_role(request, use_idm_account=False):
     """Gets the owner role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -445,7 +450,11 @@ def get_owner_role(request):
     if owner and cache.get('owner_role') is None:
         # TODO(garcianavalon) use filters to filter by name
         try:
-            roles = api.keystone.keystoneclient(request, admin=True).roles.list()
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.roles.list()
         except Exception:
             roles = []
             exceptions.handle(request)
@@ -456,7 +465,7 @@ def get_owner_role(request):
                 break
     return cache.get('owner_role')
 
-def get_trial_role(request):
+def get_trial_role(request, use_idm_account=False):
     """Gets the trial role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -466,7 +475,11 @@ def get_trial_role(request):
     if trial and cache.get('trial_role') is None:
         # TODO(garcianavalon) use filters to filter by name
         try:
-            roles = api.keystone.keystoneclient(request, admin=True).roles.list()
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.roles.list()
         except Exception:
             roles = []
             exceptions.handle(request)
@@ -476,6 +489,56 @@ def get_trial_role(request):
                 cache.set('trial_role', pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
                 break
     return cache.get('trial_role')
+
+def get_basic_role(request, use_idm_account=False):
+    """Gets the basic role object from Keystone and caches it.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    basic = getattr(local_settings, "KEYSTONE_BASIC_ROLE", None)
+    if basic and cache.get('basic_role') is None:
+        # TODO(garcianavalon) use filters to filter by name
+        try:
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.roles.list()
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == basic or role.name == basic:
+                pickle_role = PickleObject(name=role.name, id=role.id)
+                cache.set('basic_role', pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get('basic_role')
+
+def get_community_role(request, use_idm_account=False):
+    """Gets the community role object from Keystone and caches it.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    community = getattr(local_settings, "KEYSTONE_COMMUNITY_ROLE", None)
+    if community and cache.get('community_role') is None:
+        # TODO(garcianavalon) use filters to filter by name
+        try:
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.roles.list()
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == community or role.name == community:
+                pickle_role = PickleObject(name=role.name, id=role.id)
+                cache.set('community_role', pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get('community_role')
 
 def get_provider_role(request):
     """Gets the provider role object from Keystone and caches it.
