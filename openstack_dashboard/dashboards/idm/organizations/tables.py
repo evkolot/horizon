@@ -56,15 +56,25 @@ class NextPage(tables.LinkAction):
 
         else:
             index = ''
-        return index
+        return index, organizations
 
     def get_link_url(self):
         base_url = urlresolvers.reverse('horizon:idm:organizations:index')
-        index = self.get_marker()
+        index = self.get_marker()[0]
         param = urlencode({"index": index})
         LOG.debug('table: param: {0}'.format(param))
         url = "?".join([base_url, param])
         return url
+
+    def allowed(self, request, datum):
+        """Determine whether this action is allowed for the current request.
+
+        This method is meant to be overridden with more specific checks.
+        """
+        index, organizations = self.get_marker()
+        if (index == len(organizations)-1) or (len(organizations)==0):
+            return False
+        return True
 
 class PreviousPage(tables.LinkAction):
     name = "prevpage"
@@ -75,7 +85,6 @@ class PreviousPage(tables.LinkAction):
         """Returns the identifier for the first object in the current data set
         for APIs that use marker/limit-based paging.
         """
-
         LOG.debug('table: get_prev_marker table')
         if self.table.data:
             marker = http.urlquote_plus(self.table.get_object_id(self.table.data[0]))
@@ -94,15 +103,25 @@ class PreviousPage(tables.LinkAction):
 
         else:
             index = ''
-        return index
+        return index, organizations
 
     def get_link_url(self):
         base_url = urlresolvers.reverse('horizon:idm:organizations:index')
-        index = self.get_prev_marker()
-        param = urlencode({"index": index, "prev":"true"})
+        index = self.get_prev_marker()[0]
+        param = urlencode({"index": index, "prev": "true"})
         LOG.debug('table: param: {0}'.format(param))
         url = "?".join([base_url, param])
         return url
+
+    def allowed(self, request, datum):
+        """Determine whether this action is allowed for the current request.
+
+        This method is meant to be overridden with more specific checks.
+        """
+        index, organizations = self.get_prev_marker()
+        if (index == 0) or (len(organizations) == 0):
+            return False
+        return True
 
 
 class OtherOrganizationsTable(tables.DataTable):
