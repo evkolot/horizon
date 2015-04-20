@@ -7,7 +7,7 @@
       {% endfor %}
     </div>
   {% if table.has_actions and table.name = "other_organizations" and table.data %}
-  <div>
+  <div class="panel-footer">
   	{{table.render_table_actions}}
   </div>
   {% endif %}
