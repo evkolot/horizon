@@ -34,14 +34,21 @@ class NextPage(tables.LinkAction):
     verbose_name = ("Next Page")
     classes = ("ajax-update",)
 
+    # def get_organization(self):
+    #     return self._organizations
+
+    # def set_organization(self, organizations):
+    #     self._organizations = organizations
+
     def get_marker(self):
-        """Returns the identifier for the last object in the current data set
-        for APIs that use marker/limit-based paging.
+        """Returns the index for the last object in the list of organizations.
         """
-        LOG.debug(' table: get_marker table')
+        LOG.debug('Next Page get_marker')
         if self.table.data:
             marker = http.urlquote_plus(self.table.get_object_id(self.table.data[-1]))
-            LOG.debug('table: marker is: {0}'.format(marker))
+            # LOG.debug('table: marker is: {0}'.format(marker))
+            # if self.table.get_organization() is None:
+            #     LOG.debug('----------------NOPE')
             organizations, _has_more = api.keystone.tenant_list(self.table.request)
             my_organizations, _more = api.keystone.tenant_list(
                 self.table.request, user=self.table.request.user.id, admin=False)
@@ -49,20 +56,24 @@ class NextPage(tables.LinkAction):
                                                       organizations
                                                       if not t in
                                                       my_organizations])
-            LOG.debug('table: Length of projects: {0}'.format(len(organizations)))
+                # self.table.set_organization(organizations)
+            # else:
+            #     organizations = self.table.get_organization()
+            #     LOG.debug('-----------------YEP')
             index = organizations.index(api.keystone.tenant_get(
                         self.table.request, marker))
             LOG.debug(index)
 
         else:
             index = ''
+            organizations = ''
         return index, organizations
 
     def get_link_url(self):
         base_url = urlresolvers.reverse('horizon:idm:organizations:index')
         index = self.get_marker()[0]
         param = urlencode({"index": index})
-        LOG.debug('table: param: {0}'.format(param))
+        LOG.debug('NextPage get_link_url')
         url = "?".join([base_url, param])
         return url
 
@@ -82,13 +93,13 @@ class PreviousPage(tables.LinkAction):
     classes = ("ajax-update",)
 
     def get_prev_marker(self):
-        """Returns the identifier for the first object in the current data set
+        """Returns the index for the first object in the current data set
         for APIs that use marker/limit-based paging.
         """
-        LOG.debug('table: get_prev_marker table')
+        LOG.debug('PreviousPage get_prev_marker')
         if self.table.data:
             marker = http.urlquote_plus(self.table.get_object_id(self.table.data[0]))
-            LOG.debug('table: prev_marker is: {0}'.format(marker))
+            # LOG.debug('table: prev_marker is: {0}'.format(marker))
             organizations, _has_more = api.keystone.tenant_list(self.table.request)
             my_organizations, _more = api.keystone.tenant_list(
                 self.table.request, user=self.table.request.user.id, admin=False)
@@ -96,20 +107,20 @@ class PreviousPage(tables.LinkAction):
                                                       organizations
                                                       if not t in
                                                       my_organizations])
-            LOG.debug('table: Length of projects: {0}'.format(len(organizations)))
             index = organizations.index(api.keystone.tenant_get(
                         self.table.request, marker))
             LOG.debug(index)
 
         else:
             index = ''
+            organizations = ''
         return index, organizations
 
     def get_link_url(self):
         base_url = urlresolvers.reverse('horizon:idm:organizations:index')
         index = self.get_prev_marker()[0]
         param = urlencode({"index": index, "prev": "true"})
-        LOG.debug('table: param: {0}'.format(param))
+        LOG.debug('PreviousPage get_link_url')
         url = "?".join([base_url, param])
         return url
 
@@ -137,6 +148,7 @@ class OtherOrganizationsTable(tables.DataTable):
         verbose_name = ("")
         table_actions = (PreviousPage, NextPage, )
         row_class = idm_tables.OrganizationClickableRow
+
 
 
 class OwnedOrganizationsTable(tables.DataTable):

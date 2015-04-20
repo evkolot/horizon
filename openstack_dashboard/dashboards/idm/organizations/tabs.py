@@ -16,6 +16,8 @@ import logging
 from horizon import exceptions
 from horizon import tabs
 
+from django.core.cache import cache
+
 from openstack_dashboard import api
 from openstack_dashboard.local import local_settings as settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
@@ -49,8 +51,12 @@ class OtherOrganizationsTab(tabs.TableTab):
                                                            my_organizations])
             if prev:
                 if index:
-                    index = int(index)
-                    LOG.debug('index: {0}'.format(index))
+                    try:
+                        index = int(index)
+                        LOG.debug('index: {0}'.format(index))
+                    except Exception:
+                        exceptions.handle(self.request,
+                                          ("Invalid index."))
 
                     if (index - limit) <= 0:
                         organizations = organizations_full[0:limit]
@@ -60,7 +66,12 @@ class OtherOrganizationsTab(tabs.TableTab):
                     organizations = organizations_full[0:limit]
             else:
                 if index:
-                    index = int(index)
+                    try:
+                        index = int(index)
+                        LOG.debug('index: {0}'.format(index))
+                    except Exception as e:
+                        exceptions.handle(self.request,
+                                          ("Invalid index."))
                     # marker = organizations_full.index(api.keystone.tenant_get(
                     #     self.request, marker_id))
                     LOG.debug('index: {0}'.format(index))
@@ -69,6 +80,10 @@ class OtherOrganizationsTab(tabs.TableTab):
                     LOG.debug('index: {0}'.format(index))
                 if index == (len(organizations_full)-1):
                     organizations = organizations_full[(index-limit+1):len(organizations_full)]
+                elif index <= 0:
+                    organizations = organizations_full[0:limit]
+                elif (index > (len(organizations_full)-1)):
+                    organizations = organizations_full[len(organizations_full)-limit+1:len(organizations_full)]
                 elif (index + limit) > (len(organizations_full)-1):
                     organizations = organizations_full[index+1:len(organizations_full)]
                 else:
