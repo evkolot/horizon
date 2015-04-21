@@ -22,11 +22,13 @@ from horizon import tables
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.local import local_settings as settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import tables as idm_tables
 
 
 LOG = logging.getLogger('idm_logger')
+LIMIT = getattr(settings, 'PAGE_LIMIT', 15)
 
 
 class NextPage(tables.LinkAction):
@@ -34,58 +36,24 @@ class NextPage(tables.LinkAction):
     verbose_name = ("Next Page")
     classes = ("ajax-update",)
 
-    # def get_organization(self):
-    #     return self._organizations
-
-    # def set_organization(self, organizations):
-    #     self._organizations = organizations
-
     def get_marker(self):
         """Returns the index for the last object in the list of organizations.
         """
         LOG.debug('Next Page get_marker')
-        if self.table.data:
-            marker = http.urlquote_plus(self.table.get_object_id(self.table.data[-1]))
-            # LOG.debug('table: marker is: {0}'.format(marker))
-            # if self.table.get_organization() is None:
-            #     LOG.debug('----------------NOPE')
-            organizations, _has_more = api.keystone.tenant_list(self.table.request)
-            my_organizations, _more = api.keystone.tenant_list(
-                self.table.request, user=self.table.request.user.id, admin=False)
-            organizations = idm_utils.filter_default([t for t in
-                                                      organizations
-                                                      if not t in
-                                                      my_organizations])
-                # self.table.set_organization(organizations)
-            # else:
-            #     organizations = self.table.get_organization()
-            #     LOG.debug('-----------------YEP')
-            index = organizations.index(api.keystone.tenant_get(
-                        self.table.request, marker))
-            LOG.debug(index)
-
+        if self.table.request.GET.get('index', None):
+            index = int(self.table.request.GET.get('index', None)) + LIMIT
         else:
-            index = ''
-            organizations = ''
-        return index, organizations
+            index = LIMIT - 1
+        return index
 
     def get_link_url(self):
         base_url = urlresolvers.reverse('horizon:idm:organizations:index')
-        index = self.get_marker()[0]
+        index = self.get_marker()
         param = urlencode({"index": index})
         LOG.debug('NextPage get_link_url')
         url = "?".join([base_url, param])
         return url
 
-    def allowed(self, request, datum):
-        """Determine whether this action is allowed for the current request.
-
-        This method is meant to be overridden with more specific checks.
-        """
-        index, organizations = self.get_marker()
-        if (index == len(organizations)-1) or (len(organizations)==0):
-            return False
-        return True
 
 class PreviousPage(tables.LinkAction):
     name = "prevpage"
@@ -96,32 +64,21 @@ class PreviousPage(tables.LinkAction):
         """Returns the index for the first object in the current data set
         for APIs that use marker/limit-based paging.
         """
-        LOG.debug('PreviousPage get_prev_marker')
-        if self.table.data:
-            marker = http.urlquote_plus(self.table.get_object_id(self.table.data[0]))
-            # LOG.debug('table: prev_marker is: {0}'.format(marker))
-            organizations, _has_more = api.keystone.tenant_list(self.table.request)
-            my_organizations, _more = api.keystone.tenant_list(
-                self.table.request, user=self.table.request.user.id, admin=False)
-            organizations = idm_utils.filter_default([t for t in
-                                                      organizations
-                                                      if not t in
-                                                      my_organizations])
-            index = organizations.index(api.keystone.tenant_get(
-                        self.table.request, marker))
-            LOG.debug(index)
+        index = self.table.request.GET.get('index', None)
+        if index:
+            index = int(index) - LIMIT
 
-        else:
-            index = ''
-            organizations = ''
-        return index, organizations
+        return index
 
     def get_link_url(self):
         base_url = urlresolvers.reverse('horizon:idm:organizations:index')
-        index = self.get_prev_marker()[0]
-        param = urlencode({"index": index, "prev": "true"})
+        index = self.get_prev_marker()
+        param = urlencode({"index": index}) #, "prev": "true"})
         LOG.debug('PreviousPage get_link_url')
-        url = "?".join([base_url, param])
+        if index > 0:
+            url = "?".join([base_url, param])
+        else:
+            url = base_url
         return url
 
     def allowed(self, request, datum):
@@ -129,8 +86,8 @@ class PreviousPage(tables.LinkAction):
 
         This method is meant to be overridden with more specific checks.
         """
-        index, organizations = self.get_prev_marker()
-        if (index == 0) or (len(organizations) == 0):
+        index = self.get_prev_marker()
+        if (index is None or index < -1):
             return False
         return True
 
@@ -148,7 +105,6 @@ class OtherOrganizationsTable(tables.DataTable):
         verbose_name = ("")
         table_actions = (PreviousPage, NextPage, )
         row_class = idm_tables.OrganizationClickableRow
-
 
 
 class OwnedOrganizationsTable(tables.DataTable):

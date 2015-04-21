@@ -38,8 +38,7 @@ class OtherOrganizationsTab(tabs.TableTab):
     def get_other_organizations_data(self):
         organizations = []
         limit = LIMIT
-        index = self.request.GET.get('index', None)
-        prev = self.request.GET.get('prev', None)
+        index = self.request.GET.get('index', -1)
         try:
             organizations_full, self._more = api.keystone.tenant_list(
                 self.request, admin=False)
@@ -49,45 +48,22 @@ class OtherOrganizationsTab(tabs.TableTab):
                                                            organizations_full
                                                            if not t in
                                                            my_organizations])
-            if prev:
-                if index:
-                    try:
-                        index = int(index)
-                        LOG.debug('index: {0}'.format(index))
-                    except Exception:
-                        exceptions.handle(self.request,
-                                          ("Invalid index."))
-
-                    if (index - limit) <= 0:
-                        organizations = organizations_full[0:limit]
-                    else:
-                        organizations = organizations_full[(index-limit):(index)]
-                else:
-                    organizations = organizations_full[0:limit]
+            try:
+                index = int(index)
+                LOG.debug('index: {0}'.format(index))
+            except Exception as e:
+                exceptions.handle(self.request,
+                                  ("Invalid index."))
+            if index == (len(organizations_full)-1):
+                organizations = organizations_full[(index-limit+1):len(organizations_full)]
+            elif index <= 0:
+                organizations = organizations_full[0:limit]
+            elif (index > (len(organizations_full)-1)):
+                organizations = organizations_full[len(organizations_full)-limit+1:len(organizations_full)]
+            elif (index + limit) > (len(organizations_full)-1):
+                organizations = organizations_full[index+1:len(organizations_full)]
             else:
-                if index:
-                    try:
-                        index = int(index)
-                        LOG.debug('index: {0}'.format(index))
-                    except Exception as e:
-                        exceptions.handle(self.request,
-                                          ("Invalid index."))
-                    # marker = organizations_full.index(api.keystone.tenant_get(
-                    #     self.request, marker_id))
-                    LOG.debug('index: {0}'.format(index))
-                else:
-                    index = -1
-                    LOG.debug('index: {0}'.format(index))
-                if index == (len(organizations_full)-1):
-                    organizations = organizations_full[(index-limit+1):len(organizations_full)]
-                elif index <= 0:
-                    organizations = organizations_full[0:limit]
-                elif (index > (len(organizations_full)-1)):
-                    organizations = organizations_full[len(organizations_full)-limit+1:len(organizations_full)]
-                elif (index + limit) > (len(organizations_full)-1):
-                    organizations = organizations_full[index+1:len(organizations_full)]
-                else:
-                    organizations = organizations_full[(index+1):(index+limit+1)]
+                organizations = organizations_full[(index+1):(index+limit+1)]
 
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
