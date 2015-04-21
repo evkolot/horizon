@@ -146,7 +146,6 @@ class RegistrationView(_RequestPassingFormView):
                 user=new_user.id, role=fiware_user_role.id)
             LOG.debug('granted role %s.', fiware_user_role.name)
 
-            import pdb; pdb.set_trace()
             # Grant purchaser in cloud app to user cloud organization
             cloud_app = fiware_api.keystone.get_fiware_cloud_app(request)
             purchaser = fiware_api.keystone.get_purchaser_role(
@@ -157,6 +156,27 @@ class RegistrationView(_RequestPassingFormView):
                 organization=new_user.cloud_project_id, 
                 application=cloud_app, 
                 use_idm_account=True)
+
+            LOG.debug('granted purchaser to org %s.', 
+                      new_user.cloud_project_id)
+
+            # Grant a public role in cloud app to user in his/her
+            # cloud organization
+            default_cloud_role = \
+                fiware_api.keystone.get_default_cloud_role(
+                    request, cloud_app, use_idm_account=True)
+
+            if default_cloud_role:
+                fiware_api.keystone.add_role_to_user(
+                    request, 
+                    role=default_cloud_role, 
+                    user=new_user,
+                    organization=new_user.cloud_project_id, 
+                    application=cloud_app, 
+                    use_idm_account=True)
+                LOG.debug('granted default cloud role')
+            else:
+                LOG.debug('default cloud role not found')
 
             self.send_activation_email(new_user)
 
