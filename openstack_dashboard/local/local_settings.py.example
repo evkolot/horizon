@@ -564,6 +564,8 @@ FIWARE_DEFAULT_APPS = [
     'Mashup',
     'Store',
 ]
+# Cloud App
+FIWARE_CLOUD_APP = 'Cloud'
 
 # reCAPTCHA
 # Get your keys at: https://www.google.com/recaptcha/admin#createsite

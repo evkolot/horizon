@@ -185,9 +185,13 @@ def user_role_assignments(request, user=None, organization=None,
                                               organization=organization,
                                               application=application)
 # ROLE-ORGANIZATIONS
-def add_role_to_organization(request, role, organization, application):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.roles
+def add_role_to_organization(request, role, organization, 
+                             application, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().fiware_roles.roles
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).fiware_roles.roles
     return manager.add_to_organization(role, organization, application)
 
 def remove_role_from_organization(request, role, organization, application):
@@ -561,7 +565,7 @@ def get_provider_role(request):
                 break
     return cache.get('provider_role')
 
-def get_purchaser_role(request):
+def get_purchaser_role(request, use_idm_account=False):
     """Gets the purchaser role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -570,8 +574,11 @@ def get_purchaser_role(request):
     purchaser = getattr(local_settings, "FIWARE_PURCHASER_ROLE", None)
     if purchaser and cache.get('pruchaser_role') is None:
         try:
-            roles = api.keystone.keystoneclient(request, 
-                admin=True).fiware_roles.roles.list()
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.fiware_roles.roles.list()
         except Exception:
             roles = []
             exceptions.handle(request)
@@ -597,6 +604,21 @@ def get_idm_admin_app(request):
                 cache.set('idm_admin', pickle_app, DEFAULT_OBJECTS_CACHE_TIME)
                 break
     return cache.get('idm_admin')
+
+def get_fiware_cloud_app(request):
+    cloud_app = getattr(local_settings, "FIWARE_CLOUD_APP", None)
+    if cloud_app and cache.get('cloud_app') is None:
+        try:
+            apps = internal_keystoneclient().oauth2.consumers.list()
+        except Exception:
+            apps = []
+            exceptions.handle(request)
+        for app in apps:
+            if app.id == cloud_app or app.name == cloud_app:
+                pickle_app = PickleObject(name=app.name, id=app.id)
+                cache.set('cloud_app', pickle_app, DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get('cloud_app')
 
 def get_fiware_default_app(request, app_name):
     if cache.get(app_name) is None:
