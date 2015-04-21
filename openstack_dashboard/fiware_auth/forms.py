@@ -113,7 +113,8 @@ class RegistrationForm(ConfirmPasswordForm):
         on the black list or allowed in the white list, depending on the settings"""
 
         email = self.cleaned_data['email']
-        email_domain = email.split('@')[1]
+        domains = email.split('@')[1].split('.')
+        email_domain = ".".join(domains[len(domains)-2:len(domains)])
         list_name = getattr(settings, 'EMAIL_LIST_TYPE', None)
         if list_name:
             f = open('openstack_dashboard/fiware_auth/'+list_name+'.txt', 'rb')
