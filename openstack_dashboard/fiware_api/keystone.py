@@ -167,9 +167,13 @@ def role_delete(request, role_id):
 
 
 # ROLE-USERS
-def add_role_to_user(request, role, user, organization, application):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.roles
+def add_role_to_user(request, role, user, organization, 
+                     application, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().fiware_roles.roles
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).fiware_roles.roles
     return manager.add_to_user(role, user, organization, application)
 
 def remove_role_from_user(request, role, user, organization, application):
@@ -603,7 +607,7 @@ def get_default_cloud_role(request, cloud_app_id, use_idm_account=False):
             else:
                 manager = api.keystone.keystoneclient(request, admin=True)
             roles = manager.fiware_roles.roles.list(
-                application_id=cloud_app_id)
+                application=cloud_app_id)
         except Exception:
             roles = []
             exceptions.handle(request)

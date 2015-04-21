@@ -169,10 +169,10 @@ class RegistrationView(_RequestPassingFormView):
             if default_cloud_role:
                 fiware_api.keystone.add_role_to_user(
                     request, 
-                    role=default_cloud_role, 
-                    user=new_user,
+                    role=default_cloud_role.id, 
+                    user=new_user.id,
                     organization=new_user.cloud_project_id, 
-                    application=cloud_app, 
+                    application=cloud_app.id, 
                     use_idm_account=True)
                 LOG.debug('granted default cloud role')
             else:
