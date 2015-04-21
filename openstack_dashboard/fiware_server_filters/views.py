@@ -106,7 +106,8 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
         if filters:
             filter_by = filters[self.filter_key]
             return [u for u in json_users 
-                if u['username'].startswith(filter_by)]
+                if 'username' in u
+                and u['username'].startswith(filter_by)]
         else:
             return json_users
 
