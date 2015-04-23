@@ -30,6 +30,17 @@
     }
   }
 }
+
+#myApplications,
+#organizations,
+#members{
+  .panel-body{
+    overflow-x: hidden;
+    max-height: 413px;
+  }
+}
+
+
 #detailApplication,
 #detailOrganization,
 #detailUser {
