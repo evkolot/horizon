@@ -131,7 +131,7 @@ class RegistrationView(_RequestPassingFormView):
                 name=cleaned_data['email'],
                 password=cleaned_data['password1'],
                 username=cleaned_data['username'])
-            LOG.debug('user %s was successfully created.', 
+            LOG.debug('user %s created.', 
                 cleaned_data['username'])
             
             # Grant trial or basic role in the domain
@@ -180,6 +180,9 @@ class RegistrationView(_RequestPassingFormView):
 
             self.send_activation_email(new_user)
 
+            msg = ('Account created succesfully, check your email for'
+                ' the confirmation link.')
+            messages.success(request, msg)
             return new_user
 
         except Exception:
