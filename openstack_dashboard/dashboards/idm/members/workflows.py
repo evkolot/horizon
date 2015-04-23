@@ -35,8 +35,10 @@ class UserRoleApi(idm_workflows.RelationshipApiInterface):
     
     def _list_all_owners(self, request, superset_id):
         all_users = api.keystone.user_list(request)
-        return [(user.id, user.username) for user in all_users
-                if hasattr(user, 'username')]
+        return [
+            (user.id, idm_utils.get_avatar(user, 'img_medium', 
+                idm_utils.DEFAULT_USER_MEDIUM_AVATAR) + '$' + user.username) 
+            for user in all_users if hasattr(user, 'username')]
 
     def _list_all_objects(self, request, superset_id):
         return idm_utils.filter_default(api.keystone.role_list(request))
@@ -122,8 +124,14 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
         project_users_roles = api.keystone.get_project_users_roles(
             request,
             project=superset_id)
-        members = [user for user in all_users if user.id in project_users_roles]
-        return  [(user.id, user.username) for user in members]
+        members = [user for user in all_users 
+            if user.id in project_users_roles
+            and hasattr(user, 'username')]
+
+        return [
+            (user.id, idm_utils.get_avatar(user, 'img_medium', 
+                idm_utils.DEFAULT_USER_MEDIUM_AVATAR) + '$' + user.username) 
+            for user in members]
 
 
     def _list_all_objects(self, request, superset_id):

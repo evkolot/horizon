@@ -143,8 +143,10 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
 
     def _list_all_owners(self, request, superset_id):
         all_users = api.keystone.user_list(request)
-        return  [(user.id, user.username) for user in all_users
-                 if hasattr(user, 'username')]
+        return [
+            (user.id, idm_utils.get_avatar(user, 'img_medium', 
+                idm_utils.DEFAULT_USER_MEDIUM_AVATAR) + '$' + user.username) 
+            for user in all_users if hasattr(user, 'username')]
 
     def _list_all_objects(self, request, superset_id):
         # TODO(garcianavalon) move to fiware_api
@@ -255,8 +257,10 @@ class AuthorizedOrganizationsApi(idm_workflows.RelationshipApiInterface):
 
     def _list_all_owners(self, request, superset_id):
         all_organizations, _more = api.keystone.tenant_list(request)
-        return  [(org.id, org.name) for org
-                 in idm_utils.filter_default(all_organizations)]
+        return [
+            (org.id, idm_utils.get_avatar(org, 'img_medium', 
+                idm_utils.DEFAULT_ORG_MEDIUM_AVATAR) + '$' + org.name) 
+            for org in idm_utils.filter_default(all_organizations)]
 
 
     def _list_all_objects(self, request, superset_id):

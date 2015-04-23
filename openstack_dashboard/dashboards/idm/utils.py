@@ -64,7 +64,10 @@ def swap_dict(old_dict):
 
 def get_avatar(obj, avatar_type, default_avatar):
     """Gets the object avatar or a default one."""
-    avatar = getattr(obj, avatar_type, None)
+    if type(obj) == dict:
+        avatar = obj.get(avatar_type, None)
+    else:
+        avatar = getattr(obj, avatar_type, None)
     if avatar:
         return settings.MEDIA_URL + avatar
     else:
