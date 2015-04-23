@@ -25,6 +25,9 @@ LOG = logging.getLogger('idm_logger')
 DEFAULT_ORG_MEDIUM_AVATAR = 'dashboard/img/logos/medium/group.png'
 DEFAULT_APP_MEDIUM_AVATAR = 'dashboard/img/logos/medium/app.png'
 DEFAULT_USER_MEDIUM_AVATAR = 'dashboard/img/logos/medium/user.png'
+DEFAULT_ORG_SMALL_AVATAR = 'dashboard/img/logos/small/group.png'
+DEFAULT_APP_SMALL_AVATAR = 'dashboard/img/logos/small/app.png'
+DEFAULT_USER_SMALL_AVATAR = 'dashboard/img/logos/small/user.png'
 
 def filter_default(items):
     """Remove from a list the automated created project for a user. This project

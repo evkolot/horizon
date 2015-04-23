@@ -98,15 +98,15 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
             attrs = [
                 'id',
                 'username',
-                'img_medium'
+                'img_small'
             ]
             temp_json_users = [self._obj_to_jsonable_dict(u, attrs) 
                                for u in users]
             # add MEDIA_URL to avatar paths or the default avatar
             json_users = []
             for user in temp_json_users:
-                user['img_medium'] = idm_utils.get_avatar(user, 'img_medium', 
-                    idm_utils.DEFAULT_USER_MEDIUM_AVATAR)
+                user['img_small'] = idm_utils.get_avatar(user, 'img_small', 
+                    idm_utils.DEFAULT_USER_SMALL_AVATAR)
                 json_users.append(user)
 
             cache.set('json_users', json_users, SHORT_CACHE_TIME)
