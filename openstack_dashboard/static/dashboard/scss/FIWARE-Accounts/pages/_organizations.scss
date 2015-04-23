@@ -21,6 +21,14 @@
   .panel-body{
     padding: 0 15px;
   }
+  .panel.members,
+  .panel.organizations,
+  .panel.applications{
+    .panel-body{
+      overflow-x: hidden;
+      max-height: 236px;
+    }
+  }
 }
 #detailApplication,
 #detailOrganization,
@@ -51,8 +59,8 @@
   }
 }
 
-div#update_owners_members,
-div#available_update_owners{
+div#update_owners_members_members,
+div#available_update_owners_members{
   overflow-x: hidden;
   height: 250px;
 }
@@ -148,6 +156,7 @@ div#available_update_owners{
     }
     li.list-group-item{
       border-bottom: 0px solid #DDD;
+      margin-right: 10px;
       &:last-child{
         border-bottom: none; 
       }
