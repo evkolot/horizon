@@ -105,8 +105,8 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
             # add MEDIA_URL to avatar paths or the default avatar
             json_users = []
             for user in temp_json_users:
-                user['img_small'] = idm_utils.get_avatar(user, 'img_small', 
-                    idm_utils.DEFAULT_USER_SMALL_AVATAR)
+                user['img_small'] = idm_utils.get_avatar(user, 
+                    'img_small', idm_utils.DEFAULT_USER_SMALL_AVATAR)
                 json_users.append(user)
 
             cache.set('json_users', json_users, SHORT_CACHE_TIME)
@@ -131,4 +131,11 @@ class OrganizationsWorkflowFilter(AjaxKeystoneFilter):
             'name',
             'img_small'
         ]
-        return [self._obj_to_jsonable_dict(o, attrs) for o in organizations]
+        # add MEDIA_URL to avatar paths or the default avatar
+        json_orgs = []
+        for org in organizations:
+            json_org = self._obj_to_jsonable_dict(org, attrs) 
+            json_org['img_small'] = idm_utils.get_avatar(json_org, 
+                'img_small', idm_utils.DEFAULT_ORG_SMALL_AVATAR)
+            json_orgs.append(json_org)
+        return json_orgs
