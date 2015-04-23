@@ -146,37 +146,48 @@ class RegistrationView(_RequestPassingFormView):
                 user=new_user.id, role=fiware_user_role.id)
             LOG.debug('granted role %s.', fiware_user_role.name)
 
-            # Grant purchaser in cloud app to user cloud organization
-            cloud_app = fiware_api.keystone.get_fiware_cloud_app(request)
+            # Grant purchaser to user's cloud organization in all 
+            # default apps. If trial requested, also in Cloud
+            default_apps = fiware_api.keystone.get_fiware_default_apps(
+                request, use_idm_account=True)
+
+            if cleaned_data['trial']:
+                cloud_app = fiware_api.keystone.get_fiware_cloud_app(
+                    request, use_idm_account=True)
+                default_apps.append(cloud_app)
+
             purchaser = fiware_api.keystone.get_purchaser_role(
                 request, use_idm_account=True)
-            fiware_api.keystone.add_role_to_organization(
-                request, 
-                role=purchaser, 
-                organization=new_user.cloud_project_id, 
-                application=cloud_app, 
-                use_idm_account=True)
-
-            LOG.debug('granted purchaser to org %s.', 
-                      new_user.cloud_project_id)
+            import pdb; pdb.set_trace()
+            for app in default_apps:
+                fiware_api.keystone.add_role_to_organization(
+                    request, 
+                    role=purchaser, 
+                    organization=new_user.cloud_project_id,
+                    application=app.id, 
+                    use_idm_account=True)
+                LOG.debug('Granted purchaser to org %s in app %s',
+                          new_user.cloud_project_id,
+                          app.id)    
 
             # Grant a public role in cloud app to user in his/her
-            # cloud organization
-            default_cloud_role = \
-                fiware_api.keystone.get_default_cloud_role(
-                    request, cloud_app, use_idm_account=True)
+            # cloud organization if trial requested
+            if cleaned_data['trial']:
+                default_cloud_role = \
+                    fiware_api.keystone.get_default_cloud_role(
+                        request, cloud_app, use_idm_account=True)
 
-            if default_cloud_role:
-                fiware_api.keystone.add_role_to_user(
-                    request, 
-                    role=default_cloud_role.id, 
-                    user=new_user.id,
-                    organization=new_user.cloud_project_id, 
-                    application=cloud_app.id, 
-                    use_idm_account=True)
-                LOG.debug('granted default cloud role')
-            else:
-                LOG.debug('default cloud role not found')
+                if default_cloud_role:
+                    fiware_api.keystone.add_role_to_user(
+                        request, 
+                        role=default_cloud_role.id, 
+                        user=new_user.id,
+                        organization=new_user.cloud_project_id, 
+                        application=cloud_app.id, 
+                        use_idm_account=True)
+                    LOG.debug('granted default cloud role')
+                else:
+                    LOG.debug('default cloud role not found')
 
             self.send_activation_email(new_user)
 
