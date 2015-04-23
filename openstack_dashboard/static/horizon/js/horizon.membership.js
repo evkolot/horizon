@@ -207,7 +207,7 @@ horizon.membership = {
    * Generates the HTML structure for a member that will be displayed
    * as a list item in the member list.
    **/
-  generate_member_element: function(step_slug, display_name, data_id, role_ids, update_icon) {
+  generate_member_element: function(step_slug, display_name, data_id, avatar, role_ids, update_icon) {
     var apps = [],
       that = this,
       membership_roles = that.roles[step_slug],
@@ -236,6 +236,7 @@ horizon.membership = {
         apps: apps,
         roles_label: gettext("Roles"),
         update_icon: update_icon,
+        avatar: avatar,
       },
       member_el = $(template.render(params));
     this.update_member_role_dropdown(step_slug, params.data_id, role_ids, member_el);
@@ -249,13 +250,15 @@ horizon.membership = {
     var data_id, data = horizon.membership.data[step_slug];
     for (data_id in data) {
       if(data.hasOwnProperty(data_id)){
-        var display_name = data[data_id];
+        var info = data[data_id].split('$');
+        var display_name = info[1];
+        var avatar = info[0];
         var role_ids = this.get_member_roles(step_slug, data_id);
         if (role_ids.length > 0) {
-          $("." + step_slug + "_members").append(this.generate_member_element(step_slug, display_name, data_id, role_ids, 'fa fa-close'));
+          $("." + step_slug + "_members").append(this.generate_member_element(step_slug, display_name, data_id, avatar, role_ids, 'fa fa-close'));
         }
         else {
-          //$(".available_" + step_slug).append(this.generate_member_element(step_slug, display_name, data_id, role_ids, 'fa fa-plus'));
+          //$(".available_" + step_slug).append(this.generate_member_element(step_slug, display_name, data_id, avatar, role_ids, 'fa fa-plus'));
         }
       }
     }
@@ -468,18 +471,17 @@ horizon.membership = {
         error: function(jqXHR, status, errorThrown) {
         },
         success: function (data, textStatus, jqXHR) {
-          console.log(data)
           $(".available_" + step_slug).empty()
           for (var i in data) {
             var display_name = data[i]['username'];
             if (display_name === undefined) {
               display_name = data[i]['name'];
-              console.log(display_name)
             }
+            var avatar = data[i]['img_small'];
             var data_id = data[i]['id'];
             var role_ids = horizon.membership.get_member_roles(step_slug, data_id);
             if (role_ids.length == 0) {
-              $(".available_" + step_slug).append(horizon.membership.generate_member_element(step_slug, display_name, data_id, role_ids, 'fa fa-plus'));
+              $(".available_" + step_slug).append(horizon.membership.generate_member_element(step_slug, display_name, data_id, avatar, role_ids, 'fa fa-plus'));
             }
           }
           //hide role dropdowns for available member list

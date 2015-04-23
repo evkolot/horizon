@@ -564,6 +564,9 @@ FIWARE_DEFAULT_APPS = [
     'Mashup',
     'Store',
 ]
+# Cloud App
+FIWARE_CLOUD_APP = 'Cloud'
+FIWARE_DEFAULT_CLOUD_ROLE = 'Member'
 
 # reCAPTCHA
 # Get your keys at: https://www.google.com/recaptcha/admin#createsite
@@ -596,6 +599,10 @@ OPENSTACK_KEYSTONE_ADMIN_ROLES = [
 ]
 # KEYSTONE role for trial users
 KEYSTONE_TRIAL_ROLE = 'trial'
+KEYSTONE_BASIC_ROLE = 'basic'
+KEYSTONE_COMMUNITY_ROLE = 'community'
+
+MAX_TRIAL_USERS = 100
 
 # Default FIWARE roles
 FIWARE_PURCHASER_ROLE = 'purchaser'

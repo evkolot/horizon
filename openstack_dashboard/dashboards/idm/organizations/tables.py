@@ -16,16 +16,19 @@ import logging
 
 from django.core import urlresolvers
 from django.utils.http import urlencode
+from django.utils import http
 
 from horizon import tables
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.local import local_settings as settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import tables as idm_tables
 
 
 LOG = logging.getLogger('idm_logger')
+LIMIT = getattr(settings, 'PAGE_LIMIT', 15)
 
 
 class NextPage(tables.LinkAction):
@@ -33,26 +36,60 @@ class NextPage(tables.LinkAction):
     verbose_name = ("Next Page")
     classes = ("ajax-update",)
 
+    def get_marker(self):
+        """Returns the index for the last object in the list of organizations.
+        """
+        LOG.debug('Next Page get_marker')
+        if self.table.request.GET.get('index', None):
+            index = int(self.table.request.GET.get('index', None)) + LIMIT
+        else:
+            index = LIMIT - 1
+        return index
+
     def get_link_url(self):
         base_url = urlresolvers.reverse('horizon:idm:organizations:index')
-        marker = self.table.get_marker()
-        param = urlencode({"marker": marker})
-        LOG.debug('param: {0}'.format(param))
+        index = self.get_marker()
+        param = urlencode({"index": index})
+        LOG.debug('NextPage get_link_url')
         url = "?".join([base_url, param])
         return url
+
 
 class PreviousPage(tables.LinkAction):
     name = "prevpage"
     verbose_name = ("Previous Page")
     classes = ("ajax-update",)
 
+    def get_prev_marker(self):
+        """Returns the index for the first object in the current data set
+        for APIs that use marker/limit-based paging.
+        """
+        index = self.table.request.GET.get('index', None)
+        if index:
+            index = int(index) - LIMIT
+
+        return index
+
     def get_link_url(self):
         base_url = urlresolvers.reverse('horizon:idm:organizations:index')
-        marker = self.table.get_prev_marker()
-        param = urlencode({"marker": marker, "prev":"true"})
-        LOG.debug('param: {0}'.format(param))
-        url = "?".join([base_url, param])
+        index = self.get_prev_marker()
+        param = urlencode({"index": index}) #, "prev": "true"})
+        LOG.debug('PreviousPage get_link_url')
+        if index > 0:
+            url = "?".join([base_url, param])
+        else:
+            url = base_url
         return url
+
+    def allowed(self, request, datum):
+        """Determine whether this action is allowed for the current request.
+
+        This method is meant to be overridden with more specific checks.
+        """
+        index = self.get_prev_marker()
+        if (index is None or index < -1):
+            return False
+        return True
 
 
 class OtherOrganizationsTable(tables.DataTable):

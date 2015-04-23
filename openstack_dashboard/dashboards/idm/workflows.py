@@ -125,7 +125,7 @@ class UpdateRelationshipAction(workflows.MembershipAction,
                 'data-superset-name': 
                     relationship._get_supersetid_name(self.request, 
                                                       self.superset_id),
-                'data-superset-id':self.superset_id
+                'data-superset-id':self.superset_id,
             })
             self.fields[field_name] = forms.MultipleChoiceField(
                                                     required=False,

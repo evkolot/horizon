@@ -22,6 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 from horizon import exceptions
 
 from openstack_dashboard import api
+from openstack_dashboard.dashboards.idm import utils as idm_utils
 
 SHORT_CACHE_TIME = 10 # seconds
 
@@ -99,13 +100,22 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
                 'username',
                 'img_small'
             ]
-            json_users = [self._obj_to_jsonable_dict(u, attrs) for u in users]
+            temp_json_users = [self._obj_to_jsonable_dict(u, attrs) 
+                               for u in users]
+            # add MEDIA_URL to avatar paths or the default avatar
+            json_users = []
+            for user in temp_json_users:
+                user['img_small'] = idm_utils.get_avatar(user, 
+                    'img_small', idm_utils.DEFAULT_USER_SMALL_AVATAR)
+                json_users.append(user)
+
             cache.set('json_users', json_users, SHORT_CACHE_TIME)
         # now filter by username
         if filters:
             filter_by = filters[self.filter_key]
             return [u for u in json_users 
-                if u['username'].startswith(filter_by)]
+                if 'username' in u
+                and u['username'].startswith(filter_by)]
         else:
             return json_users
 
@@ -115,9 +125,17 @@ class OrganizationsWorkflowFilter(AjaxKeystoneFilter):
     def api_call(self, request, filters=None):
         organizations, more = api.keystone.tenant_list(request, 
             filters=filters)
+        organizations = idm_utils.filter_default(organizations)
         attrs = [
             'id',
             'name',
             'img_small'
         ]
-        return [self._obj_to_jsonable_dict(o, attrs) for o in organizations]
+        # add MEDIA_URL to avatar paths or the default avatar
+        json_orgs = []
+        for org in organizations:
+            json_org = self._obj_to_jsonable_dict(org, attrs) 
+            json_org['img_small'] = idm_utils.get_avatar(json_org, 
+                'img_small', idm_utils.DEFAULT_ORG_SMALL_AVATAR)
+            json_orgs.append(json_org)
+        return json_orgs

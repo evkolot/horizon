@@ -32,7 +32,10 @@ class UserRoleApi(idm_workflows.RelationshipApiInterface):
     
     def _list_all_owners(self, request, superset_id):
         all_users = api.keystone.user_list(request)
-        return [(user.id, user.username) for user in all_users]
+        return [
+            (user.id, idm_utils.get_avatar(user, 'img_small', 
+                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
+            for user in all_users if hasattr(user, 'username')]
 
     def _list_all_objects(self, request, superset_id):
         return idm_utils.filter_default(api.keystone.role_list(request))
