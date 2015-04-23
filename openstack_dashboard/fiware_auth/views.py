@@ -158,7 +158,7 @@ class RegistrationView(_RequestPassingFormView):
 
             purchaser = fiware_api.keystone.get_purchaser_role(
                 request, use_idm_account=True)
-            import pdb; pdb.set_trace()
+
             for app in default_apps:
                 fiware_api.keystone.add_role_to_organization(
                     request, 

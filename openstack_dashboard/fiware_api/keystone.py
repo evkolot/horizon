@@ -670,8 +670,8 @@ def get_fiware_default_app(request, app_name, use_idm_account=False):
             if app.name == app_name:
                 pickle_app = PickleObject(name=app.name, id=app.id)
                 cache.set(app_name, pickle_app, DEFAULT_OBJECTS_CACHE_TIME)
-                return cache.get(app_name)
-        return None
+                break
+    return cache.get(app_name)
 
 def get_fiware_default_apps(request, use_idm_account=False):
     default_apps_names = getattr(local_settings, "FIWARE_DEFAULT_APPS", [])
