@@ -24,6 +24,8 @@ from openstack_dashboard.dashboards.idm.myApplications \
 
 
 LOG = logging.getLogger('idm_logger')
+LIMIT = 2
+#getattr(settings, 'PAGE_LIMIT', 15)
 
 class ProvidingTab(tabs.TableTab):
     name = ("Providing")
@@ -34,6 +36,7 @@ class ProvidingTab(tabs.TableTab):
 
     def get_providing_table_data(self):
         applications = []
+        index = self.request.GET.get('index', 0)
 
         try:
             # TODO(garcianavalon) extract to fiware_api
@@ -51,6 +54,13 @@ class ProvidingTab(tabs.TableTab):
                                    if a.role_id == provider_role.id]       
             applications = [app for app in all_apps
                             if app.id in apps_with_roles]
+
+            applications = sorted(applications, key=lambda x: x.name)
+        
+            indexes = range(0, len(applications), LIMIT)
+            self._tables['providing_table'].indexes = indexes
+            applications = idm_utils.paginate(self, applications, index=index, limit=LIMIT)
+
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)
                 setattr(app, 'counter', users)
@@ -69,6 +79,7 @@ class PurchasedTab(tabs.TableTab):
 
     def get_purchased_table_data(self):
         applications = []
+        index = self.request.GET.get('index', 0)
         try:
             # TODO(garcianavalon) extract to fiware_api
             purchaser_role = fiware_api.keystone.get_purchaser_role(self.request)
@@ -87,6 +98,13 @@ class PurchasedTab(tabs.TableTab):
            
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
+
+            applications = sorted(applications, key=lambda x: x.name)
+        
+            indexes = range(0, len(applications), LIMIT)
+            self._tables['purchased_table'].indexes = indexes
+            applications = idm_utils.paginate(self, applications, index=index, limit=LIMIT)
+
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)
                 setattr(app, 'counter', users)
@@ -106,6 +124,8 @@ class AuthorizedTab(tabs.TableTab):
 
     def get_authorized_table_data(self):
         applications = []
+        index = self.request.GET.get('index', 0)
+
         try:
             # TODO(garcianavalon) extract to fiware_api
             purchaser_role = fiware_api.keystone.get_purchaser_role(self.request)
@@ -125,6 +145,13 @@ class AuthorizedTab(tabs.TableTab):
                                    and a.role_id != provider_role.id]
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
+
+            applications = sorted(applications, key=lambda x: x.name)
+        
+            indexes = range(0, len(applications), LIMIT)
+            self._tables['authorized_table'].indexes = indexes
+            applications = idm_utils.paginate(self, applications, index=index, limit=LIMIT)
+
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)
                 setattr(app, 'counter', users)

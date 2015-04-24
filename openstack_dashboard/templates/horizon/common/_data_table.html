@@ -6,9 +6,22 @@
         {{ row.render }}
       {% endfor %}
     </div>
-  {% if table.has_actions and table.name = "other_organizations" and table.data %}
+  
+  {% if table.indexes|length > 1 %}
   <div class="panel-footer">
-  	{{table.render_table_actions}}
+    {% if table.name = 'organizations' %}
+      {% for index in table.indexes %}
+        <a href="?index_org={{index}}?index_app={{index_app}}">-{{ forloop.counter }}-</a>
+      {% endfor %}
+    {% elif table.name = 'organizations' %}
+      {% for index in table.indexes %}
+        <a href="?index_app={{index}}?index_org={{index_org}}">-{{ forloop.counter }}-</a>
+      {% endfor %}
+    {% else %}
+      {% for index in table.indexes %}
+        <a href="?index={{index}}">-{{ forloop.counter }}-</a>
+      {% endfor %}
+    {% endif %}
   </div>
   {% endif %}
   {% endwith %}

@@ -37,8 +37,9 @@ class OtherOrganizationsTab(tabs.TableTab):
 
     def get_other_organizations_data(self):
         organizations = []
-        limit = LIMIT
-        index = self.request.GET.get('index', -1)
+        import pdb
+        pdb.set_trace()
+        index = self.request.GET.get('index', 0)
         try:
             organizations_full, self._more = api.keystone.tenant_list(
                 self.request, admin=False)
@@ -48,22 +49,11 @@ class OtherOrganizationsTab(tabs.TableTab):
                                                            organizations_full
                                                            if not t in
                                                            my_organizations])
-            try:
-                index = int(index)
-                LOG.debug('index: {0}'.format(index))
-            except Exception as e:
-                exceptions.handle(self.request,
-                                  ("Invalid index."))
-            if index == (len(organizations_full)-1):
-                organizations = organizations_full[(index-limit+1):len(organizations_full)]
-            elif index <= 0:
-                organizations = organizations_full[0:limit]
-            elif (index > (len(organizations_full)-1)):
-                organizations = organizations_full[len(organizations_full)-limit+1:len(organizations_full)]
-            elif (index + limit) > (len(organizations_full)-1):
-                organizations = organizations_full[index+1:len(organizations_full)]
-            else:
-                organizations = organizations_full[(index+1):(index+limit+1)]
+            organizations_full = sorted(organizations_full, key=lambda x: x.name)
+        
+            indexes = range(0, len(organizations_full), LIMIT)
+            self._tables['other_organizations'].indexes = indexes
+            organizations = idm_utils.paginate(self, organizations_full, index=index, limit=LIMIT)
 
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
@@ -89,7 +79,14 @@ class OwnedOrganizationsTab(tabs.TableTab):
             # NOTE(garcianavalon) the organizations the user is owner(admin)
             # are already in the request object by the middleware
             organizations = self.request.organizations
+            organizations = sorted(organizations, key=lambda x: x.name)
             self._more = False
+            
+            index = self.request.GET.get('index', 0)
+            indexes = range(0, len(organizations), LIMIT)
+            self._tables['owned_organizations'].indexes = indexes
+            organizations = idm_utils.paginate(self, organizations, index=index, limit=LIMIT)
+
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)
@@ -115,6 +112,14 @@ class MemberOrganizationsTab(tabs.TableTab):
             owner_organizations = [org.id for org in self.request.organizations]
             organizations = [o for o in my_organizations 
                              if not o.id in owner_organizations]
+            organizations = sorted(organizations, key=lambda x: x.name)
+
+            index = self.request.GET.get('index', 0)
+            indexes = range(0, len(organizations), LIMIT)
+            self._tables['member_organizations'].indexes = indexes
+            organizations = idm_utils.paginate(self, organizations, index=index, limit=LIMIT)
+
+
         except Exception:
             self._more = False
             exceptions.handle(self.request,

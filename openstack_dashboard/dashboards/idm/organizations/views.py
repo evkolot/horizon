@@ -45,7 +45,7 @@ AVATAR_ROOT = os.path.abspath(os.path.join(
 class IndexView(tabs.TabbedTableView):
     tab_group_class = organization_tabs.PanelTabs
     template_name = 'idm/organizations/index.html'
-    
+
 
 class CreateOrganizationView(forms.ModalFormView):
     form_class = organization_forms.CreateOrganizationForm

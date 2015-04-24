@@ -104,3 +104,28 @@ def get_counter(self, organization=None, application=None):
              if user.id in users_with_roles]
 
     return len(users)
+
+def paginate(self, list_pag, index, limit):
+    import pdb
+    pdb.set_trace()
+    try:
+        index = int(index)
+        LOG.debug('index: {0}'.format(index))
+    except Exception as e:
+        exceptions.handle(self.request,
+                          ("Invalid index."))
+    if len(list_pag)<= limit:
+        final_list = list_pag
+    else:
+        if index == (len(list_pag)-1):
+            final_list = list_pag[(index-limit+1):len(list_pag)]
+        elif index <= 0:
+            final_list = list_pag[0:limit]
+        elif (index > (len(list_pag)-1)):
+            final_list = list_pag[len(list_pag)-limit+1:len(list_pag)]
+        elif (index + limit) > (len(list_pag)-1):
+            final_list = list_pag[index:len(list_pag)]
+        else:
+            final_list = list_pag[(index):(index+limit)]
+
+    return final_list
