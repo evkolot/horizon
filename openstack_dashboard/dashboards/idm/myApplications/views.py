@@ -205,17 +205,22 @@ class DetailApplicationView(tables.MultiTableView):
             all_users = api.keystone.user_list(self.request)
             role_assignments = fiware_api.keystone.user_role_assignments(
                 self.request, application=self.kwargs['application_id'])
-            users_with_roles = [a.user_id for a in role_assignments]
-            users = [user for user in all_users if user.id in users_with_roles]
-            users = sorted(users, key=lambda x: x.username.lower())
+            authorized_users = []
+            for assignment in role_assignments:
+                user = next((user for user in all_users if user.id == assignment.user_id), 
+                            None)
+                if user and user.default_project_id == assignment.organization_id:
+                    authorized_users.append(user)
+            authorized_users = sorted(authorized_users, key=lambda x: x.username.lower())
             index_mem = self.request.GET.get('index_mem', 0)
             indexes = range(0, len(users), LIMIT)
             self._tables['members'].indexes = indexes
-            users = idm_utils.paginate(self, users, index=index_mem, limit=LIMIT)
+            authorized_users = idm_utils.paginate(self, authorized_users, 
+                index=index_mem, limit=LIMIT)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
-        return users
+        return authorized_users
 
     def get_organizations_data(self):
         organizations = []
