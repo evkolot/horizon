@@ -32,14 +32,16 @@ class ManageAuthorizedMembersLink(tables.LinkAction):
     def allowed(self, request, user):
         # Allowed if your allowed role list is not empty
         # TODO(garcianavalon) move to fiware_api
+        idm_admin = fiware_api.keystone.get_idm_admin_app(request)
+        if not idm_admin:
+            return False
         default_org = api.keystone.user_get(
             request, request.user).default_project_id
         allowed = fiware_api.keystone.list_user_allowed_roles_to_assign(
             request,
             user=request.user.id,
             organization=default_org)
-        app_id = getattr(settings, 'IDM_ID')
-        return allowed.get(app_id, False)
+        return allowed.get(idm_admin.id, False)
 
 
 class MembersTable(tables.DataTable):
@@ -50,7 +52,6 @@ class MembersTable(tables.DataTable):
     class Meta:
         name = "members"
         verbose_name = ("Authorized Administrators")
-        table_actions = (ManageAuthorizedMembersLink, )
         multi_select = False
         row_class = idm_tables.UserClickableRow
-        table_actions = (tables.FilterAction,)
+        table_actions = (tables.FilterAction, ManageAuthorizedMembersLink,)

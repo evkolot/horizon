@@ -131,7 +131,7 @@ class RegistrationView(_RequestPassingFormView):
                 name=cleaned_data['email'],
                 password=cleaned_data['password1'],
                 username=cleaned_data['username'])
-            LOG.debug('user %s was successfully created.', 
+            LOG.debug('user %s created.', 
                 cleaned_data['username'])
             
             # Grant trial or basic role in the domain
@@ -146,13 +146,60 @@ class RegistrationView(_RequestPassingFormView):
                 user=new_user.id, role=fiware_user_role.id)
             LOG.debug('granted role %s.', fiware_user_role.name)
 
+            # Grant purchaser to user's cloud organization in all 
+            # default apps. If trial requested, also in Cloud
+            default_apps = fiware_api.keystone.get_fiware_default_apps(
+                request, use_idm_account=True)
+
+            if cleaned_data['trial']:
+                cloud_app = fiware_api.keystone.get_fiware_cloud_app(
+                    request, use_idm_account=True)
+                default_apps.append(cloud_app)
+
+            purchaser = fiware_api.keystone.get_purchaser_role(
+                request, use_idm_account=True)
+
+            for app in default_apps:
+                fiware_api.keystone.add_role_to_organization(
+                    request, 
+                    role=purchaser, 
+                    organization=new_user.cloud_project_id,
+                    application=app.id, 
+                    use_idm_account=True)
+                LOG.debug('Granted purchaser to org %s in app %s',
+                          new_user.cloud_project_id,
+                          app.id)    
+
+            # Grant a public role in cloud app to user in his/her
+            # cloud organization if trial requested
+            if cleaned_data['trial']:
+                default_cloud_role = \
+                    fiware_api.keystone.get_default_cloud_role(
+                        request, cloud_app, use_idm_account=True)
+
+                if default_cloud_role:
+                    fiware_api.keystone.add_role_to_user(
+                        request, 
+                        role=default_cloud_role.id, 
+                        user=new_user.id,
+                        organization=new_user.cloud_project_id, 
+                        application=cloud_app.id, 
+                        use_idm_account=True)
+                    LOG.debug('granted default cloud role')
+                else:
+                    LOG.debug('default cloud role not found')
+
             self.send_activation_email(new_user)
 
+            msg = ('Account created succesfully, check your email for'
+                ' the confirmation link.')
+            messages.success(request, msg)
             return new_user
 
         except Exception:
             msg = ('Unable to create user.')
             LOG.warning(msg)
+            messages.error(request, msg)
             exceptions.handle(request, msg)
 
     def send_activation_email(self, user):
@@ -163,7 +210,7 @@ class RegistrationView(_RequestPassingFormView):
         context = {
             'activation_url':('activate/?activation_key={0}&user={1}'
                 '').format(user.activation_key, user.id),
-            'user_name':user.name,
+            'user_name':user.username,
         }
         text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, 
                                         dictionary=context)
@@ -230,13 +277,14 @@ class RequestPasswordResetView(_RequestPassingFormView):
         user = fiware_api.keystone.check_email(email)
         if user:
             reset_password_token = fiware_api.keystone.get_reset_token(user)
-            token = base.getid(reset_password_token)
-            self.send_reset_email(email, token)
+            token = reset_password_token.id
+            user = reset_password_token.user
+            self.send_reset_email(email, token, user)
             messages.success(request, ('Reset mail send to %s') % email)
         else:
             messages.error(request, ('No email %s registered') % email)
 
-    def send_reset_email(self, email, token):
+    def send_reset_email(self, email, token, user):
         # TODO(garcianavalon) subject, message and from_email as settings/files
         subject = 'Reset password instructions - FIWARE'
         # Email subject *must not* contain newlines
@@ -244,7 +292,7 @@ class RequestPasswordResetView(_RequestPassingFormView):
         context = {
             'reset_url':('password/reset/?token={0}&email={1}'
                 '').format(token, email),
-            'user_name':email,
+            'user_name':user['username'],
         }
         text_content = render_to_string(RESET_PASSWORD_TXT_TEMPLATE, 
                                         dictionary=context)
@@ -346,7 +394,7 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         context = {
             'activation_url':('activate/?activation_key={0}&user={1}'
                 '').format(activation_key.id, user.id),
-            'user_name':user.name,
+            'user_name':user.username,
         }
         text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, 
                                         dictionary=context)

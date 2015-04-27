@@ -560,10 +560,11 @@ IDM_USER_CREDENTIALS = {
 FIWARE_IDM_ADMIN_APP = 'idm'
 # Application name of all the default apps for organizations
 FIWARE_DEFAULT_APPS = [
-    'Cloud',
-    'Mashup',
     'Store',
 ]
+# Cloud App
+FIWARE_CLOUD_APP = 'Cloud'
+FIWARE_DEFAULT_CLOUD_ROLE = 'Member'
 
 # reCAPTCHA
 # Get your keys at: https://www.google.com/recaptcha/admin#createsite

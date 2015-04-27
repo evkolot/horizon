@@ -17,7 +17,7 @@ import logging
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import workflows as idm_workflows
-
+from openstack_dashboard.dashboards.idm import utils as idm_utils
 
 INDEX_URL = "horizon:idm_admin:administrators:index"
 LOG = logging.getLogger('idm_logger')
@@ -28,7 +28,10 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
 
     def _list_all_owners(self, request, superset_id):
         all_users = api.keystone.user_list(request)
-        return [(user.id, user.name) for user in all_users]
+        return [
+            (user.id, idm_utils.get_avatar(user, 'img_small', 
+                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
+            for user in all_users if hasattr(user, 'username')]
 
     def _list_all_objects(self, request, superset_id):
         all_roles = fiware_api.keystone.role_list(request)
