@@ -13,6 +13,7 @@
 # under the License.
 
 from django.conf import settings
+from django.shortcuts import redirect
 
 from horizon import exceptions
 from horizon import tables
@@ -22,6 +23,8 @@ from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm_admin.administrators \
     import tables as administrators_tables
+from openstack_dashboard.dashboards.idm_admin \
+    import utils as idm_admin_utils
 from openstack_dashboard.dashboards.idm_admin.administrators \
     import workflows as administrators_workflows
 
@@ -29,6 +32,12 @@ from openstack_dashboard.dashboards.idm_admin.administrators \
 class DetailApplicationView(tables.MultiTableView):
     template_name = 'idm_admin/administrators/index.html'
     table_classes = (administrators_tables.MembersTable, )
+
+    def dispatch(self, request, *args, **kwargs):
+        if idm_admin_utils.is_current_user_administrator(request):
+            return super(DetailApplicationView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
 
     def get_members_data(self):
         users = []
@@ -58,6 +67,12 @@ class DetailApplicationView(tables.MultiTableView):
 class ManageMembersView(workflows.WorkflowView):
     workflow_class = administrators_workflows.ManageAuthorizedMembers
 
+    def dispatch(self, request, *args, **kwargs):
+        if idm_admin_utils.is_current_user_administrator(request):
+            return super(ManageMembersView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
+            
     def get_initial(self):
         initial = super(ManageMembersView, self).get_initial()
         initial['superset_id'] = fiware_api.keystone.get_idm_admin_app(
