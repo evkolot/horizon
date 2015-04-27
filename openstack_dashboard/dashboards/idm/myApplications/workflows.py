@@ -138,7 +138,7 @@ class ManageApplicationRoles(idm_workflows.RelationshipWorkflow):
 
 
 # APPLICATION MEMBERS
-class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
+class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
     """FIWARE roles and user logic"""
 
     def _list_all_owners(self, request, superset_id):
@@ -213,37 +213,37 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
         return application.name
 
 
-class UpdateAuthorizedMembersAction(idm_workflows.UpdateRelationshipAction):
+class UpdateAuthorizedUsersAction(idm_workflows.UpdateRelationshipAction):
     ERROR_MESSAGE = ('Unable to retrieve data. Please try again later.')
-    RELATIONSHIP_CLASS = AuthorizedMembersApi
+    RELATIONSHIP_CLASS = AuthorizedUsersApi
     ERROR_URL = INDEX_URL
 
     class Meta:
-        name = ("Manage authorized members")
-        slug = idm_workflows.RELATIONSHIP_SLUG + '_members'
+        name = ("Manage authorized users")
+        slug = idm_workflows.RELATIONSHIP_SLUG + '_users'
 
 
-class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
-    action_class = UpdateAuthorizedMembersAction
+class UpdateAuthorizedUsers(idm_workflows.UpdateRelationshipStep):
+    action_class = UpdateAuthorizedUsersAction
     available_list_title = ("All users")
-    members_list_title = ("Authorized Members")
+    members_list_title = ("Authorized Users")
     no_available_text = ("No users found.")
     no_members_text = ("No users.")
-    RELATIONSHIP_CLASS = AuthorizedMembersApi
+    RELATIONSHIP_CLASS = AuthorizedUsersApi
     server_filter_url = urlresolvers.reverse_lazy(
         'fiware_server_filters_users')
 
 
-class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):
+class ManageAuthorizedUsers(idm_workflows.RelationshipWorkflow):
     slug = "manage_organization_users_application_roles"
     name = ("Authorize users in your application")
     finalize_button_name = ("Save")
     success_message = ('Modified users.')
     failure_message = ('Unable to modify users.')
     success_url = "horizon:idm:myApplications:detail"
-    default_steps = (UpdateAuthorizedMembers,)
-    RELATIONSHIP_CLASS = AuthorizedMembersApi
-    member_slug = idm_workflows.RELATIONSHIP_SLUG + '_members'
+    default_steps = (UpdateAuthorizedUsers,)
+    RELATIONSHIP_CLASS = AuthorizedUsersApi
+    member_slug = idm_workflows.RELATIONSHIP_SLUG + '_users'
 
     def get_success_url(self):
         # Overwrite to allow passing kwargs

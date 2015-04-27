@@ -61,10 +61,10 @@ class AuthorizedApplicationsTable(tables.DataTable):
         row_class = idm_tables.ApplicationClickableRow
 
 
-class ManageAuthorizedMembersLink(tables.LinkAction):
-    name = "manage_application_members"
+class ManageAuthorizedUsersLink(tables.LinkAction):
+    name = "manage_application_users"
     verbose_name = ("Authorize")
-    url = "horizon:idm:myApplications:members"
+    url = "horizon:idm:myApplications:users"
     classes = ("ajax-modal",)
     icon = "key"
 
@@ -88,15 +88,15 @@ class ManageAuthorizedMembersLink(tables.LinkAction):
         return  urlresolvers.reverse(self.url, args=(app_id,))
 
 
-class MembersTable(tables.DataTable):
+class AuthUsersTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
-    username = tables.Column('username', verbose_name=('Members'))
+    username = tables.Column('username')
     
     class Meta:
-        name = "members"
-        verbose_name = ("Authorized Members")
-        table_actions = (tables.FilterAction, ManageAuthorizedMembersLink, )
+        name = "auth_users"
+        verbose_name = ("Authorized Users")
+        table_actions = (tables.FilterAction, ManageAuthorizedUsersLink, )
         multi_select = False
         row_class = idm_tables.UserClickableRow
 

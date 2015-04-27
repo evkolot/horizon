@@ -193,10 +193,10 @@ class CreatePermissionView(forms.ModalFormView):
 
 class DetailApplicationView(tables.MultiTableView):
     template_name = 'idm/myApplications/detail.html'
-    table_classes = (application_tables.MembersTable,
+    table_classes = (application_tables.AuthUsersTable,
                      application_tables.AuthorizedOrganizationsTable)
 
-    def get_members_data(self):
+    def get_auth_users_data(self):
         users = []
         try:
             # NOTE(garcianavalon) Get all the users' ids that belong to
@@ -214,7 +214,7 @@ class DetailApplicationView(tables.MultiTableView):
             authorized_users = sorted(authorized_users, key=lambda x: x.username.lower())
             index_mem = self.request.GET.get('index_mem', 0)
             indexes = range(0, len(users), LIMIT)
-            self._tables['members'].indexes = indexes
+            self._tables['auth_users'].indexes = indexes
             authorized_users = idm_utils.paginate(self, authorized_users, 
                 index=index_mem, limit=LIMIT)
         except Exception:
@@ -310,11 +310,11 @@ class DetailApplicationView(tables.MultiTableView):
         return context
 
 
-class AuthorizedMembersView(workflows.WorkflowView):
-    workflow_class = application_workflows.ManageAuthorizedMembers
+class AuthorizedUsersView(workflows.WorkflowView):
+    workflow_class = application_workflows.ManageAuthorizedUsers
 
     def get_initial(self):
-        initial = super(AuthorizedMembersView, self).get_initial()
+        initial = super(AuthorizedUsersView, self).get_initial()
         initial['superset_id'] = self.kwargs['application_id']
         return initial
 
