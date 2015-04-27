@@ -58,7 +58,7 @@ class IndexView(tables.MultiTableView):
                 project=self.request.organization.id)
             users = [user for user in all_users if user.id in project_users_roles]
 
-            users = sorted(users, key=lambda x: x.username)
+            users = sorted(users, key=lambda x: x.username.lower())
         
             indexes = range(0, len(users), LIMIT)
             self._tables['members'].indexes = indexes

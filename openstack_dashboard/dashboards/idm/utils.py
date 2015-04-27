@@ -14,6 +14,8 @@
 
 import logging
 
+from horizon import exceptions
+
 from django.conf import settings
 from django.core import urlresolvers
 
@@ -106,15 +108,16 @@ def get_counter(self, organization=None, application=None):
     return len(users)
 
 def paginate(self, list_pag, index, limit):
-    import pdb
-    pdb.set_trace()
     try:
         index = int(index)
         LOG.debug('index: {0}'.format(index))
-    except Exception as e:
+    except ValueError as e:
+        LOG.error("Invalid index. {0}".format(e))
         exceptions.handle(self.request,
-                          ("Invalid index."))
-    if len(list_pag)<= limit:
+                          ("Invalid index. \
+                            Error message: {0}".format(e)))
+
+    if len(list_pag) <= limit:
         final_list = list_pag
     else:
         if index == (len(list_pag)-1):

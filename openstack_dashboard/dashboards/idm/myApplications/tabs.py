@@ -24,8 +24,7 @@ from openstack_dashboard.dashboards.idm.myApplications \
 
 
 LOG = logging.getLogger('idm_logger')
-LIMIT = 2
-#getattr(settings, 'PAGE_LIMIT', 15)
+LIMIT = getattr(settings, 'PAGE_LIMIT', 15)
 
 class ProvidingTab(tabs.TableTab):
     name = ("Providing")
@@ -55,8 +54,7 @@ class ProvidingTab(tabs.TableTab):
             applications = [app for app in all_apps
                             if app.id in apps_with_roles]
 
-            applications = sorted(applications, key=lambda x: x.name)
-        
+            applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
             indexes = range(0, len(applications), LIMIT)
             self._tables['providing_table'].indexes = indexes
             applications = idm_utils.paginate(self, applications, index=index, limit=LIMIT)
@@ -67,7 +65,7 @@ class ProvidingTab(tabs.TableTab):
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))
-        return idm_utils.filter_default(applications)
+        return applications
 
 
 class PurchasedTab(tabs.TableTab):
@@ -99,7 +97,7 @@ class PurchasedTab(tabs.TableTab):
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
 
-            applications = sorted(applications, key=lambda x: x.name)
+            applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
         
             indexes = range(0, len(applications), LIMIT)
             self._tables['purchased_table'].indexes = indexes
@@ -112,7 +110,7 @@ class PurchasedTab(tabs.TableTab):
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))
-        return idm_utils.filter_default(applications)
+        return applications
 
 
 class AuthorizedTab(tabs.TableTab):
@@ -146,7 +144,7 @@ class AuthorizedTab(tabs.TableTab):
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
 
-            applications = sorted(applications, key=lambda x: x.name)
+            applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
         
             indexes = range(0, len(applications), LIMIT)
             self._tables['authorized_table'].indexes = indexes
@@ -159,7 +157,7 @@ class AuthorizedTab(tabs.TableTab):
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))
-        return idm_utils.filter_default(applications)
+        return applications
 
         
 class PanelTabs(tabs.TabGroup):

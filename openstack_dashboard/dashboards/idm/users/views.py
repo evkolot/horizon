@@ -35,8 +35,7 @@ from openstack_dashboard.dashboards.idm.users.forms import  InfoForm, ContactFor
 from horizon import views
 
 LOG = logging.getLogger('idm_logger')
-LIMIT = 3
-# getattr(local_settings, 'PAGE_LIMIT', 15)
+LIMIT = getattr(local_settings, 'PAGE_LIMIT', 15)
 
 
 
@@ -48,8 +47,6 @@ class DetailUserView(tables.MultiTableView):
     
     def get_organizations_data(self):
         organizations = []
-        import pdb
-        pdb.set_trace()
         index_org = self.request.GET.get('index_org', 0)
         LOG.debug(self.request.path)
         path = self.request.path
@@ -62,7 +59,7 @@ class DetailUserView(tables.MultiTableView):
                 user=user_id,
                 admin=False)
 
-            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name))
+            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
         
             indexes = range(0, len(organizations), LIMIT)
             self._tables['organizations'].indexes = indexes
@@ -79,8 +76,6 @@ class DetailUserView(tables.MultiTableView):
 
     def get_applications_data(self):
         applications = []
-        import pdb
-        pdb.set_trace()
         index_app = self.request.GET.get('index_app', 0)
         path = self.request.path
         user_id = path.split('/')[3]
@@ -94,7 +89,7 @@ class DetailUserView(tables.MultiTableView):
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
             applications = idm_utils.filter_default(
-                            sorted(applications, key=lambda x: x.name))
+                            sorted(applications, key=lambda x: x.name.lower()))
         
             indexes = range(0, len(applications), LIMIT)
             self._tables['applications'].indexes = indexes

@@ -58,6 +58,13 @@
         <p class="alert alert-info empty"> {{ organization_name }} does not have any members.</p>
       {% endif %}
     </div>
+    {% if members_table.indexes|length > 1 %}
+      <div class="panel-footer">
+          {% for index in members_table.indexes reversed %}
+            <a href="?index_mem={{index}}&index_app={{index_app}}">-{{ forloop.revcounter }}-</a>
+          {% endfor %}
+      </div>
+    {% endif %}
   </div>
 
   <div class="panel panel-default applications">
@@ -74,6 +81,13 @@
         <p class="alert alert-info empty"> {{organization_name}} does not have any authorizing applications.</p>
       {% endif %}
     </div>
+    {% if applications_table.indexes|length > 1 %}
+      <div class="panel-footer">
+          {% for index in applications_table.indexes reversed %}
+            <a href="?index_mem={{index_mem}}&index_app={{index}}">-{{ forloop.revcounter }}-</a>
+          {% endfor %}
+      </div>
+      {% endif %}
   </div>
 
 </div>

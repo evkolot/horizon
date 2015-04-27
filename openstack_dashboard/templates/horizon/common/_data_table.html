@@ -7,22 +7,14 @@
       {% endfor %}
     </div>
   
-  {% if table.indexes|length > 1 %}
-  <div class="panel-footer">
-    {% if table.name = 'organizations' %}
-      {% for index in table.indexes %}
-        <a href="?index_org={{index}}?index_app={{index_app}}">-{{ forloop.counter }}-</a>
+  
+  {% if table.indexes|length > 1 and table.name != 'organizations' and table.name != 'applications' and table.name != 'members' %}
+    <div class="panel-footer">
+      {% for index in table.indexes reversed %}
+        <a href="?index={{index}}">-{{ forloop.revcounter }}-</a>
       {% endfor %}
-    {% elif table.name = 'organizations' %}
-      {% for index in table.indexes %}
-        <a href="?index_app={{index}}?index_org={{index_org}}">-{{ forloop.counter }}-</a>
-      {% endfor %}
-    {% else %}
-      {% for index in table.indexes %}
-        <a href="?index={{index}}">-{{ forloop.counter }}-</a>
-      {% endfor %}
-    {% endif %}
-  </div>
+    </div>
   {% endif %}
+  
   {% endwith %}
 {% endwith %}

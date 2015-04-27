@@ -37,8 +37,6 @@ class OtherOrganizationsTab(tabs.TableTab):
 
     def get_other_organizations_data(self):
         organizations = []
-        import pdb
-        pdb.set_trace()
         index = self.request.GET.get('index', 0)
         try:
             organizations_full, self._more = api.keystone.tenant_list(
@@ -49,7 +47,7 @@ class OtherOrganizationsTab(tabs.TableTab):
                                                            organizations_full
                                                            if not t in
                                                            my_organizations])
-            organizations_full = sorted(organizations_full, key=lambda x: x.name)
+            organizations_full = sorted(organizations_full, key=lambda x: x.name.lower())
         
             indexes = range(0, len(organizations_full), LIMIT)
             self._tables['other_organizations'].indexes = indexes
@@ -79,9 +77,9 @@ class OwnedOrganizationsTab(tabs.TableTab):
             # NOTE(garcianavalon) the organizations the user is owner(admin)
             # are already in the request object by the middleware
             organizations = self.request.organizations
-            organizations = sorted(organizations, key=lambda x: x.name)
+            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
             self._more = False
-            
+
             index = self.request.GET.get('index', 0)
             indexes = range(0, len(organizations), LIMIT)
             self._tables['owned_organizations'].indexes = indexes
@@ -94,7 +92,7 @@ class OwnedOrganizationsTab(tabs.TableTab):
             self._more = False
             exceptions.handle(self.request,
                               ("Unable to retrieve organization information."))
-        return idm_utils.filter_default(organizations)
+        return organizations
 
 
 class MemberOrganizationsTab(tabs.TableTab):
@@ -112,7 +110,7 @@ class MemberOrganizationsTab(tabs.TableTab):
             owner_organizations = [org.id for org in self.request.organizations]
             organizations = [o for o in my_organizations 
                              if not o.id in owner_organizations]
-            organizations = sorted(organizations, key=lambda x: x.name)
+            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
 
             index = self.request.GET.get('index', 0)
             indexes = range(0, len(organizations), LIMIT)
@@ -124,7 +122,7 @@ class MemberOrganizationsTab(tabs.TableTab):
             self._more = False
             exceptions.handle(self.request,
                               ("Unable to retrieve organization information."))
-        return idm_utils.filter_default(organizations)
+        return organizations
 
 
 class PanelTabs(tabs.TabGroup):
