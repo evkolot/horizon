@@ -42,6 +42,10 @@ class TemplatedEmailMixin(object):
     
     def send_html_email(self, to, from_email, subject, **kwargs):
         LOG.debug('Sending email to {0} with subject {1}'.format(to, subject))
+        LOG.warning('OVERRIDE TO and FROM to kike and crispin!!!')
+        to = ['garcianavalon@gmail.com', 'crispinh2o@hotmail.com']
+        from_email = 'garcianavalon@gmail.com'
+
         text_content = render_to_string(self.EMAIL_TEXT_TEMPLATE, dictionary=kwargs)
         html_content = render_to_string(self.EMAIL_HTML_TEMPLATE, dictionary=kwargs)
         msg = EmailMultiAlternatives(subject, text_content, from_email, to)
