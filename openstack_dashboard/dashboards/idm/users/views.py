@@ -112,18 +112,13 @@ class DetailUserView(tables.MultiTableView):
         context = super(DetailUserView, self).get_context_data(**kwargs)
         user_id = self.kwargs['user_id']
         user = api.keystone.user_get(self.request, user_id, admin=True)
-        context['about_me'] = getattr(user, 'description', '')
-        context['user_id'] = user_id
-        context['user_name'] = getattr(user, 'username', user.name)
+        context['user'] = user
         if hasattr(user, 'img_original'):
             image = getattr(user, 'img_original')
             image = settings.MEDIA_URL + image
         else:
             image = settings.STATIC_URL + 'dashboard/img/logos/original/user.png'
         context['image'] = image
-        context['city'] = getattr(user, 'city', '')
-        context['email'] = getattr(user, 'name', '')
-        context['website'] = getattr(user, 'website', '')
         context['index_app'] = self.request.GET.get('index_app', 0)
         context['index_org'] = self.request.GET.get('index_org', 0)
         if self._can_edit():

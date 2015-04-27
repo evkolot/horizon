@@ -8,9 +8,9 @@
 <div id="detailUser">
     <header>
         <h3 class="name">
-            {{ user_name }} 
+            {{ user.username }} 
             {% if edit %}
-                <a href="{% url 'horizon:idm:users:edit' user_id %}" class="small"><i class="fa fa-edit"></i>edit</a>
+                <a href="{% url 'horizon:idm:users:edit' user.id %}" class="small"><i class="fa fa-edit"></i>edit</a>
             {% endif %}
         </h3>
         <!--crear la carga de la imagen -->
@@ -27,17 +27,16 @@
               </h5>
 
               <div class="info expander">
-                <p>{{ about_me }}</p>
+                <p>{{ user.about_me }}</p>
               </div>
             </div> 
             <div class="contact_us">
                 <h5>
-                  Contact us
+                  More Info
                 </h5>
                 <div class ="info">
-                    <p> {{ city }} </p>
-                    <p>{{ email }}</p>
-                    <p>{{ website }}</p>
+                    <p> {{ user.city }} </p>
+                    <p>{{ user.website }}</p>
                 </div>
             </div>
 		</div>

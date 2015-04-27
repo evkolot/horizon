@@ -70,14 +70,12 @@ class InfoForm(forms.SelfHandlingForm):
 class ContactForm(forms.SelfHandlingForm):
     userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
     password = forms.CharField(label=("password"), widget=forms.HiddenInput(), required=False)
-    name = forms.EmailField(label=("E-mail"), required=False)
     website = forms.URLField(label=("Website"), required=False)
     title = 'Contact Information'
 
     def handle(self, request, data):
         api.keystone.user_update(request, 
                                 data['userID'], 
-                                name=data['name'], 
                                 website=data['website'],
                                 password=data['password'])
         LOG.debug('User {0} updated'.format(data['userID']))
@@ -129,7 +127,8 @@ class CancelForm(forms.SelfHandlingForm):
     title = 'Cancel Account'
     
     def handle(self, request, data, user):
-        image = getattr(user,'img_original','')
+        # FIXME(garcianavalon) this crashes for sure, check it out
+        image = getattr(user, 'img_original', '')
         if "UserAvatar" in image:
             os.remove(AVATAR_SMALL + organization.id)
             os.remove(AVATAR_MEDIUM + organization.id)
