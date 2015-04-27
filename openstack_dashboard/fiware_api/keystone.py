@@ -35,37 +35,22 @@ LOG = logging.getLogger('idm_logger')
 # and other objects
 DEFAULT_OBJECTS_CACHE_TIME = 60 * 15
 
-def fiwareclient(session=None, request=None):# TODO(garcianavalon) use this
-    """Encapsulates all the logic for communicating with the modified keystone server.
-
-    The IdM has its own admin account in the keystone server, and uses it to perform
-    operations like create users, projects, etc. when there is no user with admin rights
-    (for example, when user registration) to overcome the Keystone limitations.
-
-    Also adds the methods to operate with the OAuth2.0 extension.
-    """
-    # TODO(garcianavalon) find a way to integrate this with the existng keystone api
-    # TODO(garcianavalon)caching and efficiency with the client object.
-    if not session:
-        session = _password_session()
-    keystone = client.Client(session=session)
+def internal_keystoneclient():
+    idm_user_session = _password_session()
+    keystone = client.Client(session=idm_user_session)
     return keystone
-
-def _oauth2_session(access_token_id):
-    auth = oauth2_auth.OAuth2(access_token=access_token_id)
-    return session.Session(auth=auth)
 
 def _password_session():
     conf_params = getattr(settings, 'IDM_USER_CREDENTIALS')
     conf_params['auth_url'] = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
-    LOG.debug('Creating a new keystoneclient password session to \
-        {0} for user: {1}'.format(conf_params['auth_url'], conf_params['username']))
+    # TODO(garcianavalon) better domain usage
+    domain = 'default'
     auth = v3.Password(auth_url=conf_params['auth_url'],
                        username=conf_params['username'],
                        password=conf_params['password'],
                        project_name=conf_params['project'],
-                       user_domain_id=conf_params['domain'],
-                       project_domain_id=conf_params['domain'])
+                       user_domain_id=domain,
+                       project_domain_id=domain)
     return session.Session(auth=auth)
 
 # USER REGISTRATION
@@ -85,15 +70,24 @@ def _find_user(keystone, email=None, username=None):
         msg = "No user matching email=%s." % email
         raise ks_exceptions.NotFound(404, msg)
 
-def _grant_role(keystone, role, user, project):
-    role = keystone.roles.find(name=role)
-    keystone.roles.grant(role, user=user, project=project)
-    return role
+def add_domain_user_role(role, user, domain='default'):
+    manager = internal_keystoneclient().roles
+    return manager.grant(role, user=user, domain=domain)
+
+def get_trial_role_assignments(request, domain='default'):
+    trial_role = get_trial_role(request, use_idm_account=True)
+    if trial_role:
+        manager = internal_keystoneclient().role_assignments
+        return manager.list(role=trial_role.id, domain=domain)
+    else:
+        return []
 
 def register_user(name, username, password):
-    keystone = fiwareclient()
-    domain = getattr(settings, 'IDM_USER_CREDENTIALS')['domain']
-    default_domain = keystone.domains.get(domain)
+    keystone = internal_keystoneclient()
+    #domain_name = getattr(settings, 'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN', 'Default')
+    #default_domain = keystone.domains.find(name=domain_name)
+    # TODO(garcianavalon) better domain usage
+    default_domain = 'default'
     # if not (check_user(name) or check_email(email)):
     new_user = keystone.user_registration.users.register_user(
         name,
@@ -103,38 +97,38 @@ def register_user(name, username, password):
     return new_user
 
 def activate_user(user, activation_key):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     user = keystone.user_registration.users.activate_user(user, activation_key)
     return user
 
 def change_password(user_email, new_password):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     user = _find_user(keystone, email=user_email)
     user = keystone.users.update(user, password=new_password, enabled=True)
     return user
 
 def check_username(username):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     user = _find_user(keystone, username=username)
     return user
 
 def check_email(email):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     user = _find_user(keystone, email=email)
     return user
 
 def get_reset_token(user):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     token = keystone.user_registration.token.get_reset_token(user)
     return token
 
 def new_activation_key(user):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
     activation_key = keystone.user_registration.activation_key.new_activation_key(user)
     return activation_key
 
 def reset_password(user, token, new_password):
-    keystone = fiwareclient()
+    keystone = internal_keystoneclient()
 
     user = keystone.user_registration.users.reset_password(user, token, new_password)
     return user
@@ -173,9 +167,13 @@ def role_delete(request, role_id):
 
 
 # ROLE-USERS
-def add_role_to_user(request, role, user, organization, application):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.roles
+def add_role_to_user(request, role, user, organization, 
+                     application, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().fiware_roles.roles
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).fiware_roles.roles
     return manager.add_to_user(role, user, organization, application)
 
 def remove_role_from_user(request, role, user, organization, application):
@@ -191,9 +189,13 @@ def user_role_assignments(request, user=None, organization=None,
                                               organization=organization,
                                               application=application)
 # ROLE-ORGANIZATIONS
-def add_role_to_organization(request, role, organization, application):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.roles
+def add_role_to_organization(request, role, organization, 
+                             application, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().fiware_roles.roles
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).fiware_roles.roles
     return manager.add_to_organization(role, organization, application)
 
 def remove_role_from_organization(request, role, organization, application):
@@ -309,7 +311,7 @@ def application_list(request, user=None):
 
 def application_get(request, application_id, use_idm_account=False):
     if use_idm_account:
-        manager = fiwareclient().oauth2.consumers
+        manager = internal_keystoneclient().oauth2.consumers
     else:
         manager = api.keystone.keystoneclient(request, admin=True).oauth2.consumers
     return manager.get(application_id)
@@ -332,6 +334,12 @@ def application_delete(request, application_id):
 
 
 # OAUTH2 FLOW
+def get_user_access_tokens(request, user):
+    """Gets all authorized access_tokens for the user"""
+    manager = internal_keystoneclient().oauth2.access_tokens
+
+    return manager.list_for_user(user=user)
+
 def request_authorization_for_application(request, application, 
                                           redirect_uri, scope=['all_info'], state=None):
     """ Sends the consumer/client credentials to the authorization server to ask
@@ -396,7 +404,7 @@ def obtain_access_token(request, consumer_id, consumer_secret, code,
     # method intented to be use by the client/consumer. For the IdM is much more 
     # convenient to simply forward the request, see forward_access_token_request method
     LOG.debug('Exchanging code: {0} by application: {1}'.format(code, consumer_id))
-    manager = fiwareclient().oauth2.access_tokens
+    manager = internal_keystoneclient().oauth2.access_tokens
     access_token = manager.create(consumer_id=consumer_id,
                                   consumer_secret=consumer_secret,
                                   authorization_code=code,
@@ -418,14 +426,6 @@ def forward_access_token_request(request):
     response = requests.post(keystone_url, data=body, headers=headers)
     return response
 
-def login_with_oauth(request, access_token, project=None):
-    """ Use an OAuth2 access token to obtain a keystone token, scoped for
-    the authorizing user in one of his projects.
-    """
-    pass
-    # TODO(garcianavalon) find out if we need this method
-    # session = _oauth2_session(access_token, project_id=project)
-    # return fiwareclient(session=session,request=request)
 
 # FIWARE-IdM API CALLS
 def forward_validate_token_request(request):
@@ -440,6 +440,7 @@ def forward_validate_token_request(request):
     return response
 
 # SPECIAL ROLES
+# TODO(garcianavalon) refactorize for better reuse
 class PickleObject():
     """Extremely simple class that holds the very little information we need
     to cache. Keystoneclient resource objects are not pickable.
@@ -447,16 +448,21 @@ class PickleObject():
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
-def get_owner_role(request):
-    """Gets the owner role object from Keystone and saves it as a global.
+def get_owner_role(request, use_idm_account=False):
+    """Gets the owner role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.
     """
     owner = getattr(local_settings, "KEYSTONE_OWNER_ROLE", None)
     if owner and cache.get('owner_role') is None:
+        # TODO(garcianavalon) use filters to filter by name
         try:
-            roles = api.keystone.keystoneclient(request, admin=True).roles.list()
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.roles.list()
         except Exception:
             roles = []
             exceptions.handle(request)
@@ -467,8 +473,83 @@ def get_owner_role(request):
                 break
     return cache.get('owner_role')
 
+def get_trial_role(request, use_idm_account=False):
+    """Gets the trial role object from Keystone and caches it.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    trial = getattr(local_settings, "KEYSTONE_TRIAL_ROLE", None)
+    if trial and cache.get('trial_role') is None:
+        # TODO(garcianavalon) use filters to filter by name
+        try:
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.roles.list()
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == trial or role.name == trial:
+                pickle_role = PickleObject(name=role.name, id=role.id)
+                cache.set('trial_role', pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get('trial_role')
+
+def get_basic_role(request, use_idm_account=False):
+    """Gets the basic role object from Keystone and caches it.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    basic = getattr(local_settings, "KEYSTONE_BASIC_ROLE", None)
+    if basic and cache.get('basic_role') is None:
+        # TODO(garcianavalon) use filters to filter by name
+        try:
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.roles.list()
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == basic or role.name == basic:
+                pickle_role = PickleObject(name=role.name, id=role.id)
+                cache.set('basic_role', pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get('basic_role')
+
+def get_community_role(request, use_idm_account=False):
+    """Gets the community role object from Keystone and caches it.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    community = getattr(local_settings, "KEYSTONE_COMMUNITY_ROLE", None)
+    if community and cache.get('community_role') is None:
+        # TODO(garcianavalon) use filters to filter by name
+        try:
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.roles.list()
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == community or role.name == community:
+                pickle_role = PickleObject(name=role.name, id=role.id)
+                cache.set('community_role', pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get('community_role')
+
 def get_provider_role(request):
-    """Gets the provider role object from Keystone and saves it as a global.
+    """Gets the provider role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.
@@ -488,26 +569,56 @@ def get_provider_role(request):
                 break
     return cache.get('provider_role')
 
-def get_purchaser_role(request):
-    """Gets the purchaser role object from Keystone and saves it as a global.
+def get_purchaser_role(request, use_idm_account=False):
+    """Gets the purchaser role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.
     """
     purchaser = getattr(local_settings, "FIWARE_PURCHASER_ROLE", None)
-    if purchaser and cache.get('pruchaser_role') is None:
+    if purchaser and cache.get('purchaser_role') is None:
         try:
-            roles = api.keystone.keystoneclient(request, 
-                admin=True).fiware_roles.roles.list()
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.fiware_roles.roles.list()
         except Exception:
             roles = []
             exceptions.handle(request)
         for role in roles:
             if role.id == purchaser or role.name == purchaser:
                 pickle_role = PickleObject(name=role.name, id=role.id)
-                cache.set('pruchaser_role', pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
+                cache.set('purchaser_role', pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
                 break
-    return cache.get('pruchaser_role')
+    return cache.get('purchaser_role')
+
+def get_default_cloud_role(request, cloud_app_id, use_idm_account=False):
+    """Gets the default_cloud role object from Keystone and caches it.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    default_cloud = getattr(local_settings, "FIWARE_DEFAULT_CLOUD_ROLE", None)
+    if default_cloud and cache.get('default_cloud_role') is None:
+        try:
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.fiware_roles.roles.list(
+                application=cloud_app_id)
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == default_cloud or role.name == default_cloud:
+                pickle_role = PickleObject(name=role.name, id=role.id)
+                cache.set('default_cloud_role', 
+                          pickle_role, 
+                          DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get('default_cloud_role')
 
 def get_idm_admin_app(request):
     idm_admin = getattr(local_settings, "FIWARE_IDM_ADMIN_APP", None)
@@ -524,3 +635,49 @@ def get_idm_admin_app(request):
                 cache.set('idm_admin', pickle_app, DEFAULT_OBJECTS_CACHE_TIME)
                 break
     return cache.get('idm_admin')
+
+def get_fiware_cloud_app(request, use_idm_account=False):
+    cloud_app = getattr(local_settings, "FIWARE_CLOUD_APP", None)
+    if cloud_app and cache.get('cloud_app') is None:
+        try:
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            apps = manager.oauth2.consumers.list()
+        except Exception:
+            apps = []
+            exceptions.handle(request)
+        for app in apps:
+            if app.id == cloud_app or app.name == cloud_app:
+                pickle_app = PickleObject(name=app.name, id=app.id)
+                cache.set('cloud_app', pickle_app, DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get('cloud_app')
+
+def get_fiware_default_app(request, app_name, use_idm_account=False):
+    if cache.get(app_name) is None:
+        try:
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            apps = manager.oauth2.consumers.list()
+        except Exception:
+            apps = []
+            exceptions.handle(request)
+        for app in apps:
+            if app.name == app_name:
+                pickle_app = PickleObject(name=app.name, id=app.id)
+                cache.set(app_name, pickle_app, DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get(app_name)
+
+def get_fiware_default_apps(request, use_idm_account=False):
+    default_apps_names = getattr(local_settings, "FIWARE_DEFAULT_APPS", [])
+    default_apps = []
+    for app_name in default_apps_names:
+        app = get_fiware_default_app(request, app_name, use_idm_account)
+        if app:
+            default_apps.append(app)
+    return default_apps

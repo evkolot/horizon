@@ -15,16 +15,20 @@
 import logging
 
 from django.core import urlresolvers
+from django.utils.http import urlencode
+from django.utils import http
 
 from horizon import tables
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.local import local_settings as settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import tables as idm_tables
 
 
 LOG = logging.getLogger('idm_logger')
+
 
 class OtherOrganizationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(

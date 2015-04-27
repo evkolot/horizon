@@ -40,6 +40,8 @@ from openstack_dashboard.dashboards.idm.myApplications \
 
 
 LOG = logging.getLogger('idm_logger')
+LIMIT = getattr(settings, 'PAGE_LIMIT', 15)
+
 
 class IndexView(tabs.TabbedTableView):
     tab_group_class = application_tabs.PanelTabs
@@ -205,6 +207,11 @@ class DetailApplicationView(tables.MultiTableView):
                 self.request, application=self.kwargs['application_id'])
             users_with_roles = [a.user_id for a in role_assignments]
             users = [user for user in all_users if user.id in users_with_roles]
+            users = sorted(users, key=lambda x: x.username.lower())
+            index_mem = self.request.GET.get('index_mem', 0)
+            indexes = range(0, len(users), LIMIT)
+            self._tables['members'].indexes = indexes
+            users = idm_utils.paginate(self, users, index=index_mem, limit=LIMIT)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
@@ -221,6 +228,11 @@ class DetailApplicationView(tables.MultiTableView):
                 self.request, application=self.kwargs['application_id'])
             organizations = [org for org in all_organizations if org.id
                      in set([a.organization_id for a in role_assignments])]
+            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
+            index_org = self.request.GET.get('index_org', 0)
+            indexes = range(0, len(organizations), LIMIT)
+            self._tables['organizations'].indexes = indexes
+            organizations = idm_utils.paginate(self, organizations, index=index_org, limit=LIMIT)
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)
@@ -288,6 +300,8 @@ class DetailApplicationView(tables.MultiTableView):
             context['manage_roles'] = True
         if self.allowed(self.request, self.request.user, application):
             context['viewCred'] = True
+        context['index_org'] = self.request.GET.get('index_org', 0)
+        context['index_mem'] = self.request.GET.get('index_mem', 0)
         return context
 
 

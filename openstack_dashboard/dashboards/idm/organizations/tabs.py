@@ -11,14 +11,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import logging
 
 from horizon import exceptions
 from horizon import tabs
 
+from django.core.cache import cache
+
 from openstack_dashboard import api
+from openstack_dashboard.local import local_settings as settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm.organizations \
     import tables as organization_tables
+
+LOG = logging.getLogger('idm_logger')
+LIMIT = getattr(settings, 'PAGE_LIMIT', 15)
 
 
 class OtherOrganizationsTab(tabs.TableTab):
@@ -30,13 +37,22 @@ class OtherOrganizationsTab(tabs.TableTab):
 
     def get_other_organizations_data(self):
         organizations = []
+        index = self.request.GET.get('index', 0)
         try:
-            organizations, self._more = api.keystone.tenant_list(
+            organizations_full, self._more = api.keystone.tenant_list(
                 self.request, admin=False)
             my_organizations, self._more = api.keystone.tenant_list(
                 self.request, user=self.request.user.id, admin=False)
-            organizations = [t for t in organizations if not t 
-                             in my_organizations]
+            organizations_full = idm_utils.filter_default([t for t in
+                                                           organizations_full
+                                                           if not t in
+                                                           my_organizations])
+            organizations_full = sorted(organizations_full, key=lambda x: x.name.lower())
+        
+            indexes = range(0, len(organizations_full), LIMIT)
+            self._tables['other_organizations'].indexes = indexes
+            organizations = idm_utils.paginate(self, organizations_full, index=index, limit=LIMIT)
+
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)
@@ -45,7 +61,7 @@ class OtherOrganizationsTab(tabs.TableTab):
             exceptions.handle(self.request,
                               ("Unable to retrieve organization list. \
                                     Error message: {0}".format(e)))
-        return idm_utils.filter_default(organizations)
+        return organizations
 
 
 class OwnedOrganizationsTab(tabs.TableTab):
@@ -61,7 +77,14 @@ class OwnedOrganizationsTab(tabs.TableTab):
             # NOTE(garcianavalon) the organizations the user is owner(admin)
             # are already in the request object by the middleware
             organizations = self.request.organizations
+            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
             self._more = False
+
+            index = self.request.GET.get('index', 0)
+            indexes = range(0, len(organizations), LIMIT)
+            self._tables['owned_organizations'].indexes = indexes
+            organizations = idm_utils.paginate(self, organizations, index=index, limit=LIMIT)
+
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)
@@ -69,7 +92,7 @@ class OwnedOrganizationsTab(tabs.TableTab):
             self._more = False
             exceptions.handle(self.request,
                               ("Unable to retrieve organization information."))
-        return idm_utils.filter_default(organizations)
+        return organizations
 
 
 class MemberOrganizationsTab(tabs.TableTab):
@@ -87,11 +110,19 @@ class MemberOrganizationsTab(tabs.TableTab):
             owner_organizations = [org.id for org in self.request.organizations]
             organizations = [o for o in my_organizations 
                              if not o.id in owner_organizations]
+            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
+
+            index = self.request.GET.get('index', 0)
+            indexes = range(0, len(organizations), LIMIT)
+            self._tables['member_organizations'].indexes = indexes
+            organizations = idm_utils.paginate(self, organizations, index=index, limit=LIMIT)
+
+
         except Exception:
             self._more = False
             exceptions.handle(self.request,
                               ("Unable to retrieve organization information."))
-        return idm_utils.filter_default(organizations)
+        return organizations
 
 
 class PanelTabs(tabs.TabGroup):

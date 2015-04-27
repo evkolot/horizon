@@ -53,6 +53,8 @@ class IndexView(tables.MultiTableView):
                 self.request,
                 project=self.request.organization.id)
             users = [user for user in all_users if user.id in project_users_roles]
+            users = sorted(users, key=lambda x: x.username.lower())
+
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
@@ -68,6 +70,8 @@ class IndexView(tables.MultiTableView):
                                self.request, organization=self.request.organization.id)]
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
+            applications = sorted(applications, key=lambda x: x.name.lower())
+
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)
                 setattr(app, 'counter', users)

@@ -14,6 +14,8 @@
 
 import logging
 
+from horizon import exceptions
+
 from django.conf import settings
 from django.core import urlresolvers
 
@@ -25,6 +27,9 @@ LOG = logging.getLogger('idm_logger')
 DEFAULT_ORG_MEDIUM_AVATAR = 'dashboard/img/logos/medium/group.png'
 DEFAULT_APP_MEDIUM_AVATAR = 'dashboard/img/logos/medium/app.png'
 DEFAULT_USER_MEDIUM_AVATAR = 'dashboard/img/logos/medium/user.png'
+DEFAULT_ORG_SMALL_AVATAR = 'dashboard/img/logos/small/group.png'
+DEFAULT_APP_SMALL_AVATAR = 'dashboard/img/logos/small/app.png'
+DEFAULT_USER_SMALL_AVATAR = 'dashboard/img/logos/small/user.png'
 
 def filter_default(items):
     """Remove from a list the automated created project for a user. This project
@@ -64,7 +69,10 @@ def swap_dict(old_dict):
 
 def get_avatar(obj, avatar_type, default_avatar):
     """Gets the object avatar or a default one."""
-    avatar = getattr(obj, avatar_type, None)
+    if type(obj) == dict:
+        avatar = obj.get(avatar_type, None)
+    else:
+        avatar = getattr(obj, avatar_type, None)
     if avatar:
         return settings.MEDIA_URL + avatar
     else:
@@ -104,3 +112,29 @@ def get_counter(self, organization=None, application=None):
              if user.id in users_with_roles]
 
     return len(users)
+
+def paginate(self, list_pag, index, limit):
+    try:
+        index = int(index)
+        LOG.debug('index: {0}'.format(index))
+    except ValueError as e:
+        LOG.error("Invalid index. {0}".format(e))
+        exceptions.handle(self.request,
+                          ("Invalid index. \
+                            Error message: {0}".format(e)))
+
+    if len(list_pag) <= limit:
+        final_list = list_pag
+    else:
+        if index == (len(list_pag)-1):
+            final_list = list_pag[(index-limit+1):len(list_pag)]
+        elif index <= 0:
+            final_list = list_pag[0:limit]
+        elif (index > (len(list_pag)-1)):
+            final_list = list_pag[len(list_pag)-limit+1:len(list_pag)]
+        elif (index + limit) > (len(list_pag)-1):
+            final_list = list_pag[index:len(list_pag)]
+        else:
+            final_list = list_pag[(index):(index+limit)]
+
+    return final_list

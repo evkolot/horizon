@@ -15,14 +15,13 @@
 import logging
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core import urlresolvers
 
 from horizon import exceptions
 
 from openstack_dashboard import api
-from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import workflows as idm_workflows
-
+from openstack_dashboard.dashboards.idm import utils as idm_utils
 
 LOG = logging.getLogger('idm_logger')
 INDEX_URL = 'horizon:idm:organizations:index'
@@ -33,10 +32,13 @@ class UserRoleApi(idm_workflows.RelationshipApiInterface):
     
     def _list_all_owners(self, request, superset_id):
         all_users = api.keystone.user_list(request)
-        return [(user.id, user.username) for user in all_users]
+        return [
+            (user.id, idm_utils.get_avatar(user, 'img_small', 
+                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
+            for user in all_users if hasattr(user, 'username')]
 
     def _list_all_objects(self, request, superset_id):
-        return api.keystone.role_list(request)
+        return idm_utils.filter_default(api.keystone.role_list(request))
 
     def _list_current_assignments(self, request, superset_id):
         return api.keystone.get_project_users_roles(request,
@@ -87,7 +89,8 @@ class UpdateProjectMembers(idm_workflows.UpdateRelationshipStep):
     no_available_text = ("No users found.")
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = UserRoleApi
-
+    server_filter_url = urlresolvers.reverse_lazy(
+        'fiware_server_filters_users')
 
 class ManageOrganizationMembers(idm_workflows.RelationshipWorkflow):
     slug = "manage_organization_users"
@@ -102,10 +105,10 @@ class ManageOrganizationMembers(idm_workflows.RelationshipWorkflow):
     current_user_editable = False
     no_roles_message = 'Some users don\'t have any role assigned. \
         If you save now they won\'t be part of the organization'
-    
+
     def get_success_url(self):
         # Overwrite to allow passing kwargs
-        return reverse(self.success_url, 
+        return urlresolvers.reverse(self.success_url, 
                     kwargs={'organization_id':self.context['superset_id']})
 
 

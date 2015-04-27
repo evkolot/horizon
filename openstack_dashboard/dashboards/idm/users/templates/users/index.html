@@ -56,6 +56,13 @@
             <p class="alert alert-info empty"> {{ user_name }} does not have any organizations.</p>
             {% endif %}
         </div>
+        {% if organizations_table.indexes|length > 1 %}
+          <div class="panel-footer">
+              {% for index in organizations_table.indexes reversed%}
+                <a href="?index_org={{index}}&index_app={{index_app}}">-{{ forloop.revcounter }}-</a>
+              {% endfor %}
+          </div>
+          {% endif %}
     </div>
 
     <div class="panel panel-default applications">
@@ -70,6 +77,13 @@
             <p class="alert alert-info empty"> {{ user_name }} does not have any applications.</p>
             {% endif %}
         </div>
+        {% if applications_table.indexes|length > 1 %}
+          <div class="panel-footer">
+              {% for index in applications_table.indexes reversed %}
+                <a href="?index_org={{index_org}}&index_app={{index}}">-{{ forloop.revcounter }}-</a>
+              {% endfor %}
+          </div>
+          {% endif %}
     </div>
 
 </div>

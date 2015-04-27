@@ -27,6 +27,7 @@ from openstack_dashboard.dashboards.idm.home import tables as home_tables
 
 LOG = logging.getLogger('idm_logger')
 
+
 class IndexView(tables.MultiTableView):
     table_classes = (home_tables.OrganizationsTable,
                      home_tables.ApplicationsTable)
@@ -47,9 +48,9 @@ class IndexView(tables.MultiTableView):
                 self.request,
                 user=self.request.user.id,
                 admin=False)
-            switchable_organizations = [org.id for org 
+            switchable_organizations = [org.id for org
                                         in self.request.organizations]
-
+            organizations = sorted(organizations, key=lambda x: x.name.lower())
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)
@@ -60,7 +61,7 @@ class IndexView(tables.MultiTableView):
             self._more = False
             exceptions.handle(self.request,
                               ("Unable to retrieve organization list."))
-    
+
         return idm_utils.filter_default(organizations)
 
     def get_applications_data(self):
@@ -68,11 +69,13 @@ class IndexView(tables.MultiTableView):
         try:
             # TODO(garcianavalon) extract to fiware_api
             all_apps = fiware_api.keystone.application_list(self.request)
-            apps_with_roles = [a.application_id for a 
+            apps_with_roles = [a.application_id for a
                                in fiware_api.keystone.user_role_assignments(
                                self.request, user=self.request.user.id)]
-            applications = [app for app in all_apps 
+            applications = [app for app in all_apps
                             if app.id in apps_with_roles]
+            applications = sorted(applications, key=lambda x: x.name.lower())
+
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)
                 setattr(app, 'counter', users)

@@ -65,22 +65,37 @@ class RegistrationForm(ConfirmPasswordForm):
     registration backend.
 
     """
-
     captcha = ReCaptchaField(attrs={
         'theme' : 'custom',
         'custom_theme_widget': 'recaptcha_widget'
         })
-    username = forms.RegexField(regex=r'^[\w.@+-]+$',
-                                max_length=30,
-                                label=("Username"),
-                                error_messages={'invalid': ("This value may contain only letters, numbers and @/./+/-/_ characters.")})
-
+    username = forms.RegexField(
+        regex=r'^[\w.@+-]+$',
+        max_length=30,
+        label=("Username"),
+        error_messages={
+            'invalid': ("This value may contain only letters, "
+                "numbers and @/./+/-/_ characters.")
+        })
     email = forms.EmailField(label=("E-mail"),
                              required=True)
+    trial = forms.BooleanField(label=("I want to be a trial user"),
+                               required=False)
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
         super(RegistrationForm, self).__init__(*args, **kwargs)
-        self.fields.keyOrder = ['username', 'email', 'password1', 'password2', 'captcha']
+        self.fields.keyOrder = [
+            'username', 'email', 'password1', 'password2', 
+            'captcha', 'trial', 
+        ]
+        # Get the number of trial users and disable the field
+        # if it exceeds the treshold
+        if (len(fiware_api.keystone.get_trial_role_assignments(
+                self.request)) 
+            >= getattr(settings, 'MAX_TRIAL_USERS', 0)):
+            self.fields['trial'].widget.attrs['disabled'] = 'disabled'
+            self.fields['trial'].label += (' (Not available)')
     
     def clean_username(self):
         """ Validate that the username is not already in use."""
@@ -98,7 +113,8 @@ class RegistrationForm(ConfirmPasswordForm):
         on the black list or allowed in the white list, depending on the settings"""
 
         email = self.cleaned_data['email']
-        email_domain = email.split('@')[1]
+        domains = email.split('@')[1].split('.')
+        email_domain = ".".join(domains[len(domains)-2:len(domains)])
         list_name = getattr(settings, 'EMAIL_LIST_TYPE', None)
         if list_name:
             f = open('openstack_dashboard/fiware_auth/'+list_name+'.txt', 'rb')

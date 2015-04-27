@@ -1,12 +1,10 @@
 Dear FIWARE Lab user,
 
-{{ content }}
-
-------------
+{{ content.txt }}
 
 {% if massive_footer == True %}
 	{% include "email/_massive_email_footer.html" %}
 {% endif %}
 
-2014 © FIWARE
-http://www.fi-ware.org/
+2015 © FIWARE
+http://www.fiware.org/

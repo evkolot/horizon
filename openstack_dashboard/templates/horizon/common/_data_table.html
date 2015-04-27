@@ -6,5 +6,15 @@
         {{ row.render }}
       {% endfor %}
     </div>
+  
+  
+  {% if table.indexes|length > 1 and table.name != 'organizations' and table.name != 'applications' and table.name != 'members' %}
+    <div class="panel-footer">
+      {% for index in table.indexes reversed %}
+        <a href="?index={{index}}">-{{ forloop.revcounter }}-</a>
+      {% endfor %}
+    </div>
+  {% endif %}
+  
   {% endwith %}
 {% endwith %}

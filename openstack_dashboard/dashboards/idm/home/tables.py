@@ -16,34 +16,34 @@ from horizon import tables
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import tables as idm_tables
 
-class GoToOrganizationTable(tables.LinkAction):
-    name = "organizations"
-    verbose_name = ("View All")
-    url = "horizon:idm:organizations"
+# class GoToOrganizationTable(tables.LinkAction):
+#     name = "organizations"
+#     verbose_name = ("View All")
+#     url = "horizon:idm:organizations"
 
-    def get_link_url(self):
-        base_url = '/idm/organizations/'
-        return base_url
-
-
-class GoToApplicationsTable(tables.LinkAction):
-    name = "applications"
-    verbose_name = ("View All")
-    url = "horizon:idm:myApplications"
-
-    def get_link_url(self):
-        base_url = '/idm/myApplications/'
-        return base_url
+#     def get_link_url(self):
+#         base_url = '/idm/organizations/'
+#         return base_url
 
 
-class CreateOrganization(tables.LinkAction):
-    name = "create_organization"
-    verbose_name = ("Create")
-    url = "horizon:idm:organizations:create"
+# class GoToApplicationsTable(tables.LinkAction):
+#     name = "applications"
+#     verbose_name = ("View All")
+#     url = "horizon:idm:myApplications"
 
-    def get_link_url(self):
-        base_url = '/idm/organizations/create'
-        return base_url
+#     def get_link_url(self):
+#         base_url = '/idm/myApplications/'
+#         return base_url
+
+
+# class CreateOrganization(tables.LinkAction):
+#     name = "create_organization"
+#     verbose_name = ("Create")
+#     url = "horizon:idm:organizations:create"
+
+#     def get_link_url(self):
+#         base_url = '/idm/organizations/create'
+#         return base_url
 
 
 
@@ -58,7 +58,7 @@ class OrganizationsTable(tables.DataTable):
     class Meta:
         name = "organizations"
         verbose_name = ("Organizations")
-        table_actions = (CreateOrganization, GoToOrganizationTable,)
+        # table_actions = (CreateOrganization, GoToOrganizationTable,)
         multi_select = False
         row_class = idm_tables.OrganizationClickableRow
 
@@ -73,7 +73,7 @@ class ApplicationsTable(tables.DataTable):
     class Meta:
         name = "applications"
         verbose_name = ("Applications")
-        table_actions = (GoToApplicationsTable,)
+        # table_actions = (GoToApplicationsTable,)
         multi_select = False
         row_class = idm_tables.ApplicationClickableRow
         

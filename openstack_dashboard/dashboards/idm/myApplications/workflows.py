@@ -14,8 +14,7 @@
 
 import logging
 
-from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core import urlresolvers
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
@@ -133,7 +132,7 @@ class ManageApplicationRoles(idm_workflows.RelationshipWorkflow):
 
     def get_success_url(self):
         # Overwrite to allow passing kwargs
-        return reverse(self.success_url,
+        return urlresolvers.reverse(self.success_url,
                     kwargs={'application_id':self.context['superset_id']})
 
 
@@ -144,8 +143,10 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
 
     def _list_all_owners(self, request, superset_id):
         all_users = api.keystone.user_list(request)
-        return  [(user.id, user.username) for user in all_users]
-
+        return [
+            (user.id, idm_utils.get_avatar(user, 'img_small', 
+                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
+            for user in all_users if hasattr(user, 'username')]
 
     def _list_all_objects(self, request, superset_id):
         # TODO(garcianavalon) move to fiware_api
@@ -229,6 +230,8 @@ class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
     no_available_text = ("No users found.")
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = AuthorizedMembersApi
+    server_filter_url = urlresolvers.reverse_lazy(
+        'fiware_server_filters_users')
 
 
 class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):
@@ -244,7 +247,7 @@ class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):
 
     def get_success_url(self):
         # Overwrite to allow passing kwargs
-        return reverse(self.success_url,
+        return urlresolvers.reverse(self.success_url,
                     kwargs={'application_id':self.context['superset_id']})
 
 
@@ -254,8 +257,10 @@ class AuthorizedOrganizationsApi(idm_workflows.RelationshipApiInterface):
 
     def _list_all_owners(self, request, superset_id):
         all_organizations, _more = api.keystone.tenant_list(request)
-        return  [(org.id, org.name) for org
-                 in idm_utils.filter_default(all_organizations)]
+        return [
+            (org.id, idm_utils.get_avatar(org, 'img_small', 
+                idm_utils.DEFAULT_ORG_SMALL_AVATAR) + '$' + org.name) 
+            for org in idm_utils.filter_default(all_organizations)]
 
 
     def _list_all_objects(self, request, superset_id):
@@ -334,6 +339,8 @@ class UpdateAuthorizedOrganizations(idm_workflows.UpdateRelationshipStep):
     no_available_text = ("No organizations found.")
     no_members_text = ("No organizations.")
     RELATIONSHIP_CLASS = AuthorizedOrganizationsApi
+    server_filter_url = urlresolvers.reverse_lazy(
+        'fiware_server_filters_organizations')
 
 
 class ManageAuthorizedOrganizations(idm_workflows.RelationshipWorkflow):
@@ -351,5 +358,5 @@ class ManageAuthorizedOrganizations(idm_workflows.RelationshipWorkflow):
 
     def get_success_url(self):
         # Overwrite to allow passing kwargs
-        return reverse(self.success_url,
+        return urlresolvers.reverse(self.success_url,
                     kwargs={'application_id':self.context['superset_id']})

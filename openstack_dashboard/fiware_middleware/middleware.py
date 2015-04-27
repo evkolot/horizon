@@ -18,6 +18,7 @@ from django import http
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
+from horizon import exceptions
 from horizon.utils import functions as utils
 
 from keystoneclient.openstack.common.apiclient \
@@ -45,10 +46,10 @@ class UserInfoMiddleware(object):
             # setattr(user_data, 'username', user_data.name)
             for attr, value in user_data.__dict__.iteritems():
                 setattr(request.user, attr, value)
-        except kc_exceptions.Unauthorized:
+        except (kc_exceptions.Unauthorized, exceptions.NotAuthorized):
             response = http.HttpResponseRedirect(settings.LOGOUT_URL)
             msg = ("Session expired")
-            LOG.info(msg)
+            LOG.debug(msg + 'for user %s', request.user.id)
             utils.add_logout_reason(request, response, msg)
             return response
         

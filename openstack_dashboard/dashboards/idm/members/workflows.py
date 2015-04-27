@@ -15,7 +15,7 @@
 import logging
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core import urlresolvers
 
 from horizon import exceptions
 from horizon import forms
@@ -35,10 +35,13 @@ class UserRoleApi(idm_workflows.RelationshipApiInterface):
     
     def _list_all_owners(self, request, superset_id):
         all_users = api.keystone.user_list(request)
-        return [(user.id, user.username) for user in all_users]
+        return [
+            (user.id, idm_utils.get_avatar(user, 'img_small', 
+                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
+            for user in all_users if hasattr(user, 'username')]
 
     def _list_all_objects(self, request, superset_id):
-        return api.keystone.role_list(request)
+        return idm_utils.filter_default(api.keystone.role_list(request))
 
     def _list_current_assignments(self, request, superset_id):
         return api.keystone.get_project_users_roles(request,
@@ -89,6 +92,8 @@ class UpdateProjectMembers(idm_workflows.UpdateRelationshipStep):
     no_available_text = ("No users found.")
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = UserRoleApi
+    server_filter_url = urlresolvers.reverse_lazy(
+        'fiware_server_filters_users')
 
 
 class ManageOrganizationMembers(idm_workflows.RelationshipWorkflow):
@@ -119,8 +124,14 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
         project_users_roles = api.keystone.get_project_users_roles(
             request,
             project=superset_id)
-        members = [user for user in all_users if user.id in project_users_roles]
-        return  [(user.id, user.username) for user in members]
+        members = [user for user in all_users 
+            if user.id in project_users_roles
+            and hasattr(user, 'username')]
+
+        return [
+            (user.id, idm_utils.get_avatar(user, 'img_small', 
+                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
+            for user in members]
 
 
     def _list_all_objects(self, request, superset_id):
@@ -226,6 +237,8 @@ class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
     no_available_text = ("No users found.")
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = AuthorizedMembersApi
+    server_filter_url = urlresolvers.reverse_lazy(
+        'fiware_server_filters_users')
 
     def contribute(self, data, context):
         superset_id = context['superset_id']
