@@ -53,33 +53,33 @@
     </div>
     <div class="panel-body">
       {% if members_table.get_rows %}
-        {{ members_table.render}}
+      {{ members_table.render}}
       {% else %}
-        <p class="alert alert-info empty"> {{ organization_name }} does not have any members.</p>
+      <p class="alert alert-info empty"> {{ organization_name }} does not have any members.</p>
       {% endif %}
     </div>
     {% if members_table.indexes|length > 1 %}
-      <div class="panel-footer">
-        <nav>
-          <ul class="pagination">
-            <!--<li>
-              <a href="#" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>-->
-            {% for index in members_table.indexes reversed %}
-              <li>
-                <a href="?index_mem={{index}}&index_app={{index_app}}"><span>{{ forloop.revcounter }}</span></a>
-              </li>
-            {% endfor %}
-            <!--<li>
-              <a href="#" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>-->
-          </ul>
-        </nav>
-      </div>
+    <div class="panel-footer">
+      <nav>
+        <ul class="pagination">
+          <!--<li>
+            <a href="#" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>-->
+          {% for index in members_table.indexes %}
+            <li {%if members_table.index_act = index %}class="active"{%endif%}>
+              <a href="?index_mem={{index}}&index_app={{index_app}}">{{ forloop.counter }}</a>
+            </li>
+          {% endfor %}
+          <!--<li>
+            <a href="#" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>-->
+        </ul>
+      </nav>
+    </div>
     {% endif %}
   </div>
 
@@ -92,35 +92,34 @@
     </div>
     <div class="panel-body">
       {% if applications_table.get_rows %}
-        {{ applications_table.render}}
+      {{ applications_table.render}}
       {% else %}
-        <p class="alert alert-info empty"> {{organization_name}} does not have any authorizing applications.</p>
+      <p class="alert alert-info empty"> {{organization_name}} does not have any authorizing applications.</p>
       {% endif %}
     </div>
     {% if applications_table.indexes|length > 1 %}
-      <div class="panel-footer">
-        <nav>
-          <ul class="pagination">
-            <!--<li>
-              <a href="#" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>-->
-            {% for index in applications_table.indexes reversed %}
-              <li>
-                 <a href="?index_mem={{index_mem}}&index_app={{index}}"><span>{{ forloop.revcounter }}</span></a>
-              </li>
-            {% endfor %}
-            <!--<li>
-              <a href="#" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>-->
-          </ul>
-        </nav>
-      </div>
-      {% endif %}
+    <div class="panel-footer">
+      <nav>
+        <ul class="pagination">
+          <!--<li>
+            <a href="#" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>-->
+          {% for index in applications_table.indexes %}
+          <li {%if applications_table.index_act = index %}class="active"{%endif%}>
+            <a href="?index_mem={{index_mem}}&index_app={{index}}">{{ forloop.counter }}</a>
+          </li>
+          {% endfor %}
+                    <!--<li>
+            <a href="#" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>-->
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
   </div>
-
 </div>
 {% endblock %}

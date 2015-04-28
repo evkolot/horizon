@@ -57,6 +57,7 @@ class ProvidingTab(tabs.TableTab):
             applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
             indexes = range(0, len(applications), LIMIT)
             self._tables['providing_table'].indexes = indexes
+            self._tables['providing_table'].index_act = int(index)
             applications = idm_utils.paginate(self, applications, index=index, limit=LIMIT)
 
             for app in applications:
@@ -101,6 +102,7 @@ class PurchasedTab(tabs.TableTab):
         
             indexes = range(0, len(applications), LIMIT)
             self._tables['purchased_table'].indexes = indexes
+            self._tables['purchased_table'].index_act = int(index)
             applications = idm_utils.paginate(self, applications, index=index, limit=LIMIT)
 
             for app in applications:
@@ -148,6 +150,7 @@ class AuthorizedTab(tabs.TableTab):
         
             indexes = range(0, len(applications), LIMIT)
             self._tables['authorized_table'].indexes = indexes
+            self._tables['authorized_table'].index_act = int(index)
             applications = idm_utils.paginate(self, applications, index=index, limit=LIMIT)
 
             for app in applications:
