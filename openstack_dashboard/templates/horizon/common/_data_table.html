@@ -12,21 +12,21 @@
     <div class="panel-footer">
       <nav>
         <ul class="pagination">
-          <li>
+          <!--<li>
             <a href="#" aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
             </a>
-          </li>
+          </li>-->
           {% for index in table.indexes reversed %}
             <li>
                <a href="?index={{index}}"><span>{{ forloop.revcounter }}</span></a>
             </li>
           {% endfor %}
-          <li>
+          <!--<li>
             <a href="#" aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
-          </li>
+          </li>-->
         </ul>
       </nav>
     </div>

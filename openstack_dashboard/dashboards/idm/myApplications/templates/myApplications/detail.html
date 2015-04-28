@@ -78,21 +78,21 @@
       <div class="panel-footer">
         <nav>
           <ul class="pagination">
-            <li>
+            <!--<li>
               <a href="#" aria-label="Next">
                 <span aria-hidden="true">&raquo;</span>
               </a>
-            </li>
+            </li>-->
             {% for index in auth_users_table.indexes reversed %}
               <li>
                  <a href="?index_mem={{index}}&index_org={{index_org}}"><span>{{ forloop.revcounter }}</span></a>
               </li>
             {% endfor %}
-            <li>
+            <!--<li>
               <a href="#" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
               </a>
-            </li>
+            </li>-->
           </ul>
         </nav>
       </div>
@@ -115,21 +115,21 @@
       <div class="panel-footer">
         <nav>
           <ul class="pagination">
-            <li>
+            <!--<li>
               <a href="#" aria-label="Next">
                 <span aria-hidden="true">&raquo;</span>
               </a>
-            </li>
+            </li>-->
             {% for index in organizations_table.indexes reversed %}
               <li>
                  <a href="?index_mem={{index_mem}}&index_org={{index}}"><span>{{ forloop.revcounter }}</span></a>
               </li>
             {% endfor %}
-            <li>
+            <!--<li>
               <a href="#" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
               </a>
-            </li>
+            </li>-->
           </ul>
         </nav>
       </div>
