@@ -143,6 +143,7 @@ div#update_owners_members{
     border-right: 1px solid $border-color;
     @media (max-width: $screen-sm-min){
       border-right: none;
+      margin-bottom: 20px;
     }
   }
   .all-users,
