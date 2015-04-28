@@ -110,7 +110,10 @@ textarea {
     @extend .alert-info;
   }
 }
-
+ul#perform_filter_available_update_owners{
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
 #organizations,
 #myApplications{
   .panel-heading{
