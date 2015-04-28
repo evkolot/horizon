@@ -26,12 +26,19 @@
         <p class="alert alert-info empty"> {{ organization_name }} does not have any members.</p>
       {% endif %}
     </div>
-    {% if table.indexes|length > 1  %}
+
+    {% if members_table.indexes|length > 1  %}
     <div class="panel-footer">
-      {% for index in members_table.indexes reversed %}
-        <a href="?index={{index}}">-{{ forloop.revcounter }}-</a>
-        
+
+    <nav>
+      <ul class="pagination">
+      {% for index in members_table.indexes %}
+        <li {% if members_table.index_act == index %}class="active"{%endif%} >
+           <a href="?index={{index}}">{{ forloop.counter }}</a>
+        </li>
       {% endfor %}
+      </ul>
+      </nav>
     </div>
   {% endif %}
   </div>

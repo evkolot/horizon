@@ -61,6 +61,7 @@ class IndexView(tables.MultiTableView):
         
             indexes = range(0, len(users), LIMIT)
             self._tables['members'].indexes = indexes
+            self._tables['members'].index_act = int(index)
             users = idm_utils.paginate(self, users, index=index, limit=LIMIT)
 
         except Exception:

@@ -51,6 +51,7 @@ class OtherOrganizationsTab(tabs.TableTab):
         
             indexes = range(0, len(organizations_full), LIMIT)
             self._tables['other_organizations'].indexes = indexes
+            self._tables['other_organizations'].index_act = int(index)
             organizations = idm_utils.paginate(self, organizations_full, index=index, limit=LIMIT)
 
             for org in organizations:
@@ -83,6 +84,7 @@ class OwnedOrganizationsTab(tabs.TableTab):
             index = self.request.GET.get('index', 0)
             indexes = range(0, len(organizations), LIMIT)
             self._tables['owned_organizations'].indexes = indexes
+            self._tables['owned_organizations'].index_act = int(index)
             organizations = idm_utils.paginate(self, organizations, index=index, limit=LIMIT)
 
             for org in organizations:
@@ -115,6 +117,7 @@ class MemberOrganizationsTab(tabs.TableTab):
             index = self.request.GET.get('index', 0)
             indexes = range(0, len(organizations), LIMIT)
             self._tables['member_organizations'].indexes = indexes
+            self._tables['member_organizations'].index_act = int(index)
             organizations = idm_utils.paginate(self, organizations, index=index, limit=LIMIT)
 
 
