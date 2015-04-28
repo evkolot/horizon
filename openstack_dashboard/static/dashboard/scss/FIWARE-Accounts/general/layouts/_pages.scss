@@ -110,7 +110,8 @@ textarea {
     @extend .alert-info;
   }
 }
-ul#perform_filter_available_update_owners{
+ul#perform_filter_available_update_owners,
+ul#perform_filter_available_update_owners_users{
   margin-bottom: 15px;
   margin-top: 15px;
 }
@@ -124,7 +125,8 @@ ul#perform_filter_available_update_owners{
 
 
 .panel.members,
-.panel.applications{
+.panel.applications,
+.panel.organizations{
   .panel-footer{
     padding: 4px 4px 6px;
     nav{

@@ -141,6 +141,9 @@ div#update_owners_members{
   }
   .all-users{
     border-right: 1px solid $border-color;
+    @media (max-width: $screen-sm-min){
+      border-right: none;
+    }
   }
   .all-users,
   .members-list{
