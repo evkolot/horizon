@@ -215,6 +215,7 @@ class DetailApplicationView(tables.MultiTableView):
             index_mem = self.request.GET.get('index_mem', 0)
             indexes = range(0, len(users), LIMIT)
             self._tables['auth_users'].indexes = indexes
+            self._tables['auth_users'].index_act = int(index_mem)
             authorized_users = idm_utils.paginate(self, authorized_users, 
                 index=index_mem, limit=LIMIT)
         except Exception:
@@ -237,6 +238,7 @@ class DetailApplicationView(tables.MultiTableView):
             index_org = self.request.GET.get('index_org', 0)
             indexes = range(0, len(organizations), LIMIT)
             self._tables['organizations'].indexes = indexes
+            self._tables['organizations'].index_act = int(index_org)
             organizations = idm_utils.paginate(self, organizations, index=index_org, limit=LIMIT)
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)

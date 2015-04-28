@@ -10,9 +10,15 @@
   
   {% if table.indexes|length > 1 and table.name != 'organizations' and table.name != 'applications' and table.name != 'members' %}
     <div class="panel-footer">
-      {% for index in table.indexes reversed %}
-        <a href="?index={{index}}">-{{ forloop.revcounter }}-</a>
+    <nav>
+    <ul class="pagination">
+      {% for index in table.indexes %}
+      <li {%if table.index_act = index %}class="active"{%endif%}>
+        <a href="?index={{index}}">{{ forloop.counter }}</a>
+      </li>
       {% endfor %}
+      </ul>
+      </nav>
     </div>
   {% endif %}
   

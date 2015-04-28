@@ -60,9 +60,15 @@
     </div>
     {% if members_table.indexes|length > 1 %}
       <div class="panel-footer">
-          {% for index in members_table.indexes reversed %}
-            <a href="?index_mem={{index}}&index_app={{index_app}}">-{{ forloop.revcounter }}-</a>
+      <nav>
+      <ul class="pagination">
+          {% for index in members_table.indexes %}
+          <li {%if members_table.index_act = index %}class="active"{%endif%}>
+            <a href="?index_mem={{index}}&index_app={{index_app}}">{{ forloop.counter }}</a>
+            </li>
           {% endfor %}
+      </ul>
+      </nav>
       </div>
     {% endif %}
   </div>
@@ -83,9 +89,15 @@
     </div>
     {% if applications_table.indexes|length > 1 %}
       <div class="panel-footer">
-          {% for index in applications_table.indexes reversed %}
-            <a href="?index_mem={{index_mem}}&index_app={{index}}">-{{ forloop.revcounter }}-</a>
+        <nav>
+          <ul class="pagination">
+          {% for index in applications_table.indexes %}
+          <li {%if applications_table.index_act = index %}class="active"{%endif%}>
+            <a href="?index_mem={{index_mem}}&index_app={{index}}">{{ forloop.counter }}</a>
+            </li>
           {% endfor %}
+          </ul>
+        </nav>
       </div>
       {% endif %}
   </div>

@@ -63,6 +63,7 @@ class DetailUserView(tables.MultiTableView):
         
             indexes = range(0, len(organizations), LIMIT)
             self._tables['organizations'].indexes = indexes
+            self._tables['organizations'].index_act = int(index_org)
             organizations = idm_utils.paginate(self, organizations, index=index_org, limit=LIMIT)
 
             for org in organizations:
@@ -93,6 +94,7 @@ class DetailUserView(tables.MultiTableView):
         
             indexes = range(0, len(applications), LIMIT)
             self._tables['applications'].indexes = indexes
+            self._tables['applications'].index_act = int(index_app)
             applications = idm_utils.paginate(self, applications, index=index_app, limit=LIMIT)
 
             for app in applications:

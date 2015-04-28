@@ -57,9 +57,15 @@
         </div>
         {% if organizations_table.indexes|length > 1 %}
           <div class="panel-footer">
-              {% for index in organizations_table.indexes reversed%}
-                <a href="?index_org={{index}}&index_app={{index_app}}">-{{ forloop.revcounter }}-</a>
+          <nav>
+            <ul class="pagination">
+              {% for index in organizations_table.indexes %}
+              <li {% if organizations_table.index_act = index%}class="active"{%endif%}>
+                <a href="?index_org={{index}}&index_app={{index_app}}">{{ forloop.counter }}</a>
+              </li>
               {% endfor %}
+            </ul>
+          </nav>
           </div>
           {% endif %}
     </div>
@@ -78,9 +84,15 @@
         </div>
         {% if applications_table.indexes|length > 1 %}
           <div class="panel-footer">
-              {% for index in applications_table.indexes reversed %}
-                <a href="?index_org={{index_org}}&index_app={{index}}">-{{ forloop.revcounter }}-</a>
+          <nav>
+            <ul class="pagination">
+              {% for index in applications_table.indexes %}
+              <li {% if applications_table.index_act = index%}class="active"{%endif%}>
+                <a href="?index_org={{index_org}}&index_app={{index}}">{{ forloop.counter }}</a>
+                </li>
               {% endfor %}
+            </ul>
+          </nav>
           </div>
           {% endif %}
     </div>

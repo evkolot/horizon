@@ -76,9 +76,15 @@
     </div>
     {% if auth_users_table.indexes|length > 1 %}
       <div class="panel-footer">
-          {% for index in auth_users_table.indexes reversed %}
-            <a href="?index_mem={{index}}&index_org={{index_org}}">-{{ forloop.revcounter }}-</a>
+        <nav>
+          <ul class="pagination">
+          {% for index in auth_users_table.indexes %}
+          <li {%if auth_users_table.index_act = index %}{%endif%}>
+            <a href="?index_mem={{index}}&index_org={{index_org}}">{{ forloop.counter }}</a>
+          </li>
           {% endfor %}
+          </ul>
+        </nav>
       </div>
     {% endif %}
   </div>
@@ -97,9 +103,15 @@
     </div>
     {% if organizations_table.indexes|length > 1 %}
       <div class="panel-footer">
-          {% for index in organizations_table.indexes reversed %}
-            <a href="?index_mem={{index_mem}}&index_org={{index}}">-{{ forloop.revcounter }}-</a>
+        <nav>
+          <ul class="pagination">
+          {% for index in organizations_table.indexes %}
+          <li {% if organizations_table.index_act = index%}class="active"{%endif%}>
+            <a href="?index_mem={{index_mem}}&index_org={{index}}">{{ forloop.counter }}</a>
+            </li>
           {% endfor %}
+          </ul>
+          </nav>
       </div>
       {% endif %}
   </div>
