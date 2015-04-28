@@ -205,12 +205,12 @@ class DetailApplicationView(tables.MultiTableView):
             all_users = api.keystone.user_list(self.request)
             role_assignments = fiware_api.keystone.user_role_assignments(
                 self.request, application=self.kwargs['application_id'])
-            authorized_users = []
+            authorized_users = set()
             for assignment in role_assignments:
                 user = next((user for user in all_users if user.id == assignment.user_id), 
                             None)
                 if user and user.default_project_id == assignment.organization_id:
-                    authorized_users.append(user)
+                    authorized_users.add(user)
             authorized_users = sorted(authorized_users, key=lambda x: x.username.lower())
             index_mem = self.request.GET.get('index_mem', 0)
             indexes = range(0, len(users), LIMIT)
