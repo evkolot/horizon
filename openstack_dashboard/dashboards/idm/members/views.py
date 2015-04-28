@@ -24,7 +24,7 @@ from horizon import workflows
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
-from openstack_dashboard.local import local_settings 
+from openstack_dashboard.local import local_settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm.members \
     import tables as members_tables
@@ -57,7 +57,6 @@ class IndexView(tables.MultiTableView):
                 self.request,
                 project=self.request.organization.id)
             users = [user for user in all_users if user.id in project_users_roles]
-
             users = sorted(users, key=lambda x: x.username.lower())
         
             indexes = range(0, len(users), LIMIT)
