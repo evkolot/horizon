@@ -60,9 +60,25 @@
     </div>
     {% if members_table.indexes|length > 1 %}
       <div class="panel-footer">
-          {% for index in members_table.indexes reversed %}
-            <a href="?index_mem={{index}}&index_app={{index_app}}">-{{ forloop.revcounter }}-</a>
-          {% endfor %}
+        <nav>
+          <ul class="pagination">
+            <li>
+              <a href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            {% for index in members_table.indexes reversed %}
+              <li>
+                <a href="?index_mem={{index}}&index_app={{index_app}}"><span>{{ forloop.revcounter }}</span></a>
+              </li>
+            {% endfor %}
+            <li>
+              <a href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
       </div>
     {% endif %}
   </div>
@@ -83,9 +99,25 @@
     </div>
     {% if applications_table.indexes|length > 1 %}
       <div class="panel-footer">
-          {% for index in applications_table.indexes reversed %}
-            <a href="?index_mem={{index_mem}}&index_app={{index}}">-{{ forloop.revcounter }}-</a>
-          {% endfor %}
+        <nav>
+          <ul class="pagination">
+            <li>
+              <a href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            {% for index in applications_table.indexes reversed %}
+              <li>
+                 <a href="?index_mem={{index_mem}}&index_app={{index}}"><span>{{ forloop.revcounter }}</span></a>
+              </li>
+            {% endfor %}
+            <li>
+              <a href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
       </div>
       {% endif %}
   </div>
