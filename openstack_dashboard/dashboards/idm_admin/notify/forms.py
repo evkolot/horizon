@@ -61,8 +61,12 @@ class EmailForm(forms.SelfHandlingForm):
 
             connection = mail.get_connection(fail_silently=True)
 
-            msg = mail.EmailMultiAlternatives(data['subject'], text_content, 
-                'no-reply@account.lab.fi-ware.org', all_users, connection=connection)
+            msg = mail.EmailMultiAlternatives(
+                subject=data['subject'], 
+                body=text_content, 
+                from_email='no-reply@account.lab.fi-ware.org', 
+                bcc=all_users, 
+                connection=connection)
             msg.attach_alternative(html_content, "text/html")
             msg.send()
 

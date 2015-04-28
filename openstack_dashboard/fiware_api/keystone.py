@@ -636,11 +636,15 @@ def get_idm_admin_app(request):
                 break
     return cache.get('idm_admin')
 
-def get_fiware_cloud_app(request):
+def get_fiware_cloud_app(request, use_idm_account=False):
     cloud_app = getattr(local_settings, "FIWARE_CLOUD_APP", None)
     if cloud_app and cache.get('cloud_app') is None:
         try:
-            apps = internal_keystoneclient().oauth2.consumers.list()
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            apps = manager.oauth2.consumers.list()
         except Exception:
             apps = []
             exceptions.handle(request)
@@ -651,11 +655,14 @@ def get_fiware_cloud_app(request):
                 break
     return cache.get('cloud_app')
 
-def get_fiware_default_app(request, app_name):
+def get_fiware_default_app(request, app_name, use_idm_account=False):
     if cache.get(app_name) is None:
         try:
-            apps = api.keystone.keystoneclient(request, 
-                admin=True).oauth2.consumers.list()
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            apps = manager.oauth2.consumers.list()
         except Exception:
             apps = []
             exceptions.handle(request)
@@ -663,14 +670,14 @@ def get_fiware_default_app(request, app_name):
             if app.name == app_name:
                 pickle_app = PickleObject(name=app.name, id=app.id)
                 cache.set(app_name, pickle_app, DEFAULT_OBJECTS_CACHE_TIME)
-                return cache.get(app_name)
-        return None
+                break
+    return cache.get(app_name)
 
-def get_fiware_default_apps(request):
+def get_fiware_default_apps(request, use_idm_account=False):
     default_apps_names = getattr(local_settings, "FIWARE_DEFAULT_APPS", [])
     default_apps = []
     for app_name in default_apps_names:
-        app = get_fiware_default_app(request, app_name)
+        app = get_fiware_default_app(request, app_name, use_idm_account)
         if app:
             default_apps.append(app)
     return default_apps

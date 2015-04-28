@@ -39,13 +39,15 @@ from openstack_dashboard.dashboards.idm.organizations \
 
 
 LOG = logging.getLogger('idm_logger')
+LIMIT = getattr(settings, 'PAGE_LIMIT', 15)
+
 AVATAR_ROOT = os.path.abspath(os.path.join(
     settings.MEDIA_ROOT, 'OrganizationAvatar'))
 
 class IndexView(tabs.TabbedTableView):
     tab_group_class = organization_tabs.PanelTabs
     template_name = 'idm/organizations/index.html'
-    
+
 
 class CreateOrganizationView(forms.ModalFormView):
     form_class = organization_forms.CreateOrganizationForm
@@ -69,6 +71,11 @@ class DetailOrganizationView(tables.MultiTableView):
                 self.request,
                 project=self.kwargs['organization_id'])
             users = [user for user in all_users if user.id in project_users_roles]
+            users = sorted(users, key=lambda x: x.username.lower())
+            index_mem = self.request.GET.get('index_mem', 0)
+            indexes = range(0, len(users), LIMIT)
+            self._tables['members'].indexes = indexes
+            users = idm_utils.paginate(self, users, index=index_mem, limit=LIMIT)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
@@ -86,13 +93,18 @@ class DetailOrganizationView(tables.MultiTableView):
             ]
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
+            applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
+            index_app = self.request.GET.get('index_app', 0)
+            indexes = range(0, len(applications), LIMIT)
+            self._tables['applications'].indexes = indexes
+            applications = idm_utils.paginate(self, applications, index=index_app, limit=LIMIT)
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)
                 setattr(app, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))
-        return idm_utils.filter_default(applications)
+        return applications
 
     def _can_edit(self):
         # Allowed if he is an owner in the organization
@@ -119,6 +131,8 @@ class DetailOrganizationView(tables.MultiTableView):
         context['city'] = getattr(organization, 'city', '')
         context['email'] = getattr(organization, 'email', '')
         context['website'] = getattr(organization, 'website', '')
+        context['index_app'] = self.request.GET.get('index_app', 0)
+        context['index_mem'] = self.request.GET.get('index_mem', 0)
         if self._can_edit():
             context['edit'] = True
         return context

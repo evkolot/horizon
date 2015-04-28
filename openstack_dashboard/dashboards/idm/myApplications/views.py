@@ -40,6 +40,8 @@ from openstack_dashboard.dashboards.idm.myApplications \
 
 
 LOG = logging.getLogger('idm_logger')
+LIMIT = getattr(settings, 'PAGE_LIMIT', 15)
+
 
 class IndexView(tabs.TabbedTableView):
     tab_group_class = application_tabs.PanelTabs
@@ -191,10 +193,10 @@ class CreatePermissionView(forms.ModalFormView):
 
 class DetailApplicationView(tables.MultiTableView):
     template_name = 'idm/myApplications/detail.html'
-    table_classes = (application_tables.MembersTable,
+    table_classes = (application_tables.AuthUsersTable,
                      application_tables.AuthorizedOrganizationsTable)
 
-    def get_members_data(self):
+    def get_auth_users_data(self):
         users = []
         try:
             # NOTE(garcianavalon) Get all the users' ids that belong to
@@ -203,12 +205,22 @@ class DetailApplicationView(tables.MultiTableView):
             all_users = api.keystone.user_list(self.request)
             role_assignments = fiware_api.keystone.user_role_assignments(
                 self.request, application=self.kwargs['application_id'])
-            users_with_roles = [a.user_id for a in role_assignments]
-            users = [user for user in all_users if user.id in users_with_roles]
+            authorized_users = set()
+            for assignment in role_assignments:
+                user = next((user for user in all_users if user.id == assignment.user_id), 
+                            None)
+                if user and user.default_project_id == assignment.organization_id:
+                    authorized_users.add(user)
+            authorized_users = sorted(authorized_users, key=lambda x: x.username.lower())
+            index_mem = self.request.GET.get('index_mem', 0)
+            indexes = range(0, len(users), LIMIT)
+            self._tables['auth_users'].indexes = indexes
+            authorized_users = idm_utils.paginate(self, authorized_users, 
+                index=index_mem, limit=LIMIT)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
-        return users
+        return authorized_users
 
     def get_organizations_data(self):
         organizations = []
@@ -221,6 +233,11 @@ class DetailApplicationView(tables.MultiTableView):
                 self.request, application=self.kwargs['application_id'])
             organizations = [org for org in all_organizations if org.id
                      in set([a.organization_id for a in role_assignments])]
+            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
+            index_org = self.request.GET.get('index_org', 0)
+            indexes = range(0, len(organizations), LIMIT)
+            self._tables['organizations'].indexes = indexes
+            organizations = idm_utils.paginate(self, organizations, index=index_org, limit=LIMIT)
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)
@@ -288,14 +305,16 @@ class DetailApplicationView(tables.MultiTableView):
             context['manage_roles'] = True
         if self.allowed(self.request, self.request.user, application):
             context['viewCred'] = True
+        context['index_org'] = self.request.GET.get('index_org', 0)
+        context['index_mem'] = self.request.GET.get('index_mem', 0)
         return context
 
 
-class AuthorizedMembersView(workflows.WorkflowView):
-    workflow_class = application_workflows.ManageAuthorizedMembers
+class AuthorizedUsersView(workflows.WorkflowView):
+    workflow_class = application_workflows.ManageAuthorizedUsers
 
     def get_initial(self):
-        initial = super(AuthorizedMembersView, self).get_initial()
+        initial = super(AuthorizedUsersView, self).get_initial()
         initial['superset_id'] = self.kwargs['application_id']
         return initial
 

@@ -12,22 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import horizon
+from django.conf import settings
 
-from openstack_dashboard.dashboards.idm_admin import utils as idm_admin_utils
-
-
-class Idm_Admin(horizon.Dashboard):
-    name = (" ")
-    name_sm = (" ")
-    slug = "idm_admin"
-    panels = ('notify', 'administrators')
-    default_panel = 'notify'
-
-    def nav(self, context):
-        # NOTE(garcianavalon) hide it if the user doesn't belong to idm_admin
-        request = context['request']
-        return idm_admin_utils.is_current_user_administrator(request)
+from openstack_dashboard import fiware_api
 
 
-horizon.register(Idm_Admin)
+def is_current_user_administrator(request):
+    """ Checks if the current user is an administrator. In other words, if he
+    has any roles in the idm_admin application.
+    """
+    idm_admin = fiware_api.keystone.get_idm_admin_app(request)
+    if not idm_admin:
+        return False
+    user_apps = [a.application_id for a
+                 in fiware_api.keystone.user_role_assignments(
+                     request, user=request.user.id)]
+    return idm_admin.id in user_apps

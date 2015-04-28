@@ -12,13 +12,23 @@
 
 import logging
 
+from django.shortcuts import redirect
+
 from horizon import forms
 
 from openstack_dashboard.dashboards.idm_admin.notify \
     import forms as notify_forms
+from openstack_dashboard.dashboards.idm_admin \
+	import utils as idm_admin_utils
 
 LOG = logging.getLogger('idm_logger')
 
 class NotifyEmailView(forms.ModalFormView):
     form_class = notify_forms.EmailForm
     template_name = 'idm_admin/notify/index.html'
+
+    def dispatch(self, request, *args, **kwargs):
+    	if idm_admin_utils.is_current_user_administrator(request):
+        	return super(NotifyEmailView, self).dispatch(request, *args, **kwargs)
+        else:
+        	return redirect('horizon:user_home')

@@ -26,6 +26,7 @@ from horizon.utils import memoized
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.local import local_settings
 from openstack_dashboard.dashboards.idm import views as idm_views
 from openstack_dashboard.dashboards.idm.users import tables as user_tables
 from openstack_dashboard.dashboards.idm import utils as idm_utils
@@ -34,6 +35,8 @@ from openstack_dashboard.dashboards.idm.users.forms import  InfoForm, ContactFor
 from horizon import views
 
 LOG = logging.getLogger('idm_logger')
+LIMIT = getattr(local_settings, 'PAGE_LIMIT', 15)
+
 
 
 class DetailUserView(tables.MultiTableView):
@@ -44,6 +47,7 @@ class DetailUserView(tables.MultiTableView):
     
     def get_organizations_data(self):
         organizations = []
+        index_org = self.request.GET.get('index_org', 0)
         LOG.debug(self.request.path)
         path = self.request.path
         user_id = path.split('/')[3]
@@ -54,6 +58,13 @@ class DetailUserView(tables.MultiTableView):
                 self.request,
                 user=user_id,
                 admin=False)
+
+            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
+        
+            indexes = range(0, len(organizations), LIMIT)
+            self._tables['organizations'].indexes = indexes
+            organizations = idm_utils.paginate(self, organizations, index=index_org, limit=LIMIT)
+
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
                 setattr(org, 'counter', users)
@@ -61,10 +72,11 @@ class DetailUserView(tables.MultiTableView):
             self._more = False
             exceptions.handle(self.request,
                               ("Unable to retrieve organization information."))
-        return idm_utils.filter_default(organizations)
+        return organizations
 
     def get_applications_data(self):
         applications = []
+        index_app = self.request.GET.get('index_app', 0)
         path = self.request.path
         user_id = path.split('/')[3]
 
@@ -76,13 +88,20 @@ class DetailUserView(tables.MultiTableView):
                                self.request, user=user_id)]
             applications = [app for app in all_apps 
                             if app.id in apps_with_roles]
+            applications = idm_utils.filter_default(
+                            sorted(applications, key=lambda x: x.name.lower()))
+        
+            indexes = range(0, len(applications), LIMIT)
+            self._tables['applications'].indexes = indexes
+            applications = idm_utils.paginate(self, applications, index=index_app, limit=LIMIT)
+
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)
                 setattr(app, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))
-        return idm_utils.filter_default(applications)
+        return applications
 
     def _can_edit(self):
         # Allowed if its the same user
@@ -93,18 +112,15 @@ class DetailUserView(tables.MultiTableView):
         context = super(DetailUserView, self).get_context_data(**kwargs)
         user_id = self.kwargs['user_id']
         user = api.keystone.user_get(self.request, user_id, admin=True)
-        context['about_me'] = getattr(user, 'description', '')
-        context['user_id'] = user_id
-        context['user_name'] = getattr(user, 'username', user.name)
+        context['user'] = user
         if hasattr(user, 'img_original'):
             image = getattr(user, 'img_original')
             image = settings.MEDIA_URL + image
         else:
             image = settings.STATIC_URL + 'dashboard/img/logos/original/user.png'
         context['image'] = image
-        context['city'] = getattr(user, 'city', '')
-        context['email'] = getattr(user, 'name', '')
-        context['website'] = getattr(user, 'website', '')
+        context['index_app'] = self.request.GET.get('index_app', 0)
+        context['index_org'] = self.request.GET.get('index_org', 0)
         if self._can_edit():
             context['edit'] = True
         return context
