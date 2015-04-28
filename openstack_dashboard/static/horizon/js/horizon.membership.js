@@ -277,7 +277,7 @@ horizon.membership = {
       if (available) {
         var default_role = horizon.membership.default_role_id[step_slug];
         $(this).removeClass( "fa-plus" ).addClass( "fa-close" );
-        $("." + step_slug + "_members").append(member_el);
+        $("." + step_slug + "_members").prepend(member_el);
         if (default_role) {
           horizon.membership.add_member_to_role(step_slug, data_id, default_role);
         } else {
