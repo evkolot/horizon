@@ -115,23 +115,19 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
         # now filter by username
         if filters:
             filter_by = filters[self.filter_key]
-            if organization:
-                members = fiware_api.keystone.user_role_assignments(request, organization=organization)
-                filtered_users = [a.user_id for a in members]
-                members_f = []
-                for user_id in filtered_users:
-                    for u in json_users:
-                        if 'username' in u and u['id']== user_id and u['username'].startswith(filter_by):
-                            import pdb
-                            pdb.set_trace()
-                            members_f.append(u)
-                return members_f
+            members_filter = [u for u in json_users 
+                              if 'username' in u
+                              and u['username'].startswith(filter_by)]
 
+            if organization:
+                members = api.keystone.role_assignments_list(request, project=organization)
+                filtered_users = [a.user['id'] for a in members]
+                # print filtered_users by organization
+                return [u for u in members_filter 
+                        if u['id'] in filtered_users]
             else:
                 # print filtered_users
-                return [u for u in json_users 
-                    if 'username' in u
-                    and u['username'].startswith(filter_by)]
+                return members_filter
         else:
             return json_users
 
