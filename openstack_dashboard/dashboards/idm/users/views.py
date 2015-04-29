@@ -162,8 +162,7 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
             "username": getattr(self.object, 'username', ' '),
             "description": getattr(self.object, 'description', ' '),    
             "city": getattr(self.object, 'city', ' '),
-            "website":getattr(self.object, 'website', ' '),
-            "password": '',
+            "website": getattr(self.object, 'website', ' '),
         })
         return initial
 

@@ -38,7 +38,6 @@ AVATAR_ORIGINAL = settings.MEDIA_ROOT+"/"+"UserAvatar/original/"
 
 class InfoForm(forms.SelfHandlingForm):
     userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-    password = forms.CharField(label=("password"), widget=forms.HiddenInput(), required=False)
     username = forms.CharField(label=("Username"), max_length=64, required=True)
     description = forms.CharField(label=("About Me"),
                                   widget=forms.widgets.Textarea,
@@ -54,7 +53,7 @@ class InfoForm(forms.SelfHandlingForm):
                                      username=data['username'],
                                      description=data['description'],
                                      city=data['city'],
-                                     password=data['password'])
+                                     password='')
             api.keystone.tenant_update(request,
                                        user.default_project_id,
                                        name=data['username'])
@@ -69,7 +68,6 @@ class InfoForm(forms.SelfHandlingForm):
 
 class ContactForm(forms.SelfHandlingForm):
     userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-    password = forms.CharField(label=("password"), widget=forms.HiddenInput(), required=False)
     website = forms.URLField(label=("Website"), required=False)
     title = 'Contact Information'
 
@@ -77,7 +75,7 @@ class ContactForm(forms.SelfHandlingForm):
         api.keystone.user_update(request, 
                                 data['userID'], 
                                 website=data['website'],
-                                password=data['password'])
+                                password='')
         LOG.debug('User {0} updated'.format(data['userID']))
         messages.success(request, ("User updated successfully."))
         response = shortcuts.redirect('horizon:idm:users:detail', data['userID'])
@@ -87,7 +85,6 @@ class ContactForm(forms.SelfHandlingForm):
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
     userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
     image = forms.ImageField(required=False)
-    password = forms.CharField(label=("password"), widget=forms.HiddenInput(), required=False)
     title = 'Change your avatar'
 
     def handle(self, request, data):
@@ -107,11 +104,11 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
                 output_img.save(settings.MEDIA_ROOT + "/" + img, 'JPEG')
                 
                 if img_type == 'small':
-                    api.keystone.user_update(request, data['userID'], img_small=img, password=data['password'])
+                    api.keystone.user_update(request, data['userID'], img_small=img, password='')
                 elif img_type == 'medium':
-                    api.keystone.user_update(request, data['userID'], img_medium=img, password=data['password'])
+                    api.keystone.user_update(request, data['userID'], img_medium=img, password='')
                 else:
-                    api.keystone.user_update(request, data['userID'], img_original=img, password=data['password'])
+                    api.keystone.user_update(request, data['userID'], img_original=img, password='')
 
             
 
