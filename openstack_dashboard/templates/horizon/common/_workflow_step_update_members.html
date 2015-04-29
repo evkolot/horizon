@@ -5,7 +5,7 @@
     <header>
       <h4>{{ step.available_list_title }}</h4>
       <div class="form-group has-feedback">
-        <input type="text" name="available_{{ step.slug }}_filter" id="available_{{ step.slug }}" class="filter {{ step.slug }}_server_filter form-control input-sm" placeholder="{% trans "filter" %}" data-url="{{ step.server_filter_url }}" {% if step.filter_by_organization %} data-org={{superset_id}}{% endif %}>
+        <input type="text" name="available_{{ step.slug }}_filter" id="available_{{ step.slug }}" class="filter {{ step.slug }}_server_filter form-control input-sm" placeholder="{% trans "filter" %}" data-url="{{ step.server_filter_url }}" {% if step.filter_by_organization %} data-org="{{step.workflow.request.organization.id}}"{% endif %}>
       </div>
     </header>
     <div class="filterable {{ step.slug }}_server_filterable" id="available_{{ step.slug }}">
