@@ -8,15 +8,14 @@
 <div id="detailOrganization">
   <header>
     <h3 class="name">
-      {{ organization_name }}
+      {{ organization.name }}
       {% if edit %}
       <a href="{% url 'horizon:idm:organizations:edit' organization_id %}" class="small"><i class="fa fa-edit"></i><span>edit</span></a>
       {% endif %}
     </h3>
     <!--crear la carga de la imagen -->
     <div class="logo">
-      <img alt="organization logo" src="{{ image }}">        
-
+      <img alt="organization logo" src="{{ image }}">
     </div>
   </header>
   <div class="panel panel-default">
@@ -25,19 +24,16 @@
         <h5>
           Description
         </h5>
-
         <div class="info expander">
-          <p>{{ contact_info }}</p>
+          <p>{{ organization.description }}</p>
         </div>
       </div> 
       <div class="contac_us">
         <h5>
-          Contact us
+          Website
         </h5>
         <div>
-          <p>{{ city }}</p>
-          <p>{{ email }}</p>
-          <p>{{ website }}</p>
+          <p>{{ organization.website }}</p>
         </div>
       </div>
     </div>

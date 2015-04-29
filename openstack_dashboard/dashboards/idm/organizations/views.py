@@ -118,23 +118,25 @@ class DetailOrganizationView(tables.MultiTableView):
         return owner_role.id in [r.id for r in user_roles]
 
     def get_context_data(self, **kwargs):
-        context = super(DetailOrganizationView, self).get_context_data(**kwargs)
+        context = super(DetailOrganizationView, self).get_context_data(
+            **kwargs)
         organization_id = self.kwargs['organization_id']
-        organization = api.keystone.tenant_get(self.request, organization_id, admin=True)
-        context['contact_info'] = organization.description
-        context['organization.id'] = organization.id
-        context['organization_name'] = organization.name
+        organization = api.keystone.tenant_get(self.request, 
+            organization_id, admin=True)
+        context['organization'] = organization
+
         if hasattr(organization, 'img_original'):
-            image = settings.MEDIA_URL + getattr(organization, 'img_original')
+            image = (settings.MEDIA_URL + getattr(organization, 
+                'img_original'))
         else:
             image = (settings.STATIC_URL 
                 + 'dashboard/img/logos/original/group.png')
+
         context['image'] = image
-        context['city'] = getattr(organization, 'city', '')
-        context['email'] = getattr(organization, 'email', '')
-        context['website'] = getattr(organization, 'website', '')
+
         context['index_app'] = self.request.GET.get('index_app', 0)
         context['index_mem'] = self.request.GET.get('index_mem', 0)
+
         if self._can_edit():
             context['edit'] = True
         return context
@@ -153,7 +155,7 @@ class BaseOrganizationsMultiFormView(idm_views.BaseMultiFormView):
     template_name = 'idm/organizations/edit.html'
     forms_classes = [
         organization_forms.InfoForm, 
-        organization_forms.ContactForm, 
+        # organization_forms.ContactForm, 
         organization_forms.AvatarForm, 
         organization_forms.CancelForm
     ]
@@ -164,9 +166,9 @@ class BaseOrganizationsMultiFormView(idm_views.BaseMultiFormView):
             organization_forms.InfoForm: 
                 reverse('horizon:idm:organizations:info', 
                 kwargs=self.kwargs),
-            organization_forms.ContactForm: 
-                reverse('horizon:idm:organizations:contact', 
-                kwargs=self.kwargs),
+            # organization_forms.ContactForm: 
+            #    reverse('horizon:idm:organizations:contact', 
+            #    kwargs=self.kwargs),
             organization_forms.AvatarForm: 
                 reverse('horizon:idm:organizations:avatar', 
                 kwargs=self.kwargs),
@@ -193,9 +195,9 @@ class BaseOrganizationsMultiFormView(idm_views.BaseMultiFormView):
             "orgID": self.object.id,
             "name": self.object.name,
             "description": self.object.description,    
-            "city": getattr(self.object, 'city', ' '),
-            "email": getattr(self.object, 'email', ' '),
-            "website":getattr(self.object, 'website', ' '),
+            "city": getattr(self.object, 'city', ''),
+            "email": getattr(self.object, 'email', ''),
+            "website":getattr(self.object, 'website', ''),
         })
         return initial
 
@@ -216,8 +218,8 @@ class BaseOrganizationsMultiFormView(idm_views.BaseMultiFormView):
 class InfoFormHandleView(BaseOrganizationsMultiFormView):
     form_to_handle_class = organization_forms.InfoForm
 
-class ContactFormHandleView(BaseOrganizationsMultiFormView):
-    form_to_handle_class = organization_forms.ContactForm
+# class ContactFormHandleView(BaseOrganizationsMultiFormView):
+#     form_to_handle_class = organization_forms.ContactForm
    
 class AvatarFormHandleView(BaseOrganizationsMultiFormView):
     form_to_handle_class = organization_forms.AvatarForm

@@ -27,19 +27,29 @@
         <div class="info expander">
           <p>{{ user.description }}</p>
         </div>
-      </div> 
+      </header>
+	<div class="panel panel-default">
+		<div class="panel-body">
+            <div class="description">
+              <h5>
+                Description
+              </h5>
 
-      <div class="contact_us">
-        <h5>
-          More Info
-        </h5>
-        <div class ="info">
-          <p> {{ user.city }} </p>
-          <p>{{ user.website }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
+              <div class="info expander">
+                <p>{{ user.description }}</p>
+              </div>
+            </div> 
+            <div class="contact_us">
+                <h5>
+                  Website
+                </h5>
+                <div class ="info">
+                    <p>{{ user.website }}</p>
+                </div>
+            </div>
+		</div>
+	</div>
+    
   
 
 

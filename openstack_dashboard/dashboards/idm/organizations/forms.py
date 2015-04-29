@@ -23,10 +23,8 @@ from django.core.urlresolvers import reverse
 from horizon import exceptions
 from horizon import forms
 from horizon import messages
-from horizon.utils import functions as utils
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
-from openstack_dashboard.local import local_settings
 from openstack_dashboard.dashboards.idm import forms as idm_forms
 
 
@@ -66,18 +64,15 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
         #create organization
         default_domain = api.keystone.get_default_domain(request)
         try:
-            city = ""
-            email = ""
-            website = ""
             self.object = api.keystone.tenant_create(
                 request,
                 name=data['name'],
                 description=data['description'],
                 enabled=True,
                 domain=default_domain,
-                city=city,
-                email=email,
-                website=website)
+                # city='',
+                # email='',
+                website='')
                                                      
         except Exception:
             exceptions.handle(request, 
@@ -92,44 +87,47 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
         LOG.debug('Organization {0} created'.format(organization_id))
 
         # Grant purchaser in all default apps
-        default_apps = fiware_api.keystone.get_fiware_default_apps(self.request)
-        purchaser_role = fiware_api.keystone.get_purchaser_role(self.request)
+        default_apps = fiware_api.keystone.get_fiware_default_apps(
+            self.request)
+        purchaser_role = fiware_api.keystone.get_purchaser_role(
+            self.request)
         try:
             for app in default_apps:
                 fiware_api.keystone.add_role_to_organization(
-                    self.request, purchaser_role.id, organization_id, app.id)
+                    self.request, 
+                    purchaser_role.id, 
+                    organization_id, 
+                    app.id)
                 LOG.debug('Granted role {0} in app {1}'.format(
                     purchaser_role.name, app.name))
         except Exception as e:
             exceptions.handle(self.request,
-                              redirect=reverse('horizon:idm:organizations:index'))
+                redirect=reverse('horizon:idm:organizations:index'))
             return False
 
         # Find owner role id
         try:
             owner_role = fiware_api.keystone.get_owner_role(self.request)
-            LOG.debug(owner_role)
             if owner_role is None:
-                owner = getattr(local_settings,
-                                    "KEYSTONE_OWNER_ROLE", None)
-                msg = ('Could not find default role "%s" in Keystone') % \
-                        default
+                msg = ('Could not find owner role in Keystone')
                 LOG.debug(msg)
                 raise exceptions.NotFound(msg)
         except Exception as e:
             exceptions.handle(self.request,
-                                redirect=reverse('horizon:idm:organizations:index'))
+                redirect=reverse('horizon:idm:organizations:index'))
             return False
         try:
             api.keystone.add_tenant_user_role(request,
-                                            project=organization_id,
-                                            user=user_id,
-                                            role=owner_role.id)
-            LOG.debug('Added user {0} and organization {1} to role {2}'.format(user_id, organization_id, owner_role.id))
+                                              project=organization_id,
+                                              user=user_id,
+                                              role=owner_role.id)
+            LOG.debug('Added user %s and organization %s to role %s', 
+                user_id, organization_id, owner_role.id)
         except Exception:
-            exceptions.handle(request,
-                                    ('Failed to add %s organization to list')
-                                    % data['name'])
+            exceptions.handle(
+                request,
+                ('Failed to add {0} organization to list').format(
+                    data['name']))
             return False
     
         response = shortcuts.redirect('switch_tenants', organization_id)
@@ -143,40 +141,47 @@ class InfoForm(forms.SelfHandlingForm):
         label=("Description"), 
         widget=forms.widgets.Textarea(attrs={'rows':4, 'cols':40}), 
         required=True)
-    city = forms.CharField(label=("City"), max_length=64, required=False)
+    website = forms.URLField(label=("Website"), required=False)
+    # city = forms.CharField(label=("City"), 
+    #                        max_length=64, 
+    #                        required=False)
     title = 'Information'
 
     def handle(self, request, data):
         try:
-            api.keystone.tenant_update(request, 
-                                    data['orgID'], 
-                                    name=data['name'], 
-                                    description=data['description'], 
-                                    city=data['city'])
+            api.keystone.tenant_update(
+                request, 
+                data['orgID'], 
+                name=data['name'], 
+                description=data['description'],
+                website=data['website'])
+                #city=data['city'])
 
-            LOG.debug('Organization {0} updated'.format(data['orgID']))
-            messages.success(request, ("Organization updated successfully."))
-            response = shortcuts.redirect('horizon:idm:organizations:detail', data['orgID'])
-            return response
+            LOG.debug('Organization %s updated', data['orgID'])
+            messages.success(request, 
+                ("Organization updated successfully."))
         except Exception:
-            response = shortcuts.redirect('horizon:idm:organizations:detail', data['orgID'])
-            return response
+            messages.error(request, 
+                ("An error occurred, try again later."))
 
-class ContactForm(forms.SelfHandlingForm):
-    orgID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-    email = forms.EmailField(label=("E-mail"), required=False)
-    website = forms.URLField(label=("Website"), required=False)
-    title = 'Contact Information'
+        return shortcuts.redirect(
+            'horizon:idm:organizations:detail', data['orgID'])
 
-    def handle(self, request, data):
-        api.keystone.tenant_update(request, 
-                                data['orgID'], 
-                                email=data['email'], 
-                                website=data['website'])
-        LOG.debug('Organization {0} updated'.format(data['orgID']))
-        messages.success(request, ("Organization updated successfully."))
-        response = shortcuts.redirect('horizon:idm:organizations:detail', data['orgID'])
-        return response
+# class ContactForm(forms.SelfHandlingForm):
+#     orgID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
+#     email = forms.EmailField(label=("E-mail"), required=False)
+#     website = forms.URLField(label=("Website"), required=False)
+#     title = 'Contact Information'
+
+#     def handle(self, request, data):
+#         api.keystone.tenant_update(request, 
+#                                 data['orgID'], 
+#                                 email=data['email'], 
+#                                 website=data['website'])
+#         LOG.debug('Organization {0} updated'.format(data['orgID']))
+#         messages.success(request, ("Organization updated successfully."))
+#         response = shortcuts.redirect('horizon:idm:organizations:detail', data['orgID'])
+#         return response
 
 
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):

@@ -18,14 +18,10 @@ import logging
 from django import shortcuts
 from django.conf import settings
 from django import forms 
-from django.core.urlresolvers import reverse
 
-from horizon import exceptions
 from horizon import forms
 from horizon import messages
-from horizon.utils import functions as utils
 from openstack_dashboard import api
-from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import forms as idm_forms
 
 
@@ -35,14 +31,19 @@ AVATAR_SMALL = settings.MEDIA_ROOT+"/"+"UserAvatar/small/"
 AVATAR_MEDIUM = settings.MEDIA_ROOT+"/"+"UserAvatar/medium/"
 AVATAR_ORIGINAL = settings.MEDIA_ROOT+"/"+"UserAvatar/original/"
 
-
 class InfoForm(forms.SelfHandlingForm):
-    userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-    username = forms.CharField(label=("Username"), max_length=64, required=True)
+    userID = forms.CharField(label=("ID"), 
+                             widget=forms.HiddenInput())
+    username = forms.CharField(label=("Username"), 
+                               max_length=64, 
+                               required=True)
     description = forms.CharField(label=("About Me"),
-                                  widget=forms.widgets.Textarea,
+                                  widget=forms.widgets.Textarea, 
                                   required=False)
-    city = forms.CharField(label=("City"), max_length=64, required=False)
+    # city = forms.CharField(label=("City"), 
+    #                        max_length=64, 
+    #                        required=False)
+    website = forms.URLField(label=("Website"), required=False)
     title = 'Personal Information'
 
     def handle(self, request, data):
@@ -51,35 +52,37 @@ class InfoForm(forms.SelfHandlingForm):
             api.keystone.user_update(request,
                                      user.id,
                                      username=data['username'],
+                                     website=data['website'],
                                      description=data['description'],
-                                     city=data['city'],
+                                     # city=data['city'],
                                      password='')
             api.keystone.tenant_update(request,
                                        user.default_project_id,
                                        name=data['username'])
             LOG.debug('User {0} updated'.format(data['userID']))
             messages.success(request, ('User updated successfully'))
-            response = shortcuts.redirect('horizon:idm:users:detail', data['userID'])
-            return response
+            
         except Exception:
-            response = shortcuts.redirect('horizon:idm:users:detail', data['userID'])
-            return response
+            messages.error('An error ocurred, try again later')
+                
+        return shortcuts.redirect('horizon:idm:users:detail',
+            data['userID'])
 
+# class ContactForm(forms.SelfHandlingForm):
+#     userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
+#     website = forms.URLField(label=("Website"), required=False)
+#     title = 'Contact Information'
 
-class ContactForm(forms.SelfHandlingForm):
-    userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-    website = forms.URLField(label=("Website"), required=False)
-    title = 'Contact Information'
-
-    def handle(self, request, data):
-        api.keystone.user_update(request, 
-                                data['userID'], 
-                                website=data['website'],
-                                password='')
-        LOG.debug('User {0} updated'.format(data['userID']))
-        messages.success(request, ("User updated successfully."))
-        response = shortcuts.redirect('horizon:idm:users:detail', data['userID'])
-        return response
+#     def handle(self, request, data):
+#         api.keystone.user_update(request, 
+#                                 data['userID'], 
+#                                 website=data['website'],
+#                                 password='')
+#         LOG.debug('User {0} updated'.format(data['userID']))
+#         messages.success(request, ("User updated successfully."))
+#         response = shortcuts.redirect('horizon:idm:users:detail', 
+#             data['userID'])
+#         return response
 
 
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
@@ -104,19 +107,20 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
                 output_img.save(settings.MEDIA_ROOT + "/" + img, 'JPEG')
                 
                 if img_type == 'small':
-                    api.keystone.user_update(request, data['userID'], img_small=img, password='')
+                    api.keystone.user_update(request, data['userID'], 
+                        img_small=img, password='')
                 elif img_type == 'medium':
-                    api.keystone.user_update(request, data['userID'], img_medium=img, password='')
+                    api.keystone.user_update(request, data['userID'], 
+                        img_medium=img, password='')
                 else:
-                    api.keystone.user_update(request, data['userID'], img_original=img, password='')
-
-            
+                    api.keystone.user_update(request, data['userID'], 
+                        img_original=img, password='')
 
             LOG.debug('User {0} image updated'.format(data['userID']))
             messages.success(request, ("User updated successfully."))
 
-        response = shortcuts.redirect('horizon:idm:users:detail', data['userID'])
-        return response
+        return shortcuts.redirect('horizon:idm:users:detail', 
+            data['userID'])
 
              
 class CancelForm(forms.SelfHandlingForm):
@@ -124,12 +128,11 @@ class CancelForm(forms.SelfHandlingForm):
     title = 'Cancel Account'
     
     def handle(self, request, data, user):
-        # FIXME(garcianavalon) this crashes for sure, check it out
         image = getattr(user, 'img_original', '')
         if "UserAvatar" in image:
-            os.remove(AVATAR_SMALL + organization.id)
-            os.remove(AVATAR_MEDIUM + organization.id)
-            os.remove(AVATAR_ORIGINAL + organization.id)
+            os.remove(AVATAR_SMALL + user.id)
+            os.remove(AVATAR_MEDIUM + user.id)
+            os.remove(AVATAR_ORIGINAL + user.id)
             LOG.debug('{0} deleted'.format(image))
         api.keystone.user_delete(request, user)
         LOG.info('User {0} deleted'.format(user.id))
