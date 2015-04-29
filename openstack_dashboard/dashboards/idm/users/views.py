@@ -12,31 +12,28 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
 import logging
 
 from django.conf import settings
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.core.urlresolvers import reverse
 
 from horizon import exceptions
 from horizon import forms
 from horizon import tables
-from horizon import tabs
-from horizon.utils import memoized
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.local import local_settings
-from openstack_dashboard.dashboards.idm import views as idm_views
-from openstack_dashboard.dashboards.idm.users import tables as user_tables
 from openstack_dashboard.dashboards.idm import utils as idm_utils
-from openstack_dashboard.dashboards.idm.users.forms import  InfoForm, ContactForm, AvatarForm, CancelForm
+from openstack_dashboard.dashboards.idm import views as idm_views
+from openstack_dashboard.dashboards.idm.users \
+    import tables as user_tables
+from openstack_dashboard.dashboards.idm.users \
+    import forms as user_forms
 
-from horizon import views
 
 LOG = logging.getLogger('idm_logger')
 LIMIT = getattr(local_settings, 'PAGE_LIMIT', 15)
-
 
 
 class DetailUserView(tables.MultiTableView):
@@ -129,40 +126,44 @@ class DetailUserView(tables.MultiTableView):
 
 class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
     template_name = 'idm/users/edit.html'
-    forms_classes = [InfoForm, ContactForm, AvatarForm, CancelForm]
+    forms_classes = [
+        user_forms.InfoForm,
+        user_forms.AvatarForm,
+        user_forms.CancelForm
+    ]
     
     def get_endpoint(self, form_class):
         """Override to allow runtime endpoint declaration"""
         endpoints = {
-            InfoForm: reverse('horizon:idm:users:info', 
-                                kwargs=self.kwargs),
-            ContactForm: reverse('horizon:idm:users:contact', 
-                                kwargs=self.kwargs),
-            AvatarForm: reverse('horizon:idm:users:avatar', 
-                                kwargs=self.kwargs),
-            CancelForm: reverse('horizon:idm:users:cancel', 
-                                kwargs=self.kwargs),
+            user_forms.InfoForm: reverse(
+                'horizon:idm:users:info', kwargs=self.kwargs),
+            user_forms.AvatarForm: reverse(
+                'horizon:idm:users:avatar', kwargs=self.kwargs),
+            user_forms.CancelForm: reverse(
+                'horizon:idm:users:cancel', kwargs=self.kwargs),
         }
         return endpoints.get(form_class)
 
     def get_object(self):
         try:
-            return api.keystone.user_get(self.request, self.kwargs['user_id'])
+            return api.keystone.user_get(self.request, 
+                                         self.kwargs['user_id'])
         except Exception:
             redirect = reverse("horizon:idm:users:index")
             exceptions.handle(self.request, 
                     ('Unable to update user'), redirect=redirect)
 
     def get_initial(self, form_class):
-        initial = super(BaseUsersMultiFormView, self).get_initial(form_class)  
+        initial = super(BaseUsersMultiFormView, self).get_initial(
+            form_class)  
         # Existing data from organizations
         initial.update({
             "userID": self.object.id,
-            "name": getattr(self.object, 'name', ' '),
-            "username": getattr(self.object, 'username', ' '),
-            "description": getattr(self.object, 'description', ' '),    
-            "city": getattr(self.object, 'city', ' '),
-            "website": getattr(self.object, 'website', ' '),
+            "name": getattr(self.object, 'name', ''),
+            "username": getattr(self.object, 'username', ''),
+            "description": getattr(self.object, 'description', ''),    
+            "city": getattr(self.object, 'city', ''),
+            "website": getattr(self.object, 'website', ''),
         })
         return initial
 
@@ -173,23 +174,22 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
             image = getattr(self.object, 'img_original')
             image = settings.MEDIA_URL + image
         else:
-            image = settings.STATIC_URL + 'dashboard/img/logos/original/user.png'
+            image = (settings.STATIC_URL + 
+                'dashboard/img/logos/original/user.png')
         context['image'] = image
         return context
 
 
 class InfoFormHandleView(BaseUsersMultiFormView):    
-    form_to_handle_class = InfoForm
-
-class ContactFormHandleView(BaseUsersMultiFormView):
-    form_to_handle_class = ContactForm
+    form_to_handle_class = user_forms.InfoForm
    
 class AvatarFormHandleView(BaseUsersMultiFormView):
-    form_to_handle_class = AvatarForm
+    form_to_handle_class = user_forms.AvatarForm
 
 class CancelFormHandleView(BaseUsersMultiFormView):
-    form_to_handle_class = CancelForm
+    form_to_handle_class = user_forms.CancelForm
 
     def handle_form(self, form):
         """ Wrapper for form.handle for easier overriding."""
-        return form.handle(self.request, form.cleaned_data, user=self.object)
+        return form.handle(self.request, 
+            form.cleaned_data, user=self.object)
