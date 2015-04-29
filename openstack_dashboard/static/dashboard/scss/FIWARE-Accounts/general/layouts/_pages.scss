@@ -10,8 +10,13 @@
     }
   }
 }
-#home .panel.applications .panel-footer {
-  padding: 4px 15px 6px;
+#home{ 
+  .panel.applications,
+  .panel.members{ 
+    .panel-footer {
+      padding: 4px 15px 6px;
+    }
+  }
 }
 
 #edit{

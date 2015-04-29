@@ -449,5 +449,36 @@ ul.disabled-list{
       }
     }
   }
+}
 
+.panel-heading .nav-tabs{
+  @media (max-width: 375px){
+    li {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 0;
+      background-color: #F1F1F2;;
+      &:hover{
+        border-bottom: none;
+        color: #888;
+        background-color: #E4E4E4;
+      }
+      a{
+        border-bottom: none;
+        &:hover{
+          border-bottom: none;
+        }
+      }
+    }
+    li.active {
+      border-bottom: none;
+        background-color: $white;
+      a{
+        border-bottom: none;
+        &:hover{
+          border-bottom: none;
+        }
+      }
+    }
+  }
 }
