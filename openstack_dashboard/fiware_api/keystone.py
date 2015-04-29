@@ -55,9 +55,6 @@ def _password_session():
 
 # USER REGISTRATION
 def _find_user(keystone, email=None, username=None):
-    # NOTE(garcianavalon) I dont know why but find by email returns a NoUniqueMatch
-    # exception so we do it by hand filtering the python dictionary,
-    # which is extremely inneficient
     if email:
         user = keystone.users.find(name=email)
         return user

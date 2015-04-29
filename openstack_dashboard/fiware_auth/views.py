@@ -21,16 +21,16 @@ from django.template.loader import render_to_string
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 
+from keystoneclient import exceptions as ks_exceptions
+
 from horizon import messages
 from horizon import exceptions
 
 from openstack_auth import views as openstack_auth_views
 
-from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.fiware_auth import forms as fiware_forms
 
-from keystoneclient import base
 
 LOG = logging.getLogger('idm_logger')
 EMAIL_HTML_TEMPLATE = 'email/base_email.html'
@@ -104,7 +104,7 @@ class RegistrationView(_RequestPassingFormView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.username:
-            return redirect("/idm/")
+            return redirect('horizon:user_home')
         return super(RegistrationView, self).dispatch(request, *args, **kwargs)
     
     def get_form_kwargs(self, request=None, form_class=None):
@@ -230,7 +230,7 @@ class ActivationView(TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.username:
-            return redirect("/idm/")
+            return redirect('horizon:user_home')
         return super(ActivationView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
@@ -264,25 +264,38 @@ class RequestPasswordResetView(_RequestPassingFormView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.username:
-            return redirect("/idm/")
+            return redirect('horizon:user_home')
         return super(RequestPasswordResetView, self).dispatch(
             request, *args, **kwargs)
 
     def form_valid(self, request, form):
-        self._create_reset_password_token(request, form.cleaned_data['email'])
-        return super(RequestPasswordResetView, self).form_valid(form)
+        success = self._create_reset_password_token(request, 
+            form.cleaned_data['email'])
+        if success:
+            return super(RequestPasswordResetView, self).form_valid(form)
+        else:
+            return self.get(request) # redirect to itself
 
     def _create_reset_password_token(self, request, email):
         LOG.info('Creating reset token for {0}.'.format(email))
-        user = fiware_api.keystone.check_email(email)
-        if user:
+        try:
+            user = fiware_api.keystone.check_email(email)
             reset_password_token = fiware_api.keystone.get_reset_token(user)
             token = reset_password_token.id
             user = reset_password_token.user
             self.send_reset_email(email, token, user)
-            messages.success(request, ('Reset mail send to %s') % email)
-        else:
-            messages.error(request, ('No email %s registered') % email)
+            messages.success(request, ('Reset email send to %s') % email)
+            return True
+        except ks_exceptions.NotFound:
+            LOG.debug('email address %s is not registered', email)
+            msg = ('Sorry. You have specified an email address that is not '
+                'registered to any our our user accounts. If your problem '
+                'persits, please contact: fiware-lab-help@lists.fi-ware.org')
+            messages.error(request, msg)
+        except Exception:
+            msg = ('An error occurred, try again later.')
+            messages.error(request, msg)
+        return False
 
     def send_reset_email(self, email, token, user):
         # TODO(garcianavalon) subject, message and from_email as settings/files
@@ -313,7 +326,7 @@ class ResetPasswordView(_RequestPassingFormView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.username:
-            return redirect("/idm/")
+            return redirect('horizon:user_home')
         self.token = request.GET.get('token')
         self.email = request.GET.get('email')
         return super(ResetPasswordView, self).dispatch(
@@ -336,8 +349,8 @@ class ResetPasswordView(_RequestPassingFormView):
     def _reset_password(self, request, token, password):
         LOG.info('Reseting password for token {0}.'.format(token))
         user_email = self.email
-        user = fiware_api.keystone.check_email(user_email)
         try:
+            user = fiware_api.keystone.check_email(user_email)
             user = fiware_api.keystone.reset_password(user, token, password)
             if user:
                 messages.success(request, ('password successfully changed.'))
@@ -346,7 +359,7 @@ class ResetPasswordView(_RequestPassingFormView):
             msg = ('Unable to change password.')
             LOG.warning(msg)
             exceptions.handle(request, msg)
-
+        return None
 
 class ResendConfirmationInstructionsView(_RequestPassingFormView):
     form_class = fiware_forms.EmailForm
@@ -355,36 +368,47 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.username:
-            return redirect("/idm/")
+            return redirect('horizon:user_home')
         return super(ResendConfirmationInstructionsView, self).dispatch(
             request, *args, **kwargs)
 
     def form_valid(self, request, form):
-        self._resend_confirmation_email(request, form.cleaned_data['email'])
-        return super(ResendConfirmationInstructionsView, self).form_valid(form)
-
+        success = self._resend_confirmation_email(request, 
+            form.cleaned_data['email'])
+        if success:
+            return super(ResendConfirmationInstructionsView, self).form_valid(form)
+        else:
+            return self.get(request) # redirect to itself
+            
     def _resend_confirmation_email(self, request, email):
-        user = fiware_api.keystone.check_email(email)
-        if not user:
+        try:
+            user = fiware_api.keystone.check_email(email)
+
+            if user.enabled:
+                msg = ('Email was already confirmed, please try signing in')
+                LOG.debug('email address %s was already confirmed', email)
+                messages.error(request, msg)
+                return False
+
+            activation_key = fiware_api.keystone.new_activation_key(user)
+
+            self.send_reactivation_email(user, activation_key)
+            msg = ('Resended confirmation instructions to %s') %email
+            messages.success(request, msg)
+            return True
+
+        except ks_exceptions.NotFound:
             LOG.debug('email address %s is not registered', email)
             msg = ('Sorry. You have specified an email address that is not '
                 'registered to any our our user accounts. If your problem '
                 'persits, please contact: fiware-lab-help@lists.fi-ware.org')
             messages.error(request, msg)
-            return False
 
-        if user.enabled:
-            msg = ('Email was already confirmed, please try signing in')
-            LOG.debug('email address %s was already confirmed', email)
+        except Exception:
+            msg = ('An error occurred, try again later.')
             messages.error(request, msg)
-            return False
-
-        activation_key = fiware_api.keystone.new_activation_key(user)
-
-        self.send_reactivation_email(user, activation_key)
-        msg = ('Resended confirmation instructions to %s') %email
-        messages.success(request, msg)
-        return True
+        
+        return False
 
     def send_reactivation_email(self, user, activation_key):
         # TODO(garcianavalon) subject, message and from_email as settings/files

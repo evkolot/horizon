@@ -17,6 +17,7 @@
     <div class="logo">
       <img alt="organization logo" src="{{ image }}">        
 
+
     </div>
   </header>
   <div class="panel panel-default">
@@ -27,7 +28,7 @@
         </h5>
 
         <div class="info expander">
-          <p>{{ user.about_me }}</p>
+          <p>{{ user.description }}</p>
         </div>
       </div> 
       <div class="contact_us">
@@ -41,23 +42,41 @@
       </div>
     </div>
   </div>
-
+  
   <div class="panel panel-default organizations">
-    <div class="panel-heading">
-      <span>{{ organizations_table }}</span>
-      {{ organizations_table.render_table_actions }}
+
+    <div class="info expander">
+      <p>{{ user.about_me }}</p>
     </div>
-    <div class="panel-body">
-      {% if organizations_table.get_rows %}
-      {{ organizations_table.render }}
-      {% else %}
-      <p class="alert alert-info empty"> {{ user_name }} does not have any organizations.</p>
-      {% endif %}
+  </div> 
+  <div class="contact_us">
+    <h5>
+      More Info
+    </h5>
+    <div class ="info">
+      <p> {{ user.city }} </p>
+      <p>{{ user.website }}</p>
     </div>
-    {% if organizations_table.indexes|length > 1 %}
-    <div class="panel-footer">
-      <nav>
-        <ul class="pagination">
+  </div>
+</div>
+</div>
+
+<div class="panel panel-default organizations">
+  <div class="panel-heading">
+    <span>{{ organizations_table }}</span>
+    {{ organizations_table.render_table_actions }}
+  </div>
+  <div class="panel-body">
+    {% if organizations_table.get_rows %}
+    {{ organizations_table.render }}
+    {% else %}
+    <p class="alert alert-info empty"> {{ user_name }} does not have any organizations.</p>
+    {% endif %}
+  </div>
+  {% if organizations_table.indexes|length > 1 %}
+  <div class="panel-footer">
+    <nav>
+      <ul class="pagination">
             <!--<li>
               <a href="#" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
