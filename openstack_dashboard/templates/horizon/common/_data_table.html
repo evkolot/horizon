@@ -1,4 +1,5 @@
 {% load i18n %}
+<div class="panel-body">
 {% with table.needs_form_wrapper as needs_form_wrapper %}
   {% with columns=table.get_columns rows=table.get_rows %}  
     <div class="list-group" id="{{ table.slugify_name }}">
@@ -6,7 +7,7 @@
         {{ row.render }}
       {% endfor %}
     </div>
-  
+</div>
   
   {% if table.indexes|length > 1 and table.name != 'organizations' and table.name != 'applications' and table.name != 'members' %}
     <div class="panel-footer">
