@@ -10,10 +10,10 @@
     <h4 class="name">
       {{ application.name }} 
       {% if edit %}
-        <a href="{% url 'horizon:idm:myApplications:edit' application.id %}" class="small"><i class="fa fa-edit"></i>edit</a>
+      <a href="{% url 'horizon:idm:myApplications:edit' application.id %}" class="small"><i class="fa fa-edit"></i>edit</a>
       {% endif %}
       {% if manage_roles %}
-        <a href="{% url 'horizon:idm:myApplications:roles_manage' application.id %}" class="small"><i class="fa fa-cogs"></i>manage roles</a>
+      <a href="{% url 'horizon:idm:myApplications:roles_manage' application.id %}" class="small"><i class="fa fa-cogs"></i>manage roles</a>
       {% endif %}
     </h4>
     <div class="logo">
@@ -41,24 +41,24 @@
         <p>{{ application.redirect_uris.0 }}</p>
       </div>
       {% if viewCred %}
-        <div class="extra">
-          <h4 class="panel-title">
-            <a data-toggle="collapse" href="#collapse_oauth2_credentials" aria-expanded="true" aria-controls="collapse_oauth2_credentials">
-              OAuth2 Credentials
-            </a>
-          </h4>
-          <div id="collapse_oauth2_credentials" class="form-group collapse" role="tabpanel">
-            <div>
-              <h6 class="panel-heading">Client ID</h6>               
-              <p>{{ application.id }}</p>
-            </div>
-            <div>
-              <h6 class="panel-heading">Client Secret</h6>               
-              <p>{{ application.secret }}</p>
-            </div>
+      <div class="extra">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" href="#collapse_oauth2_credentials" aria-expanded="true" aria-controls="collapse_oauth2_credentials">
+            OAuth2 Credentials
+          </a>
+        </h4>
+        <div id="collapse_oauth2_credentials" class="form-group collapse" role="tabpanel">
+          <div>
+            <h6 class="panel-heading">Client ID</h6>               
+            <p>{{ application.id }}</p>
+          </div>
+          <div>
+            <h6 class="panel-heading">Client Secret</h6>               
+            <p>{{ application.secret }}</p>
           </div>
         </div>
-       {% endif %}
+      </div>
+      {% endif %}
     </div>
   </div>
 
@@ -69,23 +69,33 @@
     </div>
     <div class="panel-body">
       {% if auth_users_table.get_rows %}
-        {{ auth_users_table.render}}
+      {{ auth_users_table.render}}
       {% else %}
-        <p class="alert alert-info empty">{{ application.name }} does not have any authorized users.</p>
+      <p class="alert alert-info empty">{{ application.name }} does not have any authorized users.</p>
       {% endif %}
     </div>
     {% if auth_users_table.indexes|length > 1 %}
-      <div class="panel-footer">
-        <nav>
-          <ul class="pagination">
+    <div class="panel-footer">
+      <nav>
+        <ul class="pagination">
+          <!--<li>
+            <a href="#" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>-->
           {% for index in auth_users_table.indexes %}
-          <li {%if auth_users_table.index_act = index %}{%endif%}>
-            <a href="?index_mem={{index}}&index_org={{index_org}}">{{ forloop.counter }}</a>
-          </li>
+            <li {%if auth_users_table.index_act = index %}{%endif%}>
+              <a href="?index_mem={{index}}&index_org={{index_org}}">{{ forloop.counter }}</a>
+            </li>
           {% endfor %}
-          </ul>
-        </nav>
-      </div>
+          <!--<li>
+            <a href="#" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>-->
+        </ul>
+      </nav>
+    </div>
     {% endif %}
   </div>
 
@@ -96,26 +106,35 @@
     </div>
     <div class="panel-body">
       {% if organizations_table.get_rows %}
-        {{ organizations_table.render}}
+      {{ organizations_table.render}}
       {% else %}
-        <p class="alert alert-info empty">{{ application.name }} does not have any authorized organizations.</p>
+      <p class="alert alert-info empty">{{ application.name }} does not have any authorized organizations.</p>
       {% endif %}
     </div>
     {% if organizations_table.indexes|length > 1 %}
-      <div class="panel-footer">
-        <nav>
-          <ul class="pagination">
+    <div class="panel-footer">
+      <nav>
+        <ul class="pagination">
+          <!--<li>
+            <a href="#" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>-->
           {% for index in organizations_table.indexes %}
-          <li {% if organizations_table.index_act = index%}class="active"{%endif%}>
-            <a href="?index_mem={{index_mem}}&index_org={{index}}">{{ forloop.counter }}</a>
+            <li {% if organizations_table.index_act = index%}class="active"{%endif%}>
+              <a href="?index_mem={{index_mem}}&index_org={{index}}">{{ forloop.counter }}</a>
             </li>
           {% endfor %}
-          </ul>
-          </nav>
-      </div>
-      {% endif %}
+          <!--<li>
+            <a href="#" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>-->
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
   </div>
-
 </div>
 {% endblock %}
 

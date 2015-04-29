@@ -11,14 +11,24 @@
   
   {% if table.indexes|length > 1 and table.name != 'organizations' and table.name != 'applications' and table.name != 'members' %}
     <div class="panel-footer">
-    <nav>
-    <ul class="pagination">
-      {% for index in table.indexes %}
-      <li {%if table.index_act = index %}class="active"{%endif%}>
-        <a href="?index={{index}}">{{ forloop.counter }}</a>
-      </li>
-      {% endfor %}
-      </ul>
+      <nav>
+      <ul class="pagination">
+        <!--<li>
+            <a href="#" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>-->
+          {% for index in table.indexes %}
+            <li {%if table.index_act = index %}class="active"{%endif%}>
+              <a href="?index={{index}}">{{ forloop.counter }}</a>
+            </li>
+          {% endfor %}
+          <!--<li>
+            <a href="#" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>-->
+        </ul>
       </nav>
     </div>
   {% endif %}

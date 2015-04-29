@@ -110,7 +110,11 @@ textarea {
     @extend .alert-info;
   }
 }
-
+ul#perform_filter_available_update_owners,
+ul#perform_filter_available_update_owners_users{
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
 #organizations,
 #myApplications{
   .panel-heading{
@@ -118,6 +122,27 @@ textarea {
     .nav-tabs{ margin-bottom: 0; border-bottom: 0;}
   }
 }
+
+
+.panel.members,
+.panel.applications,
+.panel.organizations{
+  .panel-footer{
+    padding: 4px 4px 6px;
+    nav{
+      min-height: 26px;
+      ul.pagination{
+        float: right;
+        margin: 0;
+        li a{
+          padding: 4px 7px;
+        }
+      }
+    }
+  }
+}
+
+
 
 #avatar-update{
   @include border-top-radius ($border-radius-base);
