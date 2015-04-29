@@ -69,13 +69,15 @@ nav.container-fluid{
 }
 .logo-fl-header{
   width: 158px;
+  @media (max-width: 480px){
+    width: 38px;
+  }
+
 }
 .logo-f-header{
   width: 118px;
 }
-.logo-fl-header{
-  width: 158px;
-}
+
 
 .logo-f-header,
 .logo-fl-header{
@@ -83,13 +85,32 @@ nav.container-fluid{
     .brand{
       margin: 0 0 0 -8px !important;
       padding: 0 !important;
-      img.fiware-lab {
+      img.fiware-lab,
+      img.fiware-lab_symbol {
         margin-top: 4px;
         width: 158px !important;
+        @media (max-width: 480px){
+          width: 38px !important;
+        }
+      }
+      img.fiware-lab{
+        @media (max-width: 480px){
+          display: none;
+        }
+      }
+      img.fiware-lab_symbol {
+        display: none;
+        @media (max-width: 480px){
+          display: inline-block;
+          width: 38px !important;
+        }
       }
       img.fiware {
         margin-top: 4px;
         width: 118px !important;
+        @media (max-width: 480px){
+          width: 38px !important;
+        }
       }
     }
   }
