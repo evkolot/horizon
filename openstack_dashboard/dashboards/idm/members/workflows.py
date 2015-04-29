@@ -239,6 +239,7 @@ class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
     RELATIONSHIP_CLASS = AuthorizedMembersApi
     server_filter_url = urlresolvers.reverse_lazy(
         'fiware_server_filters_users')
+    filter_by_organization = True
 
     def contribute(self, data, context):
         superset_id = context['superset_id']
