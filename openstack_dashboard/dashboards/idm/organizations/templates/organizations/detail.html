@@ -10,7 +10,7 @@
     <h3 class="name">
       {{ organization_name }}
       {% if edit %}
-      <a href="{% url 'horizon:idm:organizations:edit' organization_id %}" class="small"><i class="fa fa-edit"></i>edit</a>
+      <a href="{% url 'horizon:idm:organizations:edit' organization_id %}" class="small"><i class="fa fa-edit"></i><span>edit</span></a>
       {% endif %}
     </h3>
     <!--crear la carga de la imagen -->
