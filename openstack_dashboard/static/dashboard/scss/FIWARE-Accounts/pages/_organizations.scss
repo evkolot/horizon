@@ -18,15 +18,53 @@
       @include border-bottom-radius ($border-radius-base);
     }
   }
+  @media (max-width: $screen-xs-min){
+    header .name a span{
+      display: none;
+    }
+  }
+
+  @media (max-width: $screen-sm-min){
+    header{ 
+      margin-bottom: 2px;
+      margin-top: 20px;
+    }
+    .logo{ 
+      right: 15px;
+      top: -9px !important;
+      img{
+        width: 50px;
+      }
+    }
+  }
   .panel-body{
     padding: 0 15px;
   }
   .panel.members,
   .panel.organizations,
-  .panel.applications{
+  .panel.applications {
     .panel-body{
       overflow-x: hidden;
       max-height: 236px;
+    }
+    @media (max-width: $screen-xs-min){
+      .panel-heading span{
+        padding-top: 3px;
+        font-size: 12px;
+        margin-bottom: 9px;
+      }
+      .table_actions{ 
+        .filter{
+          width: 100%;
+          padding: 0;
+          margin-left: 0;
+        }
+        .btn{
+          position: absolute;
+          right: 7px;
+          padding: 2px 4px;
+        }
+      }
     }
   }
 }
@@ -106,6 +144,12 @@ div#update_owners_members{
   margin-top: 13px;
   header{
     margin-bottom: 2px;
+  }
+}
+#organization_members,
+#home{
+  @media (max-width: 205px){
+    margin-top: -40px;
   }
 }
 .edit_organization_modal {
