@@ -31,8 +31,7 @@ class BasicCancelForm(forms.SelfHandlingForm):
         user_is_editable = api.keystone.keystone_can_edit_user()
         if user_is_editable:
             try:
-                user_id = request.user.id
-                api.keystone.user_update_enabled(request, user_id, enabled=False)
+                api.keystone.user_delete(request, request.user.id)
                 msg = ("Account canceled succesfully")
                 LOG.info(msg)
                 messages.success(request, msg)
