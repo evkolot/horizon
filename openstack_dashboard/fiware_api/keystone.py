@@ -130,6 +130,13 @@ def reset_password(user, token, new_password):
     user = keystone.user_registration.users.reset_password(user, token, new_password)
     return user
 
+def project_delete(request, project):
+    keystone = internal_keystoneclient()
+    keystone.projects.delete(project)
+
+def user_delete(request, user):
+    keystone = internal_keystoneclient()
+    keystone.users.delete(user)
 
 # ROLES
 def role_get(request, role_id):
@@ -325,9 +332,13 @@ def application_update(request, consumer_id, name=None, description=None, client
                           scopes=scopes,
                           **kwargs)
 
-def application_delete(request, application_id):
-    manager = api.keystone.keystoneclient(request, admin=True).oauth2.consumers
-    return manager.delete(application_id)
+def application_delete(request, application_id, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient()
+    else:
+        manager = api.keystone.keystoneclient(request, admin=True)
+
+    return manager.oauth2.consumers.delete(application_id)
 
 
 # OAUTH2 FLOW
