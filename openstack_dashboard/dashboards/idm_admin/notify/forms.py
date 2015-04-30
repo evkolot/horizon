@@ -44,8 +44,10 @@ class EmailForm(forms.SelfHandlingForm):
         # TODO(garcianavalon) better email architecture...
         try:
 
-            all_users = [u.name for u in api.keystone.user_list(request)
-                if hasattr(u, 'name')]
+            all_users = [u.name for u
+                         in api.keystone.user_list(request,
+                                                   filters={'enabled':True})
+                         if hasattr(u, 'name')]
 
             text_content = render_to_string(self.EMAIL_TEXT_TEMPLATE, 
                 dictionary={

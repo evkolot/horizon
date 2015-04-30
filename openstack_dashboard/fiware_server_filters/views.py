@@ -94,6 +94,7 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
         # We cache the query to save some petitions here
         json_users = cache.get('json_users')
         if json_users is None:
+            filters.update({'enabled':True})
             users = api.keystone.user_list(request, filters=filters)
             attrs = [
                 'id',
