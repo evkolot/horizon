@@ -91,7 +91,7 @@ def get_counter(self, organization=None, application=None):
     # NOTE(garcianavalon) Get all the users' ids that belong to
     # the application (they have one or more roles in their default
     # organization)
-    all_users = api.keystone.user_list(self.request)
+    all_users = api.keystone.user_list(self.request, filters={'enabled':True})
     users_with_roles = set()
     if organization:
         role_assignments = api.keystone.get_project_users_roles(

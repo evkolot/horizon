@@ -96,7 +96,8 @@ class DetailTests(BaseOrganizationsTests):
         users = self.users.list()
 
         api.keystone.user_list(IsA(http.HttpRequest), 
-                                project=project.id).AndReturn(users)
+                                project=project.id,
+                                filters={'enabled':True}).AndReturn(users)
         api.keystone.tenant_get(IsA(http.HttpRequest), 
                                 project.id,
                                 admin=True).AndReturn(project)
