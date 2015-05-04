@@ -450,7 +450,7 @@ horizon.membership = {
           }, MIN_TIME_BETWEEN_QUERIES);
 
       } else {
-        horizon.membership.perform_server_filtering(step_slug, $input.attr('data-url'), filter_data);
+        horizon.membership.perform_server_filtering(step_slug, $input.attr('data-url'), $input.attr('data-org'), filter_data);
       }
     });
   },

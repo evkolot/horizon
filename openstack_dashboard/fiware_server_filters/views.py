@@ -116,9 +116,9 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
         if filters:
             filter_by = filters[self.filter_key]
             members_filter = [u for u in json_users 
-                              if 'username' in u
-                              and u['username'].startswith(filter_by)]
-
+                                if 'username' in u
+                                and u['username'].startswith(filter_by)]
+            
             if organization:
                 members = api.keystone.role_assignments_list(request, project=organization)
                 filtered_users = [a.user['id'] for a in members]
@@ -130,6 +130,7 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
                 return members_filter
         else:
             return json_users
+
 
 class OrganizationsWorkflowFilter(AjaxKeystoneFilter):
     filter_key = 'name__startswith'
