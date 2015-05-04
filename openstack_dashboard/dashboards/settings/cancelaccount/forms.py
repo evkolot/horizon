@@ -58,11 +58,9 @@ class BasicCancelForm(forms.SelfHandlingForm):
             return False
 
     def _get_orgs_to_delete(self, request, user):
-        # TODO(garcianavalon) not working, fix it
         # all orgs where the user is the only owner
         # and user specific organizations
-        delete_orgs = []
-        user_specific_orgs = [
+        delete_orgs = [
             user.default_project_id,
             user.cloud_project_id
         ]
@@ -70,17 +68,16 @@ class BasicCancelForm(forms.SelfHandlingForm):
         # NOTE(garcianavalon) the organizations the user is owner
         # are already in the request object by the middleware
         for org in request.organizations:
-            if org.id in user_specific_orgs:
-                delete_orgs.append(org.id)
+            if org.id in delete_orgs:
                 continue
 
             owners = set([
-                a.user_id for a 
+                a.user['id'] for a 
                 in api.keystone.role_assignments_list(
                     request,
                     role=owner_role.id,
                     project=org.id)
-                if hasattr(a, 'user_id')
+                if hasattr(a, 'user')
             ])
 
             if len(owners) == 1:
@@ -89,7 +86,6 @@ class BasicCancelForm(forms.SelfHandlingForm):
         return delete_orgs
 
     def _get_apps_to_delete(self, request, user):
-        # TODO(garcianavalon) not working, fix it
         # all the apps where the user is the only provider
         delete_apps = []
         provider_role = fiware_api.keystone.get_provider_role(request)
