@@ -124,3 +124,10 @@ def paginate(self, list_pag, index, limit):
             final_list = list_pag[(index):(index+limit)]
 
     return final_list
+
+class PickleObject():
+    """Extremely simple class that holds the very little information we need
+    to cache. Keystoneclient resource objects are not pickable.
+    """
+    def __init__(self, **kwds):
+        self.__dict__.update(kwds)

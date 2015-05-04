@@ -21,7 +21,7 @@ class Idm_Admin(horizon.Dashboard):
     name = (" ")
     name_sm = (" ")
     slug = "idm_admin"
-    panels = ('notify', 'administrators')
+    panels = ('notify', 'administrators', 'user_accounts')
     default_panel = 'notify'
 
     def nav(self, context):
