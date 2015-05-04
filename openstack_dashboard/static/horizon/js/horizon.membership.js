@@ -433,8 +433,8 @@ horizon.membership = {
     var MIN_TIME_BETWEEN_QUERIES = 600; // ms
     var MIN_LETTERS_TO_QUERY = 3;
     $('input.' + step_slug + '_server_filter').on('input', function() {
-      var $imput = $(this);
-      var filter_data = $imput.attr('value');
+      var $input = $(this);
+      var filter_data = $input.attr('value');
       if (filter_data.length < MIN_LETTERS_TO_QUERY){
         return;
       }
@@ -446,21 +446,22 @@ horizon.membership = {
         }
         
         horizon.membership.pending_request = window.setTimeout(function() {
-            horizon.membership.perform_server_filtering(step_slug, $imput.attr('data-url'), filter_data);
+            horizon.membership.perform_server_filtering(step_slug, $input.attr('data-url'), $input.attr('data-org'), filter_data);
           }, MIN_TIME_BETWEEN_QUERIES);
 
       } else {
-        horizon.membership.perform_server_filtering(step_slug, $imput.attr('data-url'), filter_data);
+        horizon.membership.perform_server_filtering(step_slug, $input.attr('data-url'), $input.attr('data-org'), filter_data);
       }
     });
   },
 
-  perform_server_filtering: function (step_slug, filter_url, filter_data) {
+  perform_server_filtering: function (step_slug, filter_url, filter_organization, filter_data) {
     horizon.ajax.queue({
         type: 'POST',
         url: filter_url,
         data: {
-          filter_by: filter_data
+          filter_by: filter_data,
+          organization: filter_organization
         },
         beforeSend: function () {
           //store query time

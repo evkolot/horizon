@@ -22,6 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 from horizon import exceptions
 
 from openstack_dashboard import api
+from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 
 SHORT_CACHE_TIME = 10 # seconds
@@ -93,7 +94,9 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
         # use keystone filters, we need to filter locally.
         # We cache the query to save some petitions here
         json_users = cache.get('json_users')
+        organization = request.POST.get('organization', None)
         if json_users is None:
+            filters.update({'enabled':True})
             users = api.keystone.user_list(request, filters=filters)
             attrs = [
                 'id',
@@ -113,11 +116,22 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
         # now filter by username
         if filters:
             filter_by = filters[self.filter_key]
-            return [u for u in json_users 
-                if 'username' in u
-                and u['username'].startswith(filter_by)]
+            members_filter = [u for u in json_users 
+                                if 'username' in u
+                                and u['username'].startswith(filter_by)]
+            
+            if organization:
+                members = api.keystone.role_assignments_list(request, project=organization)
+                filtered_users = [a.user['id'] for a in members]
+                # print filtered_users by organization
+                return [u for u in members_filter 
+                        if u['id'] in filtered_users]
+            else:
+                # print filtered_users
+                return members_filter
         else:
             return json_users
+
 
 class OrganizationsWorkflowFilter(AjaxKeystoneFilter):
     filter_key = 'name__startswith'

@@ -87,30 +87,16 @@ def get_switch_url(organization, check_switchable=True):
 
 
 def get_counter(self, organization=None, application=None):
-    users = []
-    # NOTE(garcianavalon) Get all the users' ids that belong to
-    # the application (they have one or more roles in their default
-    # organization)
-    all_users = api.keystone.user_list(self.request)
-    users_with_roles = set()
     if organization:
         role_assignments = api.keystone.get_project_users_roles(
             self.request, project=organization)
-        for user in all_users:
-            for a in role_assignments:
-                if (user.id == a):
-                    users_with_roles.add(user.id)
+        users = role_assignments.keys()
     elif application:
+        # NOTE(garcianavalon) careful, this endpoint also returns
+        # the ids of disabled users if they still have roles!
         role_assignments = fiware_api.keystone.user_role_assignments(
             self.request, application=application)
-        for user in all_users:
-            for a in role_assignments:
-                if (user.id == a.user_id
-                    and user.default_project_id == a.organization_id):
-                        users_with_roles.add(user.id)
-    users = [user for user in all_users
-             if user.id in users_with_roles]
-
+        users = set([a.user_id for a in role_assignments])
     return len(users)
 
 def paginate(self, list_pag, index, limit):
