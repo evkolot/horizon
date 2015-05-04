@@ -142,7 +142,7 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
     """FIWARE roles and user logic"""
 
     def _list_all_owners(self, request, superset_id):
-        all_users = api.keystone.user_list(request)
+        all_users = api.keystone.user_list(request, filters={'enabled':True})
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
                 idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
@@ -174,7 +174,8 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
         role_assignments = fiware_api.keystone.user_role_assignments(
                 request, application=superset_id)
         users_with_roles = set([a.user_id for a in role_assignments])
-        users = [user for user in api.keystone.user_list(request)
+        users = [user for user in api.keystone.user_list(request,
+                                                         filters={'enabled':True})
                  if user.id in users_with_roles]
         for user in users:
             application_users_roles[user.id] = [

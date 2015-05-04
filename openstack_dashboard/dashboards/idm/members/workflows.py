@@ -34,7 +34,7 @@ class UserRoleApi(idm_workflows.RelationshipApiInterface):
     """Holds the api calls for each specific relationship"""
     
     def _list_all_owners(self, request, superset_id):
-        all_users = api.keystone.user_list(request)
+        all_users = api.keystone.user_list(request, filters={'enabled':True})
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
                 idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
@@ -120,7 +120,7 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
         # filters by default_project_id.
         # We need to get the role_assignments for the user's
         # id's and then filter the user list ourselves
-        all_users = api.keystone.user_list(request)
+        all_users = api.keystone.user_list(request, filters={'enabled':True})
         project_users_roles = api.keystone.get_project_users_roles(
             request,
             project=superset_id)

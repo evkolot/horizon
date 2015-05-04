@@ -27,7 +27,7 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
     """FIWARE Roles logic to assign"""
 
     def _list_all_owners(self, request, superset_id):
-        all_users = api.keystone.user_list(request)
+        all_users = api.keystone.user_list(request, filters={'enabled':True})
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
                 idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
