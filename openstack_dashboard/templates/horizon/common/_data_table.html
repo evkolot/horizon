@@ -1,5 +1,5 @@
 {% load i18n %}
-<div class="panel-body">
+<div >
 {% with table.needs_form_wrapper as needs_form_wrapper %}
   {% with columns=table.get_columns rows=table.get_rows %}  
     <div class="list-group" id="{{ table.slugify_name }}">
@@ -18,11 +18,23 @@
               <span aria-hidden="true">&laquo;</span>
             </a>
           </li>-->
-          {% for index in table.indexes %}
-            <li {%if table.index_act = index %}class="active"{%endif%}>
-              <a href="?index={{index}}">{{ forloop.counter }}</a>
-            </li>
+          <li >
+              <a href="?index={{table.index_first}}"><span aria-hidden="true">First</span></a>
+          </li>
+          {% for index,num in table.indexes %}
+           
+              <li {%if table.index_act = index %}class="active"{%endif%}>
+                <a href="?index={{index}}">{{ num }}</a>
+              </li>
+
+            <li>
+              </li>
+            
+      
           {% endfor %}
+          <li >
+              <a href="?index={{table.index_last}}"><span aria-hidden="true">Last</span></a>
+          </li>
           <!--<li>
             <a href="#" aria-label="Next">
               <span aria-hidden="true">&raquo;</span>

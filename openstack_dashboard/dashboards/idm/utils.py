@@ -99,15 +99,51 @@ def get_counter(self, organization=None, application=None):
         users = set([a.user_id for a in role_assignments])
     return len(users)
 
-def paginate(self, list_pag, index, limit):
+def return_pagination(self, index, indexes, numbers):
+    # ind = int(indexes.index(index))
+    # import pdb
+    # pdb.set_trace()
+    if len(indexes)>5:
+        ind = indexes.index(index)
+        if index > 0 and ind < len(indexes)-1:
+            LOG.debug('ENTRA 1')
+            print '1'
+            indexes = indexes[index-1:index+3]
+            numbers = numbers[index-1:index+3]
+        elif index == 0:
+            LOG.debug('ENTRA 2')
+            indexes = indexes[0:10]
+            numbers = numbers[0:10]
+            print '2'
+        elif index == len(indexes)-1:
+            LOG.debug('ENTRA 3')
+            indexes = indexes[len(indexes)-10:len(indexes)]
+            numbers = numbers[len(indexes)-10:len(indexes)]
+            print '3'
+        else:
+            LOG.debug('NO ENTRA')
+    return indexes, numbers
+
+def paginate(self, list_pag, index, limit, table_name):
     try:
         index = int(index)
-        LOG.debug('index: {0}'.format(index))
     except ValueError as e:
         LOG.error("Invalid index. {0}".format(e))
         exceptions.handle(self.request,
                           ("Invalid index. \
                             Error message: {0}".format(e)))
+
+    indexes = range(0, len(list_pag), limit)
+    numbers = [(u/limit)+1 for u in indexes]
+
+    self._tables[table_name].index_act = int(index)
+    self._tables[table_name].index_first = int(indexes[0])
+    self._tables[table_name].index_last = int(indexes[-1])
+
+    indexes, numbers = return_pagination(self, index, indexes, numbers)
+    self._tables[table_name].indexes = zip(indexes,numbers)
+    # pdb.set_trace()
+    final_list = []
 
     if len(list_pag) <= limit:
         final_list = list_pag
