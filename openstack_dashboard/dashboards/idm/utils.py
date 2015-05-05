@@ -21,6 +21,7 @@ from django.core import urlresolvers
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.local import local_settings
 
 
 LOG = logging.getLogger('idm_logger')
@@ -30,6 +31,7 @@ DEFAULT_USER_MEDIUM_AVATAR = 'dashboard/img/logos/medium/user.png'
 DEFAULT_ORG_SMALL_AVATAR = 'dashboard/img/logos/small/group.png'
 DEFAULT_APP_SMALL_AVATAR = 'dashboard/img/logos/small/app.png'
 DEFAULT_USER_SMALL_AVATAR = 'dashboard/img/logos/small/user.png'
+NUM_PAGES = getattr(local_settings, 'NUM_PAGES', 10)
 
 def filter_default(items):
     """Remove from a list the automated created project for a user. This project
@@ -100,28 +102,19 @@ def get_counter(self, organization=None, application=None):
     return len(users)
 
 def return_pagination(self, index, indexes, numbers):
-    # ind = int(indexes.index(index))
-    # import pdb
-    # pdb.set_trace()
-    if len(indexes)>5:
-        ind = indexes.index(index)
-        if index > 0 and ind < len(indexes)-1:
-            LOG.debug('ENTRA 1')
-            print '1'
-            indexes = indexes[index-1:index+3]
-            numbers = numbers[index-1:index+3]
-        elif index == 0:
-            LOG.debug('ENTRA 2')
-            indexes = indexes[0:10]
-            numbers = numbers[0:10]
-            print '2'
-        elif index == len(indexes)-1:
-            LOG.debug('ENTRA 3')
-            indexes = indexes[len(indexes)-10:len(indexes)]
-            numbers = numbers[len(indexes)-10:len(indexes)]
-            print '3'
+    if len(indexes)>NUM_PAGES:
+        ind = int(indexes.index(index))
+        if (ind - NUM_PAGES + 1) < 0:
+            indexes = indexes[0:NUM_PAGES]
+            numbers = numbers[0:NUM_PAGES]
+        elif (ind + NUM_PAGES) > len(indexes):
+            indexes = indexes[len(indexes)-NUM_PAGES:len(indexes)]
+            numbers = numbers[len(numbers)-NUM_PAGES:len(numbers)]
         else:
-            LOG.debug('NO ENTRA')
+            div_1 = int(round(NUM_PAGES/2, 0))
+            div_2 = int(NUM_PAGES - div_1)
+            indexes = indexes[ind-div_1:ind+div_2]
+            numbers = numbers[ind-div_1:ind+div_2]
     return indexes, numbers
 
 def paginate(self, list_pag, index, limit, table_name):
@@ -142,7 +135,6 @@ def paginate(self, list_pag, index, limit, table_name):
 
     indexes, numbers = return_pagination(self, index, indexes, numbers)
     self._tables[table_name].indexes = zip(indexes,numbers)
-    # pdb.set_trace()
     final_list = []
 
     if len(list_pag) <= limit:
