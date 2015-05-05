@@ -24,30 +24,88 @@ from horizon import exceptions
 from horizon import forms
 from horizon import messages
 
+from keystoneclient import exceptions as keystoneclient_exceptions
+
 from openstack_dashboard import api
+from openstack_dashboard import fiware_api
 
 
 LOG = logging.getLogger('idm_logger')
-
+NOTIFICATION_CHOICES = [
+    ('all_users', 'Notify all users'),
+    ('organization', 'Notify an organization')
+]
 class EmailForm(forms.SelfHandlingForm):
-    subject = forms.CharField(max_length=50,
-                                label=("Subject"),
-                                required=True)
-    body = forms.CharField(widget=SummernoteWidget(),
-                                label=("Body"),
-                                required=True)
+    notify = forms.ChoiceField(
+        required=True,
+        choices=NOTIFICATION_CHOICES)
+    organization = forms.CharField(
+        label='Organization ID',
+        required=False)
+    subject = forms.CharField(
+        max_length=50,
+        label=("Subject"),
+        required=True)
+    body = forms.CharField(
+        widget=SummernoteWidget(),
+        label=("Body"),
+        required=True)
+    
 
     # TODO(garcianavalon) as settings
     EMAIL_HTML_TEMPLATE = 'email/base_email.html'
     EMAIL_TEXT_TEMPLATE = 'email/base_email.txt'
+
+    def clean(self):
+        cleaned_data = super(EmailForm, self).clean()
+
+        organization_id = cleaned_data.get('organization', None)
+        notify = cleaned_data.get('notify')
+        if notify != 'organization':
+            return cleaned_data
+
+        if not organization_id:
+            raise forms.ValidationError(
+                'You must specify an organization ID',
+                code='invalid')
+        else:
+            try:
+                organization = api.keystone.tenant_get(self.request, 
+                    organization_id)
+                return cleaned_data
+
+            except keystoneclient_exceptions.NotFound:
+                raise forms.ValidationError(
+                    'There is no organization with the specified ID',
+                    code='invalid')
+
+        return cleaned_data
+
     def handle(self, request, data):
         # TODO(garcianavalon) better email architecture...
         try:
+            recipients = []
+            if data['notify'] == 'all_users':
+                recipients = [u.name for u
+                             in api.keystone.user_list(request,
+                                                       filters={'enabled':True})
+                             if hasattr(u, 'name')]
+            elif data['notify'] == 'organization':
+                owner_role = fiware_api.keystone.get_owner_role(request)
+                owners = [a.user['id'] for a
+                          in api.keystone.role_assignments_list(
+                            request,
+                            role=owner_role.id,
+                            project=data['organization'])
+                ]
+                for owner_id in owners:
+                    owner = api.keystone.user_get(request, owner_id)
+                    recipients.append(owner.name)
 
-            all_users = [u.name for u
-                         in api.keystone.user_list(request,
-                                                   filters={'enabled':True})
-                         if hasattr(u, 'name')]
+            if not recipients:
+                msg = ('The recipients list is empty, no email will be sent.')
+                messages.error(request, msg)
+                return
 
             text_content = render_to_string(self.EMAIL_TEXT_TEMPLATE, 
                 dictionary={
@@ -67,7 +125,7 @@ class EmailForm(forms.SelfHandlingForm):
                 subject=data['subject'], 
                 body=text_content, 
                 from_email='no-reply@account.lab.fi-ware.org', 
-                bcc=all_users, 
+                bcc=recipients, 
                 connection=connection)
             msg.attach_alternative(html_content, "text/html")
             msg.send()

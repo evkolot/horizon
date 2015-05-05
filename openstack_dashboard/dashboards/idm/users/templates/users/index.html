@@ -18,29 +18,27 @@
       <img alt="organization logo" src="{{ image }}">        
     </div>
   </header>
-	<div class="panel panel-default">
-		<div class="panel-body">
-            <div class="description">
-              <h5>
-                Description
-              </h5>
-
-              <div class="info expander">
-                <p>{{ user.description }}</p>
-              </div>
-            </div> 
-            <div class="contact_us">
-                <h5>
-                  Website
-                </h5>
-                <div class ="info">
-                    <p>{{ user.website }}</p>
-                </div>
-            </div>
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <div class="description">
+        <h5>
+          Description
+        </h5>
+          <div class="info expander">
+            <p>{{ user.description }}</p>
+          </div>
+      </div> 
+      <div class="contact_us">
+        <h5>
+          Website
+        </h5>
+        <div class ="info">
+          <p>{{ user.website }}</p>
+        </div>
+      </div>
 		</div>
 	</div>
     
-  
 
 
 <div class="panel panel-default organizations">
@@ -55,7 +53,7 @@
     <p class="alert alert-info empty"> {{ user_name }} does not have any organizations.</p>
     {% endif %}
   </div>
-  {% if organizations_table.indexes|length > 1 %}
+  {% if organizations_table.indexes|length > 1 and organizations_table.indexes %}
   <div class="panel-footer">
     <nav>
       <ul class="pagination">
@@ -64,11 +62,17 @@
                 <span aria-hidden="true">&laquo;</span>
               </a>
             </li>-->
-            {% for index in organizations_table.indexes %}
+            <li {%if organizations_table.index_act = organizations_table.index_first %}class="active"{%endif%}>
+              <a href="?index={{organizations_table.index_first}}"><span aria-hidden="true">First</span></a>
+          </li>
+            {% for index, num in organizations_table.indexes %}
             <li {% if organizations_table.index_act = index%}class="active"{%endif%}>
-              <a href="?index_org={{index}}&index_app={{index_app}}">{{ forloop.counter }}</a>
+              <a href="?index_org={{index}}&index_app={{index_app}}">{{ num }}</a>
             </li>
             {% endfor %}
+            <li {%if organizations_table.index_act = organizations_table.index_last %}class="active"{%endif%}>
+              <a href="?index={{organizations_table.index_last}}"><span aria-hidden="true">Last</span></a>
+          </li>
             <!--<li>
               <a href="#" aria-label="Next">
                 <span aria-hidden="true">&raquo;</span>
@@ -93,20 +97,27 @@
       <p class="alert alert-info empty"> {{ user_name }} does not have any applications.</p>
       {% endif %}
     </div>
-    {% if applications_table.indexes|length > 1 %}
+    {% if applications_table.indexes|length > 1 and applications_table.indexes %}
     <div class="panel-footer">
       <nav>
         <ul class="pagination">
+
+        <li {%if applications_table.index_act = applications_table.index_first %}class="active"{%endif%}>
+              <a href="?index={{applications_table.index_first}}"><span aria-hidden="true">First</span></a>
+          </li>
           <!--<li>
             <a href="#" aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
           </li>-->
-          {% for index in applications_table.indexes %}
+          {% for index, num in applications_table.indexes %}
           <li {% if applications_table.index_act = index%}class="active"{%endif%}>
-            <a href="?index_org={{index_org}}&index_app={{index}}">{{ forloop.counter }}</a>
+            <a href="?index_org={{index_org}}&index_app={{index}}">{{ num }}</a>
           </li>
           {% endfor %}
+          <li {%if applications_table.index_act = applications_table.index_last %}class="active"{%endif%}>
+              <a href="?index={{applications_table.index_last}}"><span aria-hidden="true">Last</span></a>
+          </li>
           <!--<li>
             <a href="#" aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
