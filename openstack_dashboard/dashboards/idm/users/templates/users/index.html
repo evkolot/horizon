@@ -62,11 +62,17 @@
                 <span aria-hidden="true">&laquo;</span>
               </a>
             </li>-->
+            <li {%if organizations_table.index_act = organizations_table.index_first %}class="active"{%endif%}>
+              <a href="?index={{organizations_table.index_first}}"><span aria-hidden="true">First</span></a>
+          </li>
             {% for index, num in organizations_table.indexes %}
             <li {% if organizations_table.index_act = index%}class="active"{%endif%}>
               <a href="?index_org={{index}}&index_app={{index_app}}">{{ num }}</a>
             </li>
             {% endfor %}
+            <li {%if organizations_table.index_act = organizations_table.index_last %}class="active"{%endif%}>
+              <a href="?index={{organizations_table.index_last}}"><span aria-hidden="true">Last</span></a>
+          </li>
             <!--<li>
               <a href="#" aria-label="Next">
                 <span aria-hidden="true">&raquo;</span>

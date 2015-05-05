@@ -121,11 +121,9 @@
     <div class="panel-footer">
       <nav>
         <ul class="pagination">
-        {% if organizations_table.index_first%}
           <li {%if organizations_table.index_act = organizations_table.index_first %}class="active"{%endif%}>
                 <a href="?index_mem={{index_mem}}&index_org={{organizations_table.index_first}}"><span aria-hidden="true">First</span></a>
           </li>
-          {%endif%}
           <!--<li>
             <a href="#" aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
