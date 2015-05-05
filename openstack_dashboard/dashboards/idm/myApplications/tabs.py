@@ -55,10 +55,9 @@ class ProvidingTab(tabs.TableTab):
                             if app.id in apps_with_roles]
 
             applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
-            indexes = range(0, len(applications), LIMIT)
-            self._tables['providing_table'].indexes = indexes
-            self._tables['providing_table'].index_act = int(index)
-            applications = idm_utils.paginate(self, applications, index=index, limit=LIMIT)
+            applications = idm_utils.paginate(self, applications,
+                                              index=index, limit=LIMIT,
+                                              table_name='providing_table')
 
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)
@@ -100,10 +99,9 @@ class PurchasedTab(tabs.TableTab):
 
             applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
         
-            indexes = range(0, len(applications), LIMIT)
-            self._tables['purchased_table'].indexes = indexes
-            self._tables['purchased_table'].index_act = int(index)
-            applications = idm_utils.paginate(self, applications, index=index, limit=LIMIT)
+            applications = idm_utils.paginate(self, applications,
+                                              index=index, limit=LIMIT,
+                                              table_name='purchased_table')
 
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)
@@ -147,11 +145,9 @@ class AuthorizedTab(tabs.TableTab):
                             if app.id in apps_with_roles]
 
             applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
-        
-            indexes = range(0, len(applications), LIMIT)
-            self._tables['authorized_table'].indexes = indexes
-            self._tables['authorized_table'].index_act = int(index)
-            applications = idm_utils.paginate(self, applications, index=index, limit=LIMIT)
+            applications = idm_utils.paginate(self, applications,
+                                              index=index, limit=LIMIT,
+                                              table_name='authorized_table')
 
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)

@@ -74,10 +74,9 @@ class DetailOrganizationView(tables.MultiTableView):
             users = [user for user in all_users if user.id in project_users_roles]
             users = sorted(users, key=lambda x: x.username.lower())
             index_mem = self.request.GET.get('index_mem', 0)
-            indexes = range(0, len(users), LIMIT)
-            self._tables['members'].indexes = indexes
-            self._tables['members'].index_act = int(index_mem)
-            users = idm_utils.paginate(self, users, index=index_mem, limit=LIMIT)
+            users = idm_utils.paginate(self, users,
+                                       index=index_mem, limit=LIMIT,
+                                       table_name='members')
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
@@ -97,10 +96,9 @@ class DetailOrganizationView(tables.MultiTableView):
                             if app.id in apps_with_roles]
             applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
             index_app = self.request.GET.get('index_app', 0)
-            indexes = range(0, len(applications), LIMIT)
-            self._tables['applications'].indexes = indexes
-            self._tables['applications'].index_act = int(index_app)
-            applications = idm_utils.paginate(self, applications, index=index_app, limit=LIMIT)
+            applications = idm_utils.paginate(self, applications,
+                                              index=index_app, limit=LIMIT,
+                                              table_name='applications')
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)
                 setattr(app, 'counter', users)

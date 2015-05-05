@@ -74,20 +74,26 @@
       <p class="alert alert-info empty">{{ application.name }} does not have any authorized users.</p>
       {% endif %}
     </div>
-    {% if auth_users_table.indexes|length > 1 %}
+    {% if auth_users_table.indexes|length > 1 and auth_users_table.indexes %}
     <div class="panel-footer">
       <nav>
         <ul class="pagination">
+        <li {%if auth_users_table.index_act = auth_users_table.index_first %}class="active"{%endif%}>
+              <a href="?index_mem={{auth_users_table.index_first}}&index_org={{index_org}}"><span aria-hidden="true">First</span></a>
+          </li>
           <!--<li>
             <a href="#" aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
           </li>-->
-          {% for index in auth_users_table.indexes %}
-            <li {%if auth_users_table.index_act = index %}{%endif%}>
-              <a href="?index_mem={{index}}&index_org={{index_org}}">{{ forloop.counter }}</a>
+          {% for index, num in auth_users_table.indexes %}
+            <li {%if auth_users_table.index_act = index %}class="active"{%endif%}>
+              <a href="?index_mem={{index}}&index_org={{index_org}}">{{ num }}</a>
             </li>
           {% endfor %}
+          <li {%if auth_users_table.index_act = auth_users_table.index_last %}class="active"{%endif%}>
+              <a href="?index_mem={{auth_users_table.index_last}}&index_org={{index_org}}"><span aria-hidden="true">Last</span></a>
+          </li>
           <!--<li>
             <a href="#" aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
@@ -111,20 +117,26 @@
       <p class="alert alert-info empty">{{ application.name }} does not have any authorized organizations.</p>
       {% endif %}
     </div>
-    {% if organizations_table.indexes|length > 1 %}
+  {% if organizations_table.indexes|length > 1 and organizations_table.indexes %}
     <div class="panel-footer">
       <nav>
         <ul class="pagination">
+          <li {%if organizations_table.index_act = organizations_table.index_first %}class="active"{%endif%}>
+                <a href="?index_mem={{index_mem}}&index_org={{organizations_table.index_first}}"><span aria-hidden="true">First</span></a>
+          </li>
           <!--<li>
             <a href="#" aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
           </li>-->
-          {% for index in organizations_table.indexes %}
+          {% for index, num in organizations_table.indexes %}
             <li {% if organizations_table.index_act = index%}class="active"{%endif%}>
-              <a href="?index_mem={{index_mem}}&index_org={{index}}">{{ forloop.counter }}</a>
+              <a href="?index_mem={{index_mem}}&index_org={{index}}">{{ num }}</a>
             </li>
           {% endfor %}
+          <li {%if organizations_table.index_act = organizations_table.index_last %}class="active"{%endif%}>
+              <a href="?index_mem={{index_mem}}&index_org={{organizations_table.index_last}}"><span aria-hidden="true">Last</span></a>
+          </li>
           <!--<li>
             <a href="#" aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
@@ -133,7 +145,7 @@
         </ul>
       </nav>
     </div>
-    {% endif %}
+  {% endif %}
   </div>
 </div>
 {% endblock %}

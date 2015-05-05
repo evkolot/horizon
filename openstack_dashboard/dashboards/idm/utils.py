@@ -21,6 +21,7 @@ from django.core import urlresolvers
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.local import local_settings
 
 
 LOG = logging.getLogger('idm_logger')
@@ -30,6 +31,7 @@ DEFAULT_USER_MEDIUM_AVATAR = 'dashboard/img/logos/medium/user.png'
 DEFAULT_ORG_SMALL_AVATAR = 'dashboard/img/logos/small/group.png'
 DEFAULT_APP_SMALL_AVATAR = 'dashboard/img/logos/small/app.png'
 DEFAULT_USER_SMALL_AVATAR = 'dashboard/img/logos/small/user.png'
+NUM_PAGES = getattr(local_settings, 'NUM_PAGES', 10)
 
 def filter_default(items):
     """Remove from a list the automated created project for a user. This project
@@ -99,15 +101,43 @@ def get_counter(self, organization=None, application=None):
         users = set([a.user_id for a in role_assignments])
     return len(users)
 
-def paginate(self, list_pag, index, limit):
+def return_pagination(self, index, indexes, numbers):
+    if len(indexes)>NUM_PAGES:
+        ind = int(indexes.index(index))
+        if (ind - NUM_PAGES + 1) < 0:
+            indexes = indexes[0:NUM_PAGES]
+            numbers = numbers[0:NUM_PAGES]
+        elif (ind + NUM_PAGES) > len(indexes):
+            indexes = indexes[len(indexes)-NUM_PAGES:len(indexes)]
+            numbers = numbers[len(numbers)-NUM_PAGES:len(numbers)]
+        else:
+            div_1 = int(round(NUM_PAGES/2, 0))
+            div_2 = int(NUM_PAGES - div_1)
+            indexes = indexes[ind-div_1:ind+div_2]
+            numbers = numbers[ind-div_1:ind+div_2]
+    return indexes, numbers
+
+def paginate(self, list_pag, index, limit, table_name):
     try:
         index = int(index)
-        LOG.debug('index: {0}'.format(index))
     except ValueError as e:
         LOG.error("Invalid index. {0}".format(e))
         exceptions.handle(self.request,
                           ("Invalid index. \
                             Error message: {0}".format(e)))
+
+    indexes = range(0, len(list_pag), limit)
+    numbers = [(u/limit)+1 for u in indexes]
+    self._tables[table_name].index_act = int(index)
+    # import pdb
+    # pdb.set_trace()
+    if len(indexes) > 0:
+        self._tables[table_name].index_first = int(indexes[0])
+        self._tables[table_name].index_last = int(indexes[-1])
+        indexes, numbers = return_pagination(self, index, indexes, numbers)
+        self._tables[table_name].indexes = zip(indexes, numbers)
+        LOG.debug(indexes)
+    final_list = []
 
     if len(list_pag) <= limit:
         final_list = list_pag

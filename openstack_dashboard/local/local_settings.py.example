@@ -608,3 +608,4 @@ FIWARE_PROVIDER_ROLE = 'provider'
 
 # Table Pagination
 PAGE_LIMIT = 10
+NUM_PAGES = 10
