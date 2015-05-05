@@ -20,5 +20,6 @@ from openstack_dashboard.dashboards.idm_admin.user_accounts import views
 
 urlpatterns = patterns('',
     url(r'^$', views.FindUserView.as_view(), name='index'),
-    url(r'^update/$', views.UpdateAccountView.as_view(), name='update'),
+    url(r'^(?P<user_id>[^/]+)/update/$', views.UpdateAccountView.as_view(),
+    	name='update'),
 )

@@ -67,6 +67,7 @@ class UpdateAccountForm(forms.SelfHandlingForm):
         choices=get_account_types())
 
     region = forms.ChoiceField(
+        required=False,
         label=("Cloud region"),
         choices=get_regions())
 
@@ -74,45 +75,109 @@ class UpdateAccountForm(forms.SelfHandlingForm):
         """ Validate that there are trial users accounts left"""
         account_type = self.cleaned_data['account_type']
         if (account_type != fiware_api.keystone.get_trial_role(
-                self.request)):
+                self.request).id):
             return account_type
 
-        trial_users = len(
-            fiware_api.keystone.get_trial_role_assignments(self.request))
-        if trial_users >= getattr(settings, 'MAX_TRIAL_USERS', 0):
+        if self._max_trial_users_reached(self.request):
             raise forms.ValidationError(
                 'There are no trial accounts left.',
                 code='invalid')
         
         return account_type
 
+    def _max_trial_users_reached(self, request):
+        trial_users = len(
+            fiware_api.keystone.get_trial_role_assignments(request))
+        return trial_users >= getattr(settings, 'MAX_TRIAL_USERS', 0)
+
     def handle(self, request, data):
         try:
             user_id = data['user_id']
             role_id = data['account_type']
+            region_id = data['region']
 
-            self._clean_roles(request, )
+            if (role_id == fiware_api.keystone.get_basic_role(
+                request).id):
 
-            # grant the selected role
-            api.keystone.add_domain_user_role(request,
-                user=user_id, role=role_id)
+                self._update_to_basic(request, user_id, role_id,
+                    region_id)
+
+            elif (role_id == fiware_api.keystone.get_trial_role(
+                request).id):
+
+                self._update_to_trial(request, user_id, role_id,
+                    region_id)
+
+            elif (role_id == fiware_api.keystone.get_community_role(
+                request).id):
+
+                self._update_to_community(request, user_id, role_id,
+                    region_id)
+
+            else:
+                # we should never get to this point
+                raise
 
 
+            messages.success(request,
+                'User account upgraded succesfully')
         except Exception:
             raise
 
-    def _clean_roles(self, request, user_id):
-        account_roles = [
-            fiware_api.keystone.get_basic_role(request),
-            fiware_api.keystone.get_trial_role(request),
-            fiware_api.keystone.get_community_role(request),
-        ]
-        for role in account_roles:
-            if not role:
-                continue
+    def _update_to_community(self, request, user_id, role_id, region_id):
+        user = api.keystone.user_get(request, user_id)
+        self._clean_roles(request, user_id)
 
+        # grant the selected role
+        api.keystone.add_domain_user_role(request,
+            user=user_id, role=role_id, domain='default')
+
+    def _update_to_trial(self, request, user_id, role_id, region_id):
+        user = api.keystone.user_get(request, user_id)
+        self._clean_roles(request, user_id)
+
+        # grant the selected role
+        api.keystone.add_domain_user_role(request,
+            user=user_id, role=role_id, domain='default')
+
+    def _update_to_basic(self, request, user_id, role_id, region_id):
+        user = api.keystone.user_get(request, user_id)
+        self._clean_roles(request, user_id)
+
+        # grant the selected role
+        api.keystone.add_domain_user_role(request,
+            user=user_id, role=role_id, domain='default')
+
+        # remove purchaser from user cloud project
+        purchaser = fiware_api.keystone.get_purchaser_role(request)
+        cloud_app = fiware_api.keystone.get_fiware_cloud_app(request)
+
+        fiware_api.keystone.remove_role_from_user(
+            request,
+            role=purchaser.id,
+            user=user_id,
+            organization=user.cloud_project_id,
+            application=cloud_app.id)
+
+        # TODO(garcianavalon) limpiar endpoint groups
+
+    def _clean_roles(self, request, user_id):
+        # TODO(garcianavalon) find a better solution to this
+        user_roles = api.keystone.role_assignments_list(self.request, 
+            user=user_id, domain='default')
+        account_roles = [
+            fiware_api.keystone.get_basic_role(None,
+                use_idm_account=True).id,
+            fiware_api.keystone.get_trial_role(None,
+                use_idm_account=True).id,
+            fiware_api.keystone.get_community_role(None,
+                use_idm_account=True).id,
+        ]
+        current_account = next((a.role['id'] for a in user_roles 
+            if a.role['id'] in account_roles), None)
+        if current_account:
             api.keystone.remove_domain_user_role(request,
-                user=user_id, role=role.id)
+                user=user_id, role=current_account, domain='default')
 
 
 class FindUserByEmailForm(forms.SelfHandlingForm):
@@ -130,11 +195,10 @@ class FindUserByEmailForm(forms.SelfHandlingForm):
             # in api.keystone so we use list filtering
             # because we are using the list filtering option
             # we need to unpack it.
-            request.session['account_user'] = (
-                idm_utils.PickleObject(**user[0].__dict__))
-
+            user = user[0]
             return shortcuts.redirect(
-                'horizon:idm_admin:user_accounts:update')
+                'horizon:idm_admin:user_accounts:update',
+                user_id=user.id)
 
         except Exception:
             messages.error(request, 

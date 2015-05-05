@@ -16,6 +16,8 @@ from django.shortcuts import redirect
 
 from horizon import forms
 
+from openstack_dashboard import api
+from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm_admin.user_accounts \
     import forms as user_accounts_forms
 from openstack_dashboard.dashboards.idm_admin \
@@ -49,3 +51,33 @@ class UpdateAccountView(forms.ModalFormView):
             return super(UpdateAccountView, self).dispatch(request, *args, **kwargs)
         else:
             return redirect('horizon:user_home')
+
+    def get_context_data(self, **kwargs):
+        context = super(UpdateAccountView, self).get_context_data(**kwargs)
+        context['user'] = api.keystone.user_get(self.request, 
+            self.kwargs['user_id'])
+        return context
+
+    def get_initial(self):
+        initial = super(UpdateAccountView, self).get_initial()
+        user_id = self.kwargs['user_id']
+        user_roles = api.keystone.role_assignments_list(self.request, 
+            user=user_id, domain='default')
+        # TODO(garcianavalon) find a better solution to this
+        account_roles = [
+            fiware_api.keystone.get_basic_role(None,
+                use_idm_account=True).id,
+            fiware_api.keystone.get_trial_role(None,
+                use_idm_account=True).id,
+            fiware_api.keystone.get_community_role(None,
+                use_idm_account=True).id,
+        ]
+        current_account = next((a.role['id'] for a in user_roles 
+            if a.role['id'] in account_roles), None)
+
+        initial.update({
+            'user_id': user_id,
+            #'region': '',
+            'account_type': current_account,
+        })
+        return initial

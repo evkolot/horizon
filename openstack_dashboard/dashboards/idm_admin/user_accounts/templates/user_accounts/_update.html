@@ -4,7 +4,7 @@
 
 
 {% block form_id %}{% endblock %}
-{% block form_action %}{% url 'horizon:idm_admin:user_accounts:update' %}{% endblock %}
+{% block form_action %}{% url 'horizon:idm_admin:user_accounts:update' user.id %}{% endblock %}
 
 
 {% block modal_id %}user_accounts{% endblock %}
@@ -13,6 +13,8 @@
 {% endblock %}
 
 {% block modal-body %}
+
+User: {{ user.username }}, {{ user.name }}
 
 <fieldset>
     {% include "horizon/common/_form_fields.html" %}
