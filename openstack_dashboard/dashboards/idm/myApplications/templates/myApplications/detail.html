@@ -10,10 +10,10 @@
     <h4 class="name">
       {{ application.name }} 
       {% if edit %}
-      <a href="{% url 'horizon:idm:myApplications:edit' application.id %}" class="small"><i class="fa fa-edit"></i>edit</a>
+      <a href="{% url 'horizon:idm:myApplications:edit' application.id %}" class="small"><i class="fa fa-edit"></i><span>edit</span></a>
       {% endif %}
       {% if manage_roles %}
-      <a href="{% url 'horizon:idm:myApplications:roles_manage' application.id %}" class="small"><i class="fa fa-cogs"></i>manage roles</a>
+      <a href="{% url 'horizon:idm:myApplications:roles_manage' application.id %}" class="small"><i class="fa fa-cogs"></i><span>manage roles</span></a>
       {% endif %}
     </h4>
     <div class="logo">

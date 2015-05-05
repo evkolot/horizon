@@ -10,15 +10,12 @@
     <h3 class="name">
       {{ user.username }} 
       {% if edit %}
-      <a href="{% url 'horizon:idm:users:edit' user.id %}" class="small"><i class="fa fa-edit"></i>edit</a>
+      <a href="{% url 'horizon:idm:users:edit' user.id %}" class="small"><i class="fa fa-edit"></i><span>edit</span></a>
       {% endif %}
     </h3>
     <!--crear la carga de la imagen -->
     <div class="logo">
       <img alt="organization logo" src="{{ image }}">        
-
-
-
     </div>
   </header>
   <div class="panel panel-default">
@@ -27,40 +24,43 @@
         <h5>
           Description
         </h5>
-
-              <div class="info expander">
-                <p>{{ user.description }}</p>
-              </div>
-            </div> 
-            <div class="contact_us">
-                <h5>
-                  Website
-                </h5>
-                <div class ="info">
-                    <p>{{ user.website }}</p>
-                </div>
-            </div>
+          <div class="info expander">
+            <p>{{ user.description }}</p>
+          </div>
+      </div> 
+      <div class="contact_us">
+        <h5>
+          Website
+        </h5>
+        <div class ="info">
+          <p>{{ user.website }}</p>
+        </div>
+      </div>
 		</div>
 	</div>
     
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 6277fc39c8fdfdc9c47536395c759b215cf772e4
 
 
-  <div class="panel panel-default organizations">
-    <div class="panel-heading">
-      <span>{{ organizations_table }}</span>
-      {{ organizations_table.render_table_actions }}
-    </div>
-    <div class="panel-body">
-      {% if organizations_table.get_rows %}
-      {{ organizations_table.render }}
-      {% else %}
-      <p class="alert alert-info empty"> {{ user_name }} does not have any organizations.</p>
-      {% endif %}
-    </div>
-    {% if organizations_table.indexes|length > 1 %}
-    <div class="panel-footer">
-      <nav>
-        <ul class="pagination">
+<div class="panel panel-default organizations">
+  <div class="panel-heading">
+    <span>{{ organizations_table }}</span>
+    {{ organizations_table.render_table_actions }}
+  </div>
+  <div class="panel-body">
+    {% if organizations_table.get_rows %}
+    {{ organizations_table.render }}
+    {% else %}
+    <p class="alert alert-info empty"> {{ user_name }} does not have any organizations.</p>
+    {% endif %}
+  </div>
+  {% if organizations_table.indexes|length > 1 %}
+  <div class="panel-footer">
+    <nav>
+      <ul class="pagination">
             <!--<li>
               <a href="#" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
@@ -81,7 +81,7 @@
       </div>
       {% endif %}
     </div>
-  </div>
+
 
   <div class="panel panel-default applications">
     <div class="panel-heading">

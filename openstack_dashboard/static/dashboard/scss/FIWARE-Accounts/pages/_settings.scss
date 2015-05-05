@@ -40,6 +40,13 @@
     border-bottom: 0;
   }
 }
+.settings{
+  .control-label {
+    @include text-overflow;
+    width: 100%;
+  }
+
+}
 
 .control-label {
   color: #B6B6B6;
