@@ -18,7 +18,7 @@ from django.conf import settings
 
 from openstack_auth import forms as openstack_auth_forms
 
-from keystoneclient import exceptions as keystoneclient_exceptions   
+from keystoneclient import exceptions as keystoneclient_exceptions
 
 from openstack_dashboard import fiware_api
 
