@@ -96,70 +96,42 @@ class UpdateAccountForm(forms.SelfHandlingForm):
             role_id = data['account_type']
             region_id = data['region']
 
-            if (role_id == fiware_api.keystone.get_basic_role(
-                request).id):
+            activate_cloud = (
+                role_id != fiware_api.keystone.get_basic_role(
+                    request).id
+            )
 
-                self._update_to_basic(request, user_id, role_id,
-                    region_id)
-
-            elif (role_id == fiware_api.keystone.get_trial_role(
-                request).id):
-
-                self._update_to_trial(request, user_id, role_id,
-                    region_id)
-
-            elif (role_id == fiware_api.keystone.get_community_role(
-                request).id):
-
-                self._update_to_community(request, user_id, role_id,
-                    region_id)
-
-            else:
-                # we should never get to this point
-                raise
-
+            self._update_account(request, user_id, role_id,
+                region_id=region_id, activate_cloud=activate_cloud)
 
             messages.success(request,
                 'User account upgraded succesfully')
         except Exception:
             raise
 
-    def _update_to_community(self, request, user_id, role_id, region_id):
+    def _update_account(self, request, user_id, role_id, 
+                         region_id=None, activate_cloud=False):
         user = api.keystone.user_get(request, user_id)
+
+        # clean previous status
         self._clean_roles(request, user_id)
+        self._clean_endpoint_groups(request, user.cloud_project_id)
 
         # grant the selected role
         api.keystone.add_domain_user_role(request,
             user=user_id, role=role_id, domain='default')
 
-    def _update_to_trial(self, request, user_id, role_id, region_id):
-        user = api.keystone.user_get(request, user_id)
-        self._clean_roles(request, user_id)
+        # cloud
+        if activate_cloud:
+            self._activate_cloud(request, user_id, user.cloud_project_id)
+        else:
+            self._deactivate_cloud(request, user_id, user.cloud_project_id)
+        
+        # assign endpoint group for the selected region
+        if region_id:
+            pass
 
-        # grant the selected role
-        api.keystone.add_domain_user_role(request,
-            user=user_id, role=role_id, domain='default')
-
-    def _update_to_basic(self, request, user_id, role_id, region_id):
-        user = api.keystone.user_get(request, user_id)
-        self._clean_roles(request, user_id)
-
-        # grant the selected role
-        api.keystone.add_domain_user_role(request,
-            user=user_id, role=role_id, domain='default')
-
-        # remove purchaser from user cloud project
-        purchaser = fiware_api.keystone.get_purchaser_role(request)
-        cloud_app = fiware_api.keystone.get_fiware_cloud_app(request)
-
-        fiware_api.keystone.remove_role_from_user(
-            request,
-            role=purchaser.id,
-            user=user_id,
-            organization=user.cloud_project_id,
-            application=cloud_app.id)
-
-        # TODO(garcianavalon) limpiar endpoint groups
+        # done!
 
     def _clean_roles(self, request, user_id):
         # TODO(garcianavalon) find a better solution to this
@@ -179,6 +151,41 @@ class UpdateAccountForm(forms.SelfHandlingForm):
             api.keystone.remove_domain_user_role(request,
                 user=user_id, role=current_account, domain='default')
 
+    def _activate_cloud(self, request, user_id, cloud_project_id):
+        # grant purchaser in cloud app to cloud org
+        # and Member to the user
+        purchaser = fiware_api.keystone.get_purchaser_role(request)
+        cloud_app = fiware_api.keystone.get_fiware_cloud_app(request)
+        cloud_role = fiware_api.keystone.get_default_cloud_role(request,
+            cloud_app.id)
+        
+        fiware_api.keystone.add_role_to_organization(
+            request,
+            role=purchaser.id,
+            organization=cloud_project_id,
+            application=cloud_app.id)
+
+        fiware_api.keystone.add_role_to_user(
+            request,
+            role=cloud_role.id,
+            user=user_id,
+            organization=cloud_project_id,
+            application=cloud_app.id)
+
+    def _deactivate_cloud(self, request, user_id, cloud_project_id):
+        # remove purchaser from user cloud project
+        purchaser = fiware_api.keystone.get_purchaser_role(request)
+        cloud_app = fiware_api.keystone.get_fiware_cloud_app(request)
+
+        fiware_api.keystone.remove_role_from_user(
+            request,
+            role=purchaser.id,
+            user=user_id,
+            organization=cloud_project_id,
+            application=cloud_app.id)
+
+    def _clean_endpoint_groups(self, request, cloud_project_id):
+        pass
 
 class FindUserByEmailForm(forms.SelfHandlingForm):
     email = forms.EmailField(label=("E-mail"),
