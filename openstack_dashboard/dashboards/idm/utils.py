@@ -128,13 +128,15 @@ def paginate(self, list_pag, index, limit, table_name):
 
     indexes = range(0, len(list_pag), limit)
     numbers = [(u/limit)+1 for u in indexes]
-
     self._tables[table_name].index_act = int(index)
-    self._tables[table_name].index_first = int(indexes[0])
-    self._tables[table_name].index_last = int(indexes[-1])
-
-    indexes, numbers = return_pagination(self, index, indexes, numbers)
-    self._tables[table_name].indexes = zip(indexes,numbers)
+    # import pdb
+    # pdb.set_trace()
+    if len(indexes) > 0:
+        self._tables[table_name].index_first = int(indexes[0])
+        self._tables[table_name].index_last = int(indexes[-1])
+        indexes, numbers = return_pagination(self, index, indexes, numbers)
+        self._tables[table_name].indexes = zip(indexes, numbers)
+        LOG.debug(indexes)
     final_list = []
 
     if len(list_pag) <= limit:

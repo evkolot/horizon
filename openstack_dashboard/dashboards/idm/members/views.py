@@ -60,10 +60,9 @@ class IndexView(tables.MultiTableView):
             users = [user for user in all_users if user.id in project_users_roles]
             users = sorted(users, key=lambda x: x.username.lower())
         
-            indexes = range(0, len(users), LIMIT)
-            self._tables['members'].indexes = indexes
-            self._tables['members'].index_act = int(index)
-            users = idm_utils.paginate(self, users, index=index, limit=LIMIT)
+            users = idm_utils.paginate(self, users,
+                                       index=index, limit=LIMIT,
+                                       table_name='members')
 
         except Exception:
             exceptions.handle(self.request,

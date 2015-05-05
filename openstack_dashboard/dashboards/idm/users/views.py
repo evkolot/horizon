@@ -57,11 +57,9 @@ class DetailUserView(tables.MultiTableView):
                 admin=False)
 
             organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
-        
-            indexes = range(0, len(organizations), LIMIT)
-            self._tables['organizations'].indexes = indexes
-            self._tables['organizations'].index_act = int(index_org)
-            organizations = idm_utils.paginate(self, organizations, index=index_org, limit=LIMIT)
+            organizations = idm_utils.paginate(self, organizations,
+                                               index=index_org, limit=LIMIT,
+                                               table_name='organizations')
 
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)
@@ -88,11 +86,10 @@ class DetailUserView(tables.MultiTableView):
                             if app.id in apps_with_roles]
             applications = idm_utils.filter_default(
                             sorted(applications, key=lambda x: x.name.lower()))
-        
-            indexes = range(0, len(applications), LIMIT)
-            self._tables['applications'].indexes = indexes
-            self._tables['applications'].index_act = int(index_app)
-            applications = idm_utils.paginate(self, applications, index=index_app, limit=LIMIT)
+
+            applications = idm_utils.paginate(self, applications,
+                                              index=index_app, limit=LIMIT,
+                                              table_name='applications')
 
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)

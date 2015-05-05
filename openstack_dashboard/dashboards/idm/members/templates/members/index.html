@@ -25,7 +25,7 @@
       {% endif %}
     </div>
 
-    {% if members_table.indexes|length > 1  %}
+    {% if members_table.indexes|length > 1 and members_table.indexes  %}
       <div class="panel-footer">
 
         <nav>
@@ -35,12 +35,18 @@
                 <span aria-hidden="true">&laquo;</span>
               </a>
             </li>-->
-
-            {% for index in members_table.indexes %}
+            <li {%if table.index_act = table.index_first %}class="active"{%endif%}>
+              <a href="?index={{table.index_first}}"><span aria-hidden="true">First</span></a>
+          </li>
+            {% for index, num in members_table.indexes %}
               <li {% if members_table.index_act == index %}class="active"{%endif%} >
-                <a href="?index={{index}}">{{ forloop.counter }}</a>
+                <a href="?index={{index}}">{{ num }}</a>
               </li>
             {% endfor %}
+         
+              <li {%if table.index_act = table.index_last %}class="active"{%endif%}>
+              <a href="?index={{table.index_last}}"><span aria-hidden="true">Last</span></a>
+          </li>
             <!--<li>
               <a href="#" aria-label="Next">
                 <span aria-hidden="true">&raquo;</span>

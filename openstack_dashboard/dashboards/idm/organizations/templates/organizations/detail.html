@@ -54,28 +54,35 @@
       <p class="alert alert-info empty"> {{ organization_name }} does not have any members.</p>
       {% endif %}
     </div>
-    {% if members_table.indexes|length > 1 %}
-    <div class="panel-footer">
-      <nav>
-        <ul class="pagination">
-          <!--<li>
-            <a href="#" aria-label="Previous">
-              <span aria-hidden="true">&laquo;</span>
-            </a>
-          </li>-->
-          {% for index in members_table.indexes %}
-            <li {%if members_table.index_act = index %}class="active"{%endif%}>
-              <a href="?index_mem={{index}}&index_app={{index_app}}">{{ forloop.counter }}</a>
+    {% if members_table.indexes and members_table.indexes|length > 1  %}
+      <div class="panel-footer">
+
+        <nav>
+          <ul class="pagination">
+          <li {%if members_table.index_act = members_table.index_first %}class="active"{%endif%}>
+                <a href="?index={{members_table.index_first}}"><span aria-hidden="true">First</span></a>
             </li>
-          {% endfor %}
-          <!--<li>
-            <a href="#" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
-            </a>
-          </li>-->
-        </ul>
-      </nav>
-    </div>
+            <!--<li>
+              <a href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>-->
+            {% for index, num in members_table.indexes %}
+              <li {%if members_table.index_act = index %}class="active"{%endif%}>
+                <a href="?index_mem={{index}}&index_app={{index_app}}">{{ num }}</a>
+              </li>
+            {% endfor %}
+            <li {%if members_table.index_act = members_table.index_last %}class="active"{%endif%}>
+                <a href="?index={{members_table.index_last}}"><span aria-hidden="true">Last</span></a>
+            </li>
+            <!--<li>
+              <a href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>-->
+          </ul>
+        </nav>
+      </div>
     {% endif %}
   </div>
 
@@ -93,20 +100,26 @@
       <p class="alert alert-info empty"> {{organization_name}} does not have any authorizing applications.</p>
       {% endif %}
     </div>
-    {% if applications_table.indexes|length > 1 %}
+    {% if applications_table.indexes|length > 1 and applications_table.indexes %}
     <div class="panel-footer">
       <nav>
         <ul class="pagination">
+        <li {%if applications_table.index_act = applications_table.index_first %}class="active"{%endif%}>
+              <a href="?index={{applications_table.index_first}}"><span aria-hidden="true">First</span></a>
+          </li>
           <!--<li>
             <a href="#" aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
           </li>-->
-          {% for index in applications_table.indexes %}
+          {% for index, num in applications_table.indexes %}
           <li {%if applications_table.index_act = index %}class="active"{%endif%}>
-            <a href="?index_mem={{index_mem}}&index_app={{index}}">{{ forloop.counter }}</a>
+            <a href="?index_mem={{index_mem}}&index_app={{index}}">{{ num }}</a>
           </li>
           {% endfor %}
+          <li {%if applications_table.index_act = applications_table.index_last %}class="active"{%endif%}>
+              <a href="?index={{applications_table.index_last}}"><span aria-hidden="true">Last</span></a>
+          </li>
                     <!--<li>
             <a href="#" aria-label="Next">
               <span aria-hidden="true">&raquo;</span>

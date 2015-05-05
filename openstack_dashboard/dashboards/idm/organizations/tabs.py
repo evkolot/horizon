@@ -81,9 +81,6 @@ class OwnedOrganizationsTab(tabs.TableTab):
             self._more = False
 
             index = self.request.GET.get('index', 0)
-            indexes = range(0, len(organizations), LIMIT)
-            self._tables['owned_organizations'].indexes = indexes
-            self._tables['owned_organizations'].index_act = int(index)
             organizations = idm_utils.paginate(self, organizations,
                                                index=index, limit=LIMIT,
                                                table_name='owned_organizations')
@@ -116,9 +113,6 @@ class MemberOrganizationsTab(tabs.TableTab):
             organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
 
             index = self.request.GET.get('index', 0)
-            indexes = range(0, len(organizations), LIMIT)
-            self._tables['member_organizations'].indexes = indexes
-            self._tables['member_organizations'].index_act = int(index)
             organizations = idm_utils.paginate(self, organizations,
                                                index=index, limit=LIMIT,
                                                table_name='member_organizations')

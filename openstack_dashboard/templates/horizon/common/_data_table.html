@@ -8,7 +8,7 @@
       {% endfor %}
     </div>
   
-  {% if table.indexes|length > 1 and table.name != 'organizations' and table.name != 'applications' and table.name != 'members' %}
+  {% if table.indexes|length > 1 and table.indexes and table.name != 'organizations' and table.name != 'applications' and table.name != 'members' and table.name != 'auth_users'  %}
     <div class="panel-footer">
       <nav>
       <ul class="pagination">
@@ -26,8 +26,6 @@
                 <a href="?index={{index}}">{{ num }}</a>
               </li>
 
-            <li>
-              </li>
             
       
           {% endfor %}
