@@ -31,17 +31,25 @@ hr{
   border-top: 1px solid $border-color !important;
 }
 
-.page-header h2 {
-	font-family: $corporate-font-family-sans-serif-Regular;
-	color: $brand-secundary;
-	text-align: right;
-	padding-top: 2px;
-}
 
 .page-header {
 	border: none;
 	margin: -1px 0 0px;
 	padding-bottom: 6px;
+  min-height: 40px;
+  h2 {
+    font-family: $corporate-font-family-sans-serif-Regular;
+    color: $brand-secundary;
+    text-align: right;
+    padding-top: 2px;
+    @media (max-width: 375px){
+      padding: 3px 0 10px;
+      font-size: 19px;
+    }
+    @media (max-width: 205px){
+      display: none;
+    }
+  }
   .btn{
     float: left;
     margin-top: 2px;

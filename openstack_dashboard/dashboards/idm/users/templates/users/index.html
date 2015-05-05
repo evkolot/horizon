@@ -6,19 +6,18 @@
 
 {% block main %}
 <div id="detailUser">
-    <header>
-        <h3 class="name">
-            {{ user.username }} 
-            {% if edit %}
-                <a href="{% url 'horizon:idm:users:edit' user.id %}" class="small"><i class="fa fa-edit"></i>edit</a>
-            {% endif %}
-        </h3>
-        <!--crear la carga de la imagen -->
-        <div class="logo">
-            <img alt="organization logo" src="{{ image }}">        
-
-        </div>
-    </header>
+  <header>
+    <h3 class="name">
+      {{ user.username }} 
+      {% if edit %}
+      <a href="{% url 'horizon:idm:users:edit' user.id %}" class="small"><i class="fa fa-edit"></i><span>edit</span></a>
+      {% endif %}
+    </h3>
+    <!--crear la carga de la imagen -->
+    <div class="logo">
+      <img alt="organization logo" src="{{ image }}">        
+    </div>
+  </header>
 	<div class="panel panel-default">
 		<div class="panel-body">
             <div class="description">
@@ -41,60 +40,82 @@
 		</div>
 	</div>
     
-	<div class="panel panel-default organizations">
+  
 
-        <div class="panel-heading">
-            <span>{{ organizations_table }}</span>
-            {{ organizations_table.render_table_actions }}
-        </div>
-        <div class="panel-body">
-            {% if organizations_table.get_rows %}
-                {{ organizations_table.render }}
-            {% else %}
-            <p class="alert alert-info empty"> {{ user_name }} does not have any organizations.</p>
-            {% endif %}
-        </div>
-        {% if organizations_table.indexes|length > 1 %}
-          <div class="panel-footer">
-          <nav>
-            <ul class="pagination">
-              {% for index in organizations_table.indexes %}
-              <li {% if organizations_table.index_act = index%}class="active"{%endif%}>
-                <a href="?index_org={{index}}&index_app={{index_app}}">{{ forloop.counter }}</a>
-              </li>
-              {% endfor %}
-            </ul>
-          </nav>
-          </div>
-          {% endif %}
+
+<div class="panel panel-default organizations">
+  <div class="panel-heading">
+    <span>{{ organizations_table }}</span>
+    {{ organizations_table.render_table_actions }}
+  </div>
+  <div class="panel-body">
+    {% if organizations_table.get_rows %}
+    {{ organizations_table.render }}
+    {% else %}
+    <p class="alert alert-info empty"> {{ user_name }} does not have any organizations.</p>
+    {% endif %}
+  </div>
+  {% if organizations_table.indexes|length > 1 %}
+  <div class="panel-footer">
+    <nav>
+      <ul class="pagination">
+            <!--<li>
+              <a href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>-->
+            {% for index in organizations_table.indexes %}
+            <li {% if organizations_table.index_act = index%}class="active"{%endif%}>
+              <a href="?index_org={{index}}&index_app={{index_app}}">{{ forloop.counter }}</a>
+            </li>
+            {% endfor %}
+            <!--<li>
+              <a href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>-->
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
     </div>
 
-    <div class="panel panel-default applications">
-        <div class="panel-heading">
-            <span>{{ applications_table }}</span>
-            {{ applications_table.render_table_actions }}
-        </div>
-        <div class="panel-body">
-            {% if applications_table.get_rows %}
-                {{ applications_table.render}}
-            {% else %}
-            <p class="alert alert-info empty"> {{ user_name }} does not have any applications.</p>
-            {% endif %}
-        </div>
-        {% if applications_table.indexes|length > 1 %}
-          <div class="panel-footer">
-          <nav>
-            <ul class="pagination">
-              {% for index in applications_table.indexes %}
-              <li {% if applications_table.index_act = index%}class="active"{%endif%}>
-                <a href="?index_org={{index_org}}&index_app={{index}}">{{ forloop.counter }}</a>
-                </li>
-              {% endfor %}
-            </ul>
-          </nav>
-          </div>
-          {% endif %}
-    </div>
 
+  <div class="panel panel-default applications">
+    <div class="panel-heading">
+      <span>{{ applications_table }}</span>
+      {{ applications_table.render_table_actions }}
+    </div>
+    <div class="panel-body">
+      {% if applications_table.get_rows %}
+      {{ applications_table.render}}
+      {% else %}
+      <p class="alert alert-info empty"> {{ user_name }} does not have any applications.</p>
+      {% endif %}
+    </div>
+    {% if applications_table.indexes|length > 1 %}
+    <div class="panel-footer">
+      <nav>
+        <ul class="pagination">
+          <!--<li>
+            <a href="#" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>-->
+          {% for index in applications_table.indexes %}
+          <li {% if applications_table.index_act = index%}class="active"{%endif%}>
+            <a href="?index_org={{index_org}}&index_app={{index}}">{{ forloop.counter }}</a>
+          </li>
+          {% endfor %}
+          <!--<li>
+            <a href="#" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>-->
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}

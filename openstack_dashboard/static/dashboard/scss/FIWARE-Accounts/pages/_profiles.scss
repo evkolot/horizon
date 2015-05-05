@@ -34,9 +34,21 @@
       top: -23px;
     }
   }
-  .panel-title{
-    text-align: right;
-    margin-bottom: 6px;
+  .extra{
+    min-height: 30px;
+    .panel-title{
+      text-align: right;
+    }
+    .collapse{
+      margin-bottom: 0;
+      div{
+          min-height: 40px;
+        p{
+           word-break: break-word;
+           margin-bottom: 15px;
+        }
+      }
+    }
   }
 }
 
