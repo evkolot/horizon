@@ -19,7 +19,24 @@ User: {{ user.username }}, {{ user.name }}
 <fieldset>
     {% include "horizon/common/_form_fields.html" %}
 </fieldset>
+  <script type="text/javascript">
+    $(document).ready(function(){
 
+      function show_regions(){
+        var account_type = $("#id_account_type option:selected").text();
+        if (account_type == 'basic'){
+          $('#id_region').closest('div.form-group').hide();
+        } else if (account_type == 'trial') {
+          $('#id_region').closest('div.form-group').show();
+        } else if (account_type == 'community') {
+          $('#id_region').closest('div.form-group').show();
+        }
+      };
+      show_regions();
+
+      $('#id_account_type').on('change', show_regions);
+    });
+  </script>
 {% endblock %}
 
 {% block modal-footer %}
