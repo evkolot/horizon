@@ -30,7 +30,7 @@ from openstack_dashboard.dashboards.idm \
 
 LOG = logging.getLogger('idm_logger')
 
-def get_account_types():
+def get_account_choices():
     """Loads all FIWARE account roles."""
     choices = []
     # TODO(garcianavalon) find a better solution to this
@@ -54,6 +54,7 @@ def get_regions():
     """Loads all posible regions for the FIWARE cloud portal"""
     choices = [
         ('', 'No region'),
+        ('Spain2', 'Spain2'),
     ]
     return choices
 
@@ -64,7 +65,7 @@ class UpdateAccountForm(forms.SelfHandlingForm):
     account_type = forms.ChoiceField(
         required=True,
         label=("Account type"),
-        choices=get_account_types())
+        choices=get_account_choices())
 
     region = forms.ChoiceField(
         required=False,
@@ -84,6 +85,41 @@ class UpdateAccountForm(forms.SelfHandlingForm):
                 code='invalid')
         
         return account_type
+
+    def clean(self):
+        cleaned_data = super(UpdateAccountForm, self).clean()
+
+        # TODO(garcianavalon) find a better solution to this
+        role_name = next(choice[1] for choice in get_account_choices()
+            if choice[0] == cleaned_data['account_type'])
+        
+        region = cleaned_data.get('region', None)
+
+        allowed_regions = getattr(settings, 'FIWARE_ALLOWED_REGIONS', None)
+        if not allowed_regions:
+            raise forms.ValidationError(
+                'FIWARE_ALLOWED_REGIONS is not properly configured',
+                code='invalid')
+        
+        if not allowed_regions[role_name]:
+            if region:
+                messages.info(self.request, 
+                    'The account type selected is not allowed any region')
+
+            cleaned_data['region'] = None
+            return cleaned_data
+
+        if not region in allowed_regions[role_name]:
+            if not region:
+                msg = 'You must choose a region for this accout type.'
+            else:
+                msg = 'The region {0} is not allowed for that account type.'.format(region)
+            raise forms.ValidationError(
+                msg,
+                code='invalid')
+
+        return cleaned_data
+
 
     def _max_trial_users_reached(self, request):
         trial_users = len(
@@ -156,8 +192,7 @@ class UpdateAccountForm(forms.SelfHandlingForm):
         # and Member to the user
         purchaser = fiware_api.keystone.get_purchaser_role(request)
         cloud_app = fiware_api.keystone.get_fiware_cloud_app(request)
-        cloud_role = fiware_api.keystone.get_default_cloud_role(request,
-            cloud_app.id)
+        cloud_role = fiware_api.keystone.get_default_cloud_role(request, cloud_app)
         
         fiware_api.keystone.add_role_to_organization(
             request,

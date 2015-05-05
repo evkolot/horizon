@@ -26,8 +26,11 @@ User: {{ user.username }}, {{ user.name }}
         var account_type = $("#id_account_type option:selected").text();
         if (account_type == 'basic'){
           $('#id_region').closest('div.form-group').hide();
+          $('#id_region').val('')
+
         } else if (account_type == 'trial') {
           $('#id_region').closest('div.form-group').show();
+          
         } else if (account_type == 'community') {
           $('#id_region').closest('div.form-group').show();
         }
