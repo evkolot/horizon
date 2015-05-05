@@ -35,8 +35,8 @@
                 <span aria-hidden="true">&laquo;</span>
               </a>
             </li>-->
-            <li {%if table.index_act = table.index_first %}class="active"{%endif%}>
-              <a href="?index={{table.index_first}}"><span aria-hidden="true">First</span></a>
+            <li {%if members_table.index_act = members_table.index_first %}class="active"{%endif%}>
+              <a href="?index={{members_table.index_first}}"><span aria-hidden="true">First</span></a>
           </li>
             {% for index, num in members_table.indexes %}
               <li {% if members_table.index_act == index %}class="active"{%endif%} >
@@ -44,8 +44,8 @@
               </li>
             {% endfor %}
          
-              <li {%if table.index_act = table.index_last %}class="active"{%endif%}>
-              <a href="?index={{table.index_last}}"><span aria-hidden="true">Last</span></a>
+              <li {%if members_table.index_act = members_table.index_last %}class="active"{%endif%}>
+              <a href="?index={{members_table.index_last}}"><span aria-hidden="true">Last</span></a>
           </li>
             <!--<li>
               <a href="#" aria-label="Next">
