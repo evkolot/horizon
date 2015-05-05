@@ -447,6 +447,15 @@ def forward_validate_token_request(request):
     response = requests.get(url)
     return response
 
+# REGIONS AND ENDPOINT GROUPS
+def region_list(request, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().regions
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).regions
+    return manager.list()
+
 # SPECIAL ROLES
 # TODO(garcianavalon) refactorize for better reuse
 class PickleObject():

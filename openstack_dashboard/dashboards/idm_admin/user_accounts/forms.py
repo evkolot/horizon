@@ -54,8 +54,10 @@ def get_regions():
     """Loads all posible regions for the FIWARE cloud portal"""
     choices = [
         ('', 'No region'),
-        ('Spain2', 'Spain2'),
     ]
+    regions = fiware_api.keystone.region_list(None, use_idm_account=True)
+    for region in regions:
+        choices.append((region.id, region.id))
     return choices
 
 class UpdateAccountForm(forms.SelfHandlingForm):
