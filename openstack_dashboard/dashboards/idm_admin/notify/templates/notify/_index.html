@@ -14,11 +14,24 @@
 
 {% block modal-body %}
 
-<fieldset>
+  <fieldset>
     {% include "horizon/common/_form_fields.html" %}
-</fieldset>
+  </fieldset>
 
+  <script type="text/javascript">
+    $(document).ready(function(){
+      // hide the organization id field by default
+      $('#id_organization').closest('div.form-group').hide();
 
+      $('#id_notify').on('change', function() {
+        if (this.value == 'organization'){
+          $('#id_organization').closest('div.form-group').show();
+        } else if (this.value == 'all_users') {
+          $('#id_organization').closest('div.form-group').hide();
+        }
+      });
+    });
+  </script>
 {% endblock %}
 
 {% block modal-footer %}
