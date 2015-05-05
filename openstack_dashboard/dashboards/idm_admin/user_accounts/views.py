@@ -35,11 +35,6 @@ class FindUserView(forms.ModalFormView):
         else:
             return redirect('horizon:user_home')
 
-    def get_context_data(self, **kwargs):
-        context = super(FindUserView, self).get_context_data(**kwargs)
-        'There is no user registered under that email account'
-        return context
-
 
 class UpdateAccountView(forms.ModalFormView):
     form_class = user_accounts_forms.UpdateAccountForm

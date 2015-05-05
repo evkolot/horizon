@@ -228,22 +228,32 @@ class FindUserByEmailForm(forms.SelfHandlingForm):
     email = forms.EmailField(label=("E-mail"),
                              required=True)
 
-    def handle(self, request, data):
+    def clean_email(self):
         try:
-            user = api.keystone.user_list(request,
-                filters={'name':data['email']})
+            email = self.cleaned_data['email']
+            user = api.keystone.user_list(self.request,
+                filters={'name':email})
+
             if not user:
-                return False
+                raise forms.ValidationError(
+                'There is no user registered under that email account',
+                code='invalid')
 
             # NOTE(garcianavalon) there is no users.find binding
             # in api.keystone so we use list filtering
             # because we are using the list filtering option
             # we need to unpack it.
-            user = user[0]
-            return shortcuts.redirect(
-                'horizon:idm_admin:user_accounts:update',
-                user_id=user.id)
+            self.user = user[0]
+
+            return email
 
         except Exception:
-            messages.error(request, 
-                'An unexpected error ocurred. Try again later')
+            msg = 'An unexpected error ocurred. Try again later'
+            messages.error(self.request, msg)
+            exceptions.handle(self.request, msg)
+
+
+    def handle(self, request, data):
+        return shortcuts.redirect(
+            'horizon:idm_admin:user_accounts:update',
+            user_id=self.user.id)
