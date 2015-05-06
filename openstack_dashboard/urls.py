@@ -46,7 +46,7 @@ urlpatterns = patterns(
     url(r'^auth/', include('openstack_auth.urls')),
     url(r'', include(horizon.urls)),
     url(r'^summernote/', include('django_summernote.urls')),
-    url(r'^account_update$', user_accounts_views.UpdateAccountEndpointView.as_view(), 
+    url(r'^account_category$', user_accounts_views.UpdateAccountEndpointView.as_view(), 
         name='update_account'),
 )
 
