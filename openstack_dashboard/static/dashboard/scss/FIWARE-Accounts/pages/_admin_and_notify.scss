@@ -23,7 +23,8 @@
 }
 
 
-#notify{
+#notify,
+#user_accounts{
   .modal-header{
     border: none;
     padding-bottom: 0;
@@ -57,4 +58,13 @@
 
 .note-editor{
   border: 1px solid $border-color !important;
+}
+
+#user_accounts{
+  h5{
+    font-family: $font-family-base;
+    margin-bottom: 10px;
+    font-size: 12px;
+    display: block;
+  }
 }

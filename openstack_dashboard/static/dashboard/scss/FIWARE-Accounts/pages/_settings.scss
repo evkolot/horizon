@@ -11,7 +11,8 @@
     padding: 0;
     min-height: 1px;
     background-color: transparent;
-    &:hover{
+    &:hover,
+    &:focus{
       cursor: pointer;
       border-color: $brand-secundary !important;
       color: $brand-secundary !important;
