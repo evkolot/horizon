@@ -27,7 +27,6 @@ from keystoneclient import exceptions as ks_exceptions
 from keystoneclient import session
 from keystoneclient.auth.identity import v3
 from keystoneclient.v3 import client
-from keystoneclient.v3.contrib.oauth2 import auth as oauth2_auth
 
 
 LOG = logging.getLogger('idm_logger')
@@ -67,11 +66,7 @@ def _find_user(keystone, email=None, username=None):
         msg = "No user matching email=%s." % email
         raise ks_exceptions.NotFound(404, msg)
 
-def add_domain_user_role(role, user, domain='default'):
-    manager = internal_keystoneclient().roles
-    return manager.grant(role, user=user, domain=domain)
-
-def get_trial_role_assignments(request, domain='default'):
+def get_trial_role_assignments(request, domain='default', use_idm_account=True):
     trial_role = get_trial_role(request, use_idm_account=True)
     if trial_role:
         manager = internal_keystoneclient().role_assignments
@@ -180,9 +175,13 @@ def add_role_to_user(request, role, user, organization,
             request, admin=True).fiware_roles.roles
     return manager.add_to_user(role, user, organization, application)
 
-def remove_role_from_user(request, role, user, organization, application):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.roles
+def remove_role_from_user(request, role, user, organization, application,
+                          use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().fiware_roles.roles
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).fiware_roles.roles
     return manager.remove_from_user(role, user, organization, application)
 
 def user_role_assignments(request, user=None, organization=None,
@@ -447,6 +446,42 @@ def forward_validate_token_request(request):
     response = requests.get(url)
     return response
 
+# STUFF
+def user_get(request, user_id, admin=True, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().users
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).users
+    return manager.get(user_id)
+
+def add_domain_user_role(request, user, role, domain, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().roles
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).roles
+    return manager.grant(role, user=user, domain=domain)
+
+def remove_domain_user_role(request, user, role, domain, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().roles
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).roles
+    return manager.revoke(role, user=user, domain=domain)
+
+def role_assignments_list(request, project=None, user=None, role=None,
+                          group=None, domain=None, effective=False, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().role_assignments
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).role_assignments
+    return manager.list(project=project, user=user, role=role, group=group,
+                        domain=domain, effective=effective)
+
+
 # REGIONS AND ENDPOINT GROUPS
 def region_list(request, use_idm_account=False):
     if use_idm_account:
@@ -455,6 +490,57 @@ def region_list(request, use_idm_account=False):
         manager = api.keystone.keystoneclient(
             request, admin=True).regions
     return manager.list()
+
+def endpoint_group_list(request, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().endpoint_groups
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).endpoint_groups
+    return manager.list()
+
+def add_endpoint_group_to_project(request, project, endpoint_group, 
+                                  use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().endpoint_groups
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).endpoint_groups
+    return manager.add_endpoint_group_to_project(
+        project=project,
+        endpoint_group=endpoint_group)
+
+def delete_endpoint_group_from_project(request, project, endpoint_group, 
+                                       use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().endpoint_groups
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).endpoint_groups
+    return manager.delete_endpoint_group_from_project(
+        project=project,
+        endpoint_group=endpoint_group)
+
+def check_endpoint_group_in_project(request, project, endpoint_group, 
+                                    use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient().endpoint_groups
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).endpoint_groups
+    return manager.check_endpoint_group_in_project(
+        project=project,
+        endpoint_group=endpoint_group)
+
+# NOTE(garcianavalon) this is documented but not suported in keystone...
+# def list_endpoint_groups_for_project(request, project, use_idm_account=False):
+#     if use_idm_account:
+#         manager = internal_keystoneclient().endpoint_groups
+#     else:
+#         manager = api.keystone.keystoneclient(
+#             request, admin=True).endpoint_groups
+#     return manager.list_endpoint_groups_for_project(
+#         project=project)
 
 # SPECIAL ROLES
 # TODO(garcianavalon) refactorize for better reuse

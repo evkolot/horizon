@@ -22,6 +22,8 @@ from horizon import exceptions
 from horizon import forms
 from horizon import messages
 
+from keystoneclient import exceptions as kc_exceptions
+
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 
@@ -29,6 +31,146 @@ from openstack_dashboard.dashboards.idm \
     import utils as idm_utils
 
 LOG = logging.getLogger('idm_logger')
+
+class UserAccountsLogicMixin():
+    use_idm_account = False
+
+    def _max_trial_users_reached(self, request):
+        trial_users = len(
+            fiware_api.keystone.get_trial_role_assignments(request,
+                use_idm_account=self.use_idm_account))
+        return trial_users >= getattr(settings, 'MAX_TRIAL_USERS', 0)
+
+    def update_account(self, request, user_id, role_id, region_id=None):
+        activate_cloud = role_id != fiware_api.keystone.get_basic_role(
+            request, use_idm_account=self.use_idm_account).id
+        
+        user = fiware_api.keystone.user_get(request, user_id,
+            use_idm_account=self.use_idm_account)
+
+        # clean previous status
+        self._clean_roles(request, user_id)
+        self._clean_endpoint_groups(request, user.cloud_project_id)
+
+        # grant the selected role
+        fiware_api.keystone.add_domain_user_role(request,
+            user=user_id, role=role_id, domain='default',
+            use_idm_account=self.use_idm_account)
+
+        # cloud
+        if activate_cloud:
+            self._activate_cloud(request, user_id, user.cloud_project_id)
+        else:
+            self._deactivate_cloud(request, user_id, user.cloud_project_id)
+        
+        # assign endpoint group for the selected region
+        if not region_id:
+            return
+
+        endpoint_groups = fiware_api.keystone.endpoint_group_list(
+            request, use_idm_account=self.use_idm_account)
+        region_group = next(group for group in endpoint_groups
+            if group.filters.get('region_id', None) == region_id)
+
+        if not region_group:
+            messages.error(
+                request, 'There is no endpoint group defined for that region')
+            return
+        
+        fiware_api.keystone.add_endpoint_group_to_project(
+            request,
+            project=user.cloud_project_id,
+            endpoint_group=region_group,
+            use_idm_account=self.use_idm_account)
+
+        # done!
+
+    def _clean_roles(self, request, user_id):
+        # TODO(garcianavalon) find a better solution to this
+        user_roles = fiware_api.keystone.role_assignments_list(request, 
+            user=user_id, domain='default', use_idm_account=self.use_idm_account)
+        account_roles = [
+            fiware_api.keystone.get_basic_role(None,
+                use_idm_account=True).id,
+            fiware_api.keystone.get_trial_role(None,
+                use_idm_account=True).id,
+            fiware_api.keystone.get_community_role(None,
+                use_idm_account=True).id,
+        ]
+        current_account = next((a.role['id'] for a in user_roles 
+            if a.role['id'] in account_roles), None)
+        if current_account:
+            fiware_api.keystone.remove_domain_user_role(request,
+                user=user_id, role=current_account, domain='default',
+                use_idm_account=self.use_idm_account)
+
+    def _activate_cloud(self, request, user_id, cloud_project_id):
+        # grant purchaser in cloud app to cloud org
+        # and Member to the user
+        purchaser = fiware_api.keystone.get_purchaser_role(request,
+            use_idm_account=self.use_idm_account)
+        cloud_app = fiware_api.keystone.get_fiware_cloud_app(request,
+            use_idm_account=self.use_idm_account)
+        cloud_role = fiware_api.keystone.get_default_cloud_role(request, cloud_app,
+            use_idm_account=self.use_idm_account)
+        
+        fiware_api.keystone.add_role_to_organization(
+            request,
+            role=purchaser.id,
+            organization=cloud_project_id,
+            application=cloud_app.id,
+            use_idm_account=self.use_idm_account)
+
+        fiware_api.keystone.add_role_to_user(
+            request,
+            role=cloud_role.id,
+            user=user_id,
+            organization=cloud_project_id,
+            application=cloud_app.id,
+            use_idm_account=self.use_idm_account)
+
+    def _deactivate_cloud(self, request, user_id, cloud_project_id):
+        # remove purchaser from user cloud project
+        purchaser = fiware_api.keystone.get_purchaser_role(request,
+            use_idm_account=self.use_idm_account)
+        cloud_app = fiware_api.keystone.get_fiware_cloud_app(request,
+            use_idm_account=self.use_idm_account)
+
+        fiware_api.keystone.remove_role_from_user(
+            request,
+            role=purchaser.id,
+            user=user_id,
+            organization=cloud_project_id,
+            application=cloud_app.id,
+            use_idm_account=self.use_idm_account)
+
+    def _clean_endpoint_groups(self, request, cloud_project_id):
+        # remove all region related endpoint groups
+        # NOTE(garcianavalon) the keystone extension doesnt support yet
+        # an endpoint to get all endpoint groups for a project
+        # we check each relationship before for now
+        endpoint_groups = fiware_api.keystone.endpoint_group_list(request,
+            use_idm_account=self.use_idm_account)
+
+        for endpoint_group in endpoint_groups:
+            if 'region_id' not in endpoint_group.filters:
+                continue
+
+            try:
+                fiware_api.keystone.check_endpoint_group_in_project(
+                    request,
+                    project=cloud_project_id,
+                    endpoint_group=endpoint_group,
+                    use_idm_account=self.use_idm_account)
+            except kc_exceptions.NotFound:
+                continue
+            
+            fiware_api.keystone.delete_endpoint_group_from_project(
+                request,
+                project=cloud_project_id,
+                endpoint_group=endpoint_group,
+                use_idm_account=self.use_idm_account)
+
 
 def get_account_choices():
     """Loads all FIWARE account roles."""
@@ -60,7 +202,7 @@ def get_regions():
         choices.append((region.id, region.id))
     return choices
 
-class UpdateAccountForm(forms.SelfHandlingForm):
+class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
     user_id = forms.CharField(
         widget=forms.HiddenInput(), required=True)
 
@@ -122,108 +264,21 @@ class UpdateAccountForm(forms.SelfHandlingForm):
 
         return cleaned_data
 
-
-    def _max_trial_users_reached(self, request):
-        trial_users = len(
-            fiware_api.keystone.get_trial_role_assignments(request))
-        return trial_users >= getattr(settings, 'MAX_TRIAL_USERS', 0)
-
+    
     def handle(self, request, data):
         try:
             user_id = data['user_id']
             role_id = data['account_type']
             region_id = data['region']
 
-            activate_cloud = (
-                role_id != fiware_api.keystone.get_basic_role(
-                    request).id
-            )
-
-            self._update_account(request, user_id, role_id,
-                region_id=region_id, activate_cloud=activate_cloud)
+            self.update_account(request, user_id, role_id, region_id)
 
             messages.success(request,
                 'User account upgraded succesfully')
         except Exception:
             raise
 
-    def _update_account(self, request, user_id, role_id, 
-                         region_id=None, activate_cloud=False):
-        user = api.keystone.user_get(request, user_id)
-
-        # clean previous status
-        self._clean_roles(request, user_id)
-        self._clean_endpoint_groups(request, user.cloud_project_id)
-
-        # grant the selected role
-        api.keystone.add_domain_user_role(request,
-            user=user_id, role=role_id, domain='default')
-
-        # cloud
-        if activate_cloud:
-            self._activate_cloud(request, user_id, user.cloud_project_id)
-        else:
-            self._deactivate_cloud(request, user_id, user.cloud_project_id)
-        
-        # assign endpoint group for the selected region
-        if region_id:
-            pass
-
-        # done!
-
-    def _clean_roles(self, request, user_id):
-        # TODO(garcianavalon) find a better solution to this
-        user_roles = api.keystone.role_assignments_list(self.request, 
-            user=user_id, domain='default')
-        account_roles = [
-            fiware_api.keystone.get_basic_role(None,
-                use_idm_account=True).id,
-            fiware_api.keystone.get_trial_role(None,
-                use_idm_account=True).id,
-            fiware_api.keystone.get_community_role(None,
-                use_idm_account=True).id,
-        ]
-        current_account = next((a.role['id'] for a in user_roles 
-            if a.role['id'] in account_roles), None)
-        if current_account:
-            api.keystone.remove_domain_user_role(request,
-                user=user_id, role=current_account, domain='default')
-
-    def _activate_cloud(self, request, user_id, cloud_project_id):
-        # grant purchaser in cloud app to cloud org
-        # and Member to the user
-        purchaser = fiware_api.keystone.get_purchaser_role(request)
-        cloud_app = fiware_api.keystone.get_fiware_cloud_app(request)
-        cloud_role = fiware_api.keystone.get_default_cloud_role(request, cloud_app)
-        
-        fiware_api.keystone.add_role_to_organization(
-            request,
-            role=purchaser.id,
-            organization=cloud_project_id,
-            application=cloud_app.id)
-
-        fiware_api.keystone.add_role_to_user(
-            request,
-            role=cloud_role.id,
-            user=user_id,
-            organization=cloud_project_id,
-            application=cloud_app.id)
-
-    def _deactivate_cloud(self, request, user_id, cloud_project_id):
-        # remove purchaser from user cloud project
-        purchaser = fiware_api.keystone.get_purchaser_role(request)
-        cloud_app = fiware_api.keystone.get_fiware_cloud_app(request)
-
-        fiware_api.keystone.remove_role_from_user(
-            request,
-            role=purchaser.id,
-            user=user_id,
-            organization=cloud_project_id,
-            application=cloud_app.id)
-
-    def _clean_endpoint_groups(self, request, cloud_project_id):
-        pass
-
+    
 class FindUserByEmailForm(forms.SelfHandlingForm):
     email = forms.EmailField(label=("E-mail"),
                              required=True)
