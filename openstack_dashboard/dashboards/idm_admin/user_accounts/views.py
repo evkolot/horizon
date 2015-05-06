@@ -93,7 +93,6 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
 
     def get(self, request, *args, **kwargs):
         try:
-            import pdb; pdb.set_trace()
             import os
             __location__ = os.path.realpath(
                 os.path.join(os.getcwd(), os.path.dirname(__file__)))
