@@ -35,6 +35,20 @@ AVATAR_ORIGINAL = settings.MEDIA_ROOT+"/"+"OrganizationAvatar/original/"
 
 GENERIC_ERROR_MESSAGE = 'An error ocurred. Please try again later.'
 
+class RemoveOrgForm(forms.SelfHandlingForm):
+    orgID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
+    title = 'Remove from Organization'
+
+    def handle(self, request, data, organization):
+        import pdb
+        pdb.set_trace()
+        # user = request.user.id
+        # project = data['orgID']
+        # api.keystone.remove_tenant_user(request, project=project, user=user)
+        messages.success(request, ("You removed yourself from the organization successfully."))
+        response = shortcuts.redirect('horizon:idm:organizations:detail', data['orgID'])
+        return response
+
 
 class CreateOrganizationForm(forms.SelfHandlingForm):
     name = forms.CharField(label=("Name"), max_length=64, required=True)
@@ -235,3 +249,5 @@ class CancelForm(forms.SelfHandlingForm):
         messages.success(request, ("Organization deleted successfully."))
         response = shortcuts.redirect('horizon:idm:organizations:index')
         return response
+
+

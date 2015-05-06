@@ -55,6 +55,19 @@ class CreateOrganizationView(forms.ModalFormView):
     form_class = organization_forms.CreateOrganizationForm
     template_name = 'idm/organizations/create.html'
 
+class RemoveOrganizationView(forms.ModalFormView):
+    form_class = organization_forms.RemoveOrgForm
+    template_name = 'idm/organizations/detail_remove.html'
+    # success_url = '/thanks/'
+
+    def form_valid(self, form):
+        # This method is called when valid form data has been POSTed.
+        # It should return an HttpResponse.
+        import pdb
+        pdb.set_trace()
+        return super(RemoveOrganizationView, self).form_valid(form)
+
+
 
 class DetailOrganizationView(tables.MultiTableView):
     template_name = 'idm/organizations/detail.html'
@@ -118,6 +131,14 @@ class DetailOrganizationView(tables.MultiTableView):
         owner_role = fiware_api.keystone.get_owner_role(self.request)
         return owner_role.id in [r.id for r in user_roles]
 
+    def _is_member(self):
+        org_id = self.kwargs['organization_id']
+        user_roles = api.keystone.roles_for_user(
+            self.request, self.request.user.id, project=org_id)
+        owner_role = fiware_api.keystone.get_owner_role(self.request)
+        return user_roles and owner_role.id not in [r.id for r in user_roles] 
+
+
     def get_context_data(self, **kwargs):
         context = super(DetailOrganizationView, self).get_context_data(
             **kwargs)
@@ -140,6 +161,22 @@ class DetailOrganizationView(tables.MultiTableView):
 
         if self._can_edit():
             context['edit'] = True
+
+        if self._is_member():
+            context['member'] = True
+        #Existing data from organizations
+        initial_data = {
+            "orgID": organization_id,
+        }
+        
+        #Create forms
+        remove = organization_forms.RemoveOrgForm(self.request, initial=initial_data)
+        
+        #Actions and titles
+        remove.action ='remove/'
+        remove.title = 'Remove'
+
+        context['remove'] = remove       
         return context
 
 

@@ -130,5 +130,12 @@
     </div>
     {% endif %}
   </div>
+  {% if member %}
+  <div class="panel panel-default">
+    <div class="panel-body">
+      {% include "idm/organizations/_detail_remove.html" %}
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
