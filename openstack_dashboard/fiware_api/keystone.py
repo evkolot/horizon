@@ -22,6 +22,7 @@ from openstack_dashboard import api
 from openstack_dashboard.local import local_settings
 
 from horizon import exceptions
+from horizon.utils import functions as utils
 
 from keystoneclient import exceptions as ks_exceptions
 from keystoneclient import session
@@ -447,6 +448,23 @@ def forward_validate_token_request(request):
     return response
 
 # STUFF
+def user_update(request, user, use_idm_account=False, **data):
+    if use_idm_account:
+        manager = internal_keystoneclient().users
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).users
+    error = None
+
+    if not data['password']:
+        data.pop('password')
+    user = manager.update(user, **data)
+    if data.get('password') and user.id == request.user.id:
+        return utils.logout_with_message(
+            request,
+            "Password changed. Please log in again to continue."
+        )
+
 def user_get(request, user_id, admin=True, use_idm_account=False):
     if use_idm_account:
         manager = internal_keystoneclient().users

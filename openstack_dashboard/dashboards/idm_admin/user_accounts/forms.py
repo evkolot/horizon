@@ -13,6 +13,7 @@
 # under the License.
 
 import logging
+import datetime
 
 from django import forms
 from django import shortcuts
@@ -56,6 +57,16 @@ class UserAccountsLogicMixin():
         fiware_api.keystone.add_domain_user_role(request,
             user=user_id, role=role_id, domain='default',
             use_idm_account=self.use_idm_account)
+        date = str(datetime.date.today())
+        if (role_id == fiware_api.keystone.get_trial_role(request, 
+            use_idm_account=self.use_idm_account).id):
+
+            fiware_api.keystone.user_update(request, user=user, password='',
+                trial_started_at=date, use_idm_account=self.use_idm_account)
+        elif (role_id == fiware_api.keystone.get_community_role(request, 
+                use_idm_account=self.use_idm_account).id):
+            fiware_api.keystone.user_update(request, user=user, password='',
+                community_started_at=date, use_idm_account=self.use_idm_account)
 
         # cloud
         if activate_cloud:
