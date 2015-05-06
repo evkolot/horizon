@@ -39,7 +39,9 @@ from openstack_dashboard.dashboards.idm.organizations \
 
 
 LOG = logging.getLogger('idm_logger')
-LIMIT = getattr(settings, 'PAGE_LIMIT', 15)
+LIMIT = getattr(settings, 'PAGE_LIMIT', 8)
+LIMIT_MINI = getattr(settings, 'PAGE_LIMIT_MINI', 4)
+
 
 AVATAR_ROOT = os.path.abspath(os.path.join(
     settings.MEDIA_ROOT, 'OrganizationAvatar'))
@@ -75,7 +77,7 @@ class DetailOrganizationView(tables.MultiTableView):
             users = sorted(users, key=lambda x: x.username.lower())
             index_mem = self.request.GET.get('index_mem', 0)
             users = idm_utils.paginate(self, users,
-                                       index=index_mem, limit=LIMIT,
+                                       index=index_mem, limit=LIMIT_MINI,
                                        table_name='members')
         except Exception:
             exceptions.handle(self.request,
@@ -97,7 +99,7 @@ class DetailOrganizationView(tables.MultiTableView):
             applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
             index_app = self.request.GET.get('index_app', 0)
             applications = idm_utils.paginate(self, applications,
-                                              index=index_app, limit=LIMIT,
+                                              index=index_app, limit=LIMIT_MINI,
                                               table_name='applications')
             for app in applications:
                 users = idm_utils.get_counter(self, application=app)

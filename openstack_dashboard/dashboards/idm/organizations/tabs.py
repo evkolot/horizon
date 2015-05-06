@@ -25,7 +25,7 @@ from openstack_dashboard.dashboards.idm.organizations \
     import tables as organization_tables
 
 LOG = logging.getLogger('idm_logger')
-LIMIT = getattr(settings, 'PAGE_LIMIT', 15)
+LIMIT = getattr(settings, 'PAGE_LIMIT', 8)
 
 
 class OtherOrganizationsTab(tabs.TableTab):

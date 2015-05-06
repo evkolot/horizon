@@ -33,7 +33,8 @@ from openstack_dashboard.dashboards.idm.users \
 
 
 LOG = logging.getLogger('idm_logger')
-LIMIT = getattr(local_settings, 'PAGE_LIMIT', 15)
+LIMIT = getattr(local_settings, 'PAGE_LIMIT', 8)
+LIMIT_MINI = getattr(local_settings, 'PAGE_LIMIT_MINI', 4)
 
 
 class DetailUserView(tables.MultiTableView):
@@ -58,7 +59,7 @@ class DetailUserView(tables.MultiTableView):
 
             organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
             organizations = idm_utils.paginate(self, organizations,
-                                               index=index_org, limit=LIMIT,
+                                               index=index_org, limit=LIMIT_MINI,
                                                table_name='organizations')
 
             for org in organizations:
@@ -88,7 +89,7 @@ class DetailUserView(tables.MultiTableView):
                             sorted(applications, key=lambda x: x.name.lower()))
 
             applications = idm_utils.paginate(self, applications,
-                                              index=index_app, limit=LIMIT,
+                                              index=index_app, limit=LIMIT_MINI,
                                               table_name='applications')
 
             for app in applications:
