@@ -58,7 +58,8 @@
     a.organizations,
     a.myApplications,
     a.notify,
-    a.administrators{
+    a.administrators,
+    a.user_accounts{
       line-height: 42px;
       display: block;
       margin-bottom: 9px;
@@ -159,4 +160,5 @@ a.myApplications i{@extend .fa-cube;}
 a.organizations i, li.members i{@extend .fa-group;}
 a.notify i{@extend .fa-comment;}
 a.administrators i{@extend .fa-wrench;}
+a.user_accounts i{@extend .fa-shield;}
 

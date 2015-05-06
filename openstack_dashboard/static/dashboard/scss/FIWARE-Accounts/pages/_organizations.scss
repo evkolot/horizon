@@ -43,10 +43,6 @@
   .panel.members,
   .panel.organizations,
   .panel.applications {
-    .panel-body{
-      overflow-x: hidden;
-      max-height: 236px;
-    }
     @media (max-width: $screen-xs-min){
       .panel-heading span{
         padding-top: 3px;

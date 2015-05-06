@@ -14,7 +14,9 @@
 
 {% block modal-body %}
 
-User: {{ user.username }}, {{ user.name }}
+<h5>User: <b>{{ user.username }}</b></h5> 
+
+<h5>E-mail: <b>{{ user.name }}</b></h5>
 
 <fieldset>
     {% include "horizon/common/_form_fields.html" %}
