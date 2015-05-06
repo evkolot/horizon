@@ -39,7 +39,7 @@
     </div>
   </div>
 
-  <div class="panel panel-default members">
+  <div class="panel panel-default members" id="{{members_table.slugify_name}}">
 
     <div class="panel-heading">
       <span>
@@ -60,7 +60,7 @@
         <nav>
           <ul class="pagination">
           <li {%if members_table.index_act = members_table.index_first %}class="active"{%endif%}>
-                <a href="?index={{members_table.index_first}}"><span aria-hidden="true">First</span></a>
+                <a href="?index={{members_table.index_first}}#{{members_table.slugify_name}}"><span aria-hidden="true">First</span></a>
             </li>
             <!--<li>
               <a href="#" aria-label="Previous">
@@ -69,11 +69,11 @@
             </li>-->
             {% for index, num in members_table.indexes %}
               <li {%if members_table.index_act = index %}class="active"{%endif%}>
-                <a href="?index_mem={{index}}&index_app={{index_app}}">{{ num }}</a>
+                <a href="?index_mem={{index}}&index_app={{index_app}}#{{members_table.slugify_name}}">{{ num }}</a>
               </li>
             {% endfor %}
             <li {%if members_table.index_act = members_table.index_last %}class="active"{%endif%}>
-                <a href="?index={{members_table.index_last}}"><span aria-hidden="true">Last</span></a>
+                <a href="?index={{members_table.index_last}}#{{members_table.slugify_name}}"><span aria-hidden="true">Last</span></a>
             </li>
             <!--<li>
               <a href="#" aria-label="Next">
@@ -86,7 +86,7 @@
     {% endif %}
   </div>
 
-  <div class="panel panel-default applications">
+  <div class="panel panel-default applications" id="{{applications_table.slugify_name}}">
     <div class="panel-heading">
       <span>
         {{ applications_table }}
@@ -105,7 +105,7 @@
       <nav>
         <ul class="pagination">
         <li {%if applications_table.index_act = applications_table.index_first %}class="active"{%endif%}>
-              <a href="?index={{applications_table.index_first}}"><span aria-hidden="true">First</span></a>
+              <a href="?index={{applications_table.index_first}}#{{applications_table.slugify_name}}"><span aria-hidden="true">First</span></a>
           </li>
           <!--<li>
             <a href="#" aria-label="Previous">
@@ -114,11 +114,11 @@
           </li>-->
           {% for index, num in applications_table.indexes %}
           <li {%if applications_table.index_act = index %}class="active"{%endif%}>
-            <a href="?index_mem={{index_mem}}&index_app={{index}}">{{ num }}</a>
+            <a href="?index_mem={{index_mem}}&index_app={{index}}#{{applications_table.slugify_name}}">{{ num }}</a>
           </li>
           {% endfor %}
           <li {%if applications_table.index_act = applications_table.index_last %}class="active"{%endif%}>
-              <a href="?index={{applications_table.index_last}}"><span aria-hidden="true">Last</span></a>
+              <a href="?index={{applications_table.index_last}}#{{applications_table.slugify_name}}"><span aria-hidden="true">Last</span></a>
           </li>
                     <!--<li>
             <a href="#" aria-label="Next">

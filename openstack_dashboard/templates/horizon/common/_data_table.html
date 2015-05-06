@@ -18,19 +18,19 @@
             </a>
           </li>-->
           <li {%if table.index_act = table.index_first %}class="active"{%endif%}>
-              <a href="?index={{table.index_first}}"><span aria-hidden="true">First</span></a>
+              <a href="?index={{table.index_first}}#{{ table.slugify_name }}"><span aria-hidden="true">First</span></a>
           </li>
           {% for index,num in table.indexes %}
            
               <li {%if table.index_act = index %}class="active"{%endif%}>
-                <a href="?index={{index}}">{{ num }}</a>
+                <a href="?index={{index}}#{{ table.slugify_name }}">{{ num }}</a>
               </li>
 
             
       
           {% endfor %}
           <li {%if table.index_act = table.index_last %}class="active"{%endif%}>
-              <a href="?index={{table.index_last}}"><span aria-hidden="true">Last</span></a>
+              <a href="?index={{table.index_last}}#{{ table.slugify_name }}"><span aria-hidden="true">Last</span></a>
           </li>
           <!--<li>
             <a href="#" aria-label="Next">
