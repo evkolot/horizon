@@ -504,8 +504,8 @@ textarea {
 }
 .cancel_account,
 .destroy_organization{
+  border-color: $brand-danger 
   &:hover{
-    border-color: $brand-danger !important;
     h3{
       color: $brand-danger !important;
     }
