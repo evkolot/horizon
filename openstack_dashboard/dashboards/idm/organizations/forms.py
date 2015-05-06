@@ -38,8 +38,10 @@ GENERIC_ERROR_MESSAGE = 'An error ocurred. Please try again later.'
 class RemoveOrgForm(forms.SelfHandlingForm):
     orgID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
     title = 'Remove from Organization'
+    import pdb
+    pdb.set_trace()
 
-    def handle(self, request, data, organization):
+    def handle(self, request, data):
         import pdb
         pdb.set_trace()
         # user = request.user.id
