@@ -81,27 +81,5 @@
         margin-bottom: 10px;
       }
     }
-    .read-more a, .read-less a{
-      @extend .fa;
-      @extend .btn;
-      @extend .btn-default;
-      padding: 0 7px;
-    }
-    .read-more a{
-      @extend .fa-eye;
-    }
-    .read-less a{
-      @extend .fa-eye-slash;
-    }
-    .read-more a, .read-less a{
-      font-family: "Times", serif;
-      &:before{
-        font: normal normal normal 14px / 1 FontAwesome;
-        margin-right: 5px;
-      }
-    }
-    .read-more, .read-less{
-      font-size: 16px;
-    }
   }
 }
