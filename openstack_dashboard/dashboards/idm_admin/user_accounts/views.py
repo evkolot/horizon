@@ -93,20 +93,24 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
 
     def get(self, request, *args, **kwargs):
         try:
-            categories = json.load(open('categories.json'))
+            import pdb; pdb.set_trace()
+            import os
+            __location__ = os.path.realpath(
+                os.path.join(os.getcwd(), os.path.dirname(__file__)))
+            categories = json.load(open(os.path.join(__location__, 'categories.json')))
             for data in categories:
                 user_id = data['user_id']
                 role_id = data['role_id']
                 region_id = data.get('region_id', None)
                 errors = []
                 if (role_id == fiware_api.keystone.get_trial_role(
-                        request).id
+                        request, use_idm_account=True).id
                     and not region_id):
 
                     region_id = 'Spain2'
 
                 if (role_id == fiware_api.keystone.get_community_role(
-                        request).id
+                        request, use_idm_account=True).id
                     and not region_id):
 
                     errors.append('ERROR: ' + user_id + ' community with no region')
