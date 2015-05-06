@@ -40,7 +40,8 @@ from openstack_dashboard.dashboards.idm.myApplications \
 
 
 LOG = logging.getLogger('idm_logger')
-LIMIT = getattr(settings, 'PAGE_LIMIT', 15)
+LIMIT = getattr(settings, 'PAGE_LIMIT', 8)
+LIMIT_MINI = getattr(settings, 'PAGE_LIMIT_MINI', 4)
 
 
 class IndexView(tabs.TabbedTableView):
@@ -215,7 +216,7 @@ class DetailApplicationView(tables.MultiTableView):
             authorized_users = sorted(authorized_users, key=lambda x: x.username.lower())
             index_mem = self.request.GET.get('index_mem', 0)
             authorized_users = idm_utils.paginate(self, authorized_users,
-                                                  index=index_mem, limit=LIMIT,
+                                                  index=index_mem, limit=LIMIT_MINI,
                                                   table_name='auth_users')
         except Exception:
             exceptions.handle(self.request,
@@ -236,7 +237,7 @@ class DetailApplicationView(tables.MultiTableView):
             organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
             index_org = self.request.GET.get('index_org', 0)
             organizations = idm_utils.paginate(self, organizations,
-                                               index=index_org, limit=LIMIT,
+                                               index=index_org, limit=LIMIT_MINI,
                                                table_name='organizations')
             for org in organizations:
                 users = idm_utils.get_counter(self, organization=org)

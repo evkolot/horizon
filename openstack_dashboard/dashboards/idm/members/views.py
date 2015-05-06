@@ -33,7 +33,7 @@ from openstack_dashboard.dashboards.idm.members \
 
 
 LOG = logging.getLogger('idm_logger')
-LIMIT = getattr(local_settings, 'PAGE_LIMIT', 15)
+LIMIT = getattr(local_settings, 'PAGE_LIMIT', 8)
 
 class IndexView(tables.MultiTableView):
     table_classes = (members_tables.MembersTable,)

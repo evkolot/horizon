@@ -24,7 +24,7 @@ from openstack_dashboard.dashboards.idm.myApplications \
 
 
 LOG = logging.getLogger('idm_logger')
-LIMIT = getattr(settings, 'PAGE_LIMIT', 15)
+LIMIT = getattr(settings, 'PAGE_LIMIT', 8)
 
 class ProvidingTab(tabs.TableTab):
     name = ("Providing")
