@@ -117,10 +117,10 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
 
                 self.update_account(request, user_id, role_id, region_id)
 
-            return http.HttpResponse(errors)
+            return http.HttpResponse(content='errors')
 
         except Exception:
-            return http.HttpResponseServerError()
+            return http.HttpResponseServerError(content="ERROR 500")
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
