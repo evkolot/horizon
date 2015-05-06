@@ -12,7 +12,7 @@
     min-height: 1px;
     background-color: transparent;
     color: $brand-secundary;
-    &:hover, &:active{
+    &:hover{
       cursor: pointer;
       border-color: $brand-secundary !important;
       color: $brand-secundary !important;
