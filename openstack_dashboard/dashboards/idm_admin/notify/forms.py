@@ -113,7 +113,7 @@ class EmailForm(forms.SelfHandlingForm):
                     'massive_footer':True,
                     'content': {'text':data['body']},
                 })
-            import pdb; pdb.set_trace()
+            
             html_content = render_to_string(self.EMAIL_HTML_TEMPLATE, 
                 dictionary={
                     'massive_footer':True,
