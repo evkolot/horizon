@@ -143,7 +143,12 @@ class RegistrationView(_RequestPassingFormView):
                     request, use_idm_account=True)
 
             fiware_api.keystone.add_domain_user_role(
-                user=new_user.id, role=fiware_user_role.id)
+                request,
+                user=new_user.id,
+                role=fiware_user_role.id,
+                domain='default',
+                use_idm_account=True)
+
             LOG.debug('granted role %s.', fiware_user_role.name)
 
             # Grant purchaser to user's cloud organization in all 
@@ -172,6 +177,7 @@ class RegistrationView(_RequestPassingFormView):
 
             # Grant a public role in cloud app to user in his/her
             # cloud organization if trial requested
+            # and activate the Spain2 region
             if cleaned_data['trial']:
                 default_cloud_role = \
                     fiware_api.keystone.get_default_cloud_role(
@@ -188,6 +194,24 @@ class RegistrationView(_RequestPassingFormView):
                     LOG.debug('granted default cloud role')
                 else:
                     LOG.debug('default cloud role not found')
+
+                # TODO(garcianavalon) as setting!
+                region_id = 'Spain2'
+                endpoint_groups = fiware_api.keystone.endpoint_group_list(
+                    request, use_idm_account=True)
+                region_group = next(group for group in endpoint_groups
+                    if group.filters.get('region_id', None) == region_id)
+
+                if not region_group:
+                    messages.error(
+                        request, 'There is no endpoint group defined for that region')
+                    return
+        
+                fiware_api.keystone.add_endpoint_group_to_project(
+                    request,
+                    project=new_user.cloud_project_id,
+                    endpoint_group=region_group,
+                    use_idm_account=True)
 
             self.send_activation_email(new_user)
 
