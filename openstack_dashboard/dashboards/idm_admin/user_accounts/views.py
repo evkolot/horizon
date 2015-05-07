@@ -11,8 +11,12 @@
 # under the License.
 
 import logging
+import json
 
+from django import http
 from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import View
 
 from horizon import forms
 
@@ -76,3 +80,42 @@ class UpdateAccountView(forms.ModalFormView):
             'account_type': current_account,
         })
         return initial
+
+
+class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin):
+    """ Upgrade account logic with out the form"""
+    http_method_names = ['post']
+    use_idm_account = True
+    
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super(UpdateAccountEndpointView, self).dispatch(request, *args, **kwargs)
+
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            user_id = data['user_id']
+            role_id = data['role_id']
+
+            if (role_id == fiware_api.keystone.get_trial_role(
+                request).id):
+
+                trial_left = self._max_trial_users_reached(request)
+                if not trial_left:
+                    return http.HttpResponseNotAllowed()
+
+            region_id = data.get('region_id', None)
+
+            if (role_id != fiware_api.keystone.get_basic_role(
+                    request).id
+                and not region_id):
+
+                return http.HttpResponseBadRequest()
+
+            self.update_account(request, user_id, role_id, region_id)
+
+            return http.HttpResponse()
+
+        except Exception:
+            return http.HttpResponseServerError()
