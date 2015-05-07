@@ -126,11 +126,13 @@ class RegistrationForm(ConfirmPasswordForm):
             emails = [row.strip() for row in f]
 
             if list_name == 'blacklist' and email_domain in emails:
-                raise forms.ValidationError(("The email domain is blacklisted."),
-                                         code='invalid')
+                raise forms.ValidationError(
+                    "You are using a forbidden e-mail domain in this project.",
+                    code='invalid')
             elif list_name == 'whitelist' and email_domain not in emails:
-                raise forms.ValidationError(("The email domain is not whitelisted."),
-                                         code='invalid')
+                raise forms.ValidationError(
+                    "You are using a forbidden e-mail domain in this project.",
+                    code='invalid')
         try:
             existing = fiware_api.keystone.check_email(email)
             raise forms.ValidationError(("The email is already in use."),
