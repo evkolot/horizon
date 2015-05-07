@@ -40,6 +40,8 @@
         a{
           display: block;
           float: none !important;
+          @include text-overflow;
+          width: 100%;
         }
       }
       .sign_up{
