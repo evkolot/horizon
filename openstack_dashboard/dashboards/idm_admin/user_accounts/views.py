@@ -84,39 +84,13 @@ class UpdateAccountView(forms.ModalFormView):
 
 class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin):
     """ Upgrade account logic with out the form"""
-    http_method_names = ['post', 'get']
+    http_method_names = ['post']
     use_idm_account = True
     
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
         return super(UpdateAccountEndpointView, self).dispatch(request, *args, **kwargs)
 
-    def get(self, request, *args, **kwargs):
-        import os
-        __location__ = os.path.realpath(
-            os.path.join(os.getcwd(), os.path.dirname(__file__)))
-        categories = json.load(open(os.path.join(__location__, 'categories.json')))
-        for data in categories:
-            user_id = data['user_id']
-            role_id = data['role_id']
-            region_id = data.get('region_id', None)
-            errors = []
-            if (role_id == fiware_api.keystone.get_trial_role(
-                    request, use_idm_account=True).id
-                and not region_id):
-
-                region_id = 'Spain2'
-
-            if (role_id == fiware_api.keystone.get_community_role(
-                    request, use_idm_account=True).id
-                and not region_id):
-
-                errors.append('ERROR: ' + user_id + ' community with no region')
-                
-
-            self.update_account(request, user_id, role_id, region_id)
-
-        return http.HttpResponse(content='errors')
 
     def post(self, request, *args, **kwargs):
         try:
