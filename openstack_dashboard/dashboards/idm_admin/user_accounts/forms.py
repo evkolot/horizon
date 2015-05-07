@@ -224,7 +224,7 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
 
     region = forms.ChoiceField(
         required=False,
-        label=("Cloud region"),
+        label=("Select new Cloud region"),
         choices=get_regions())
 
     def clean_account_type(self):
