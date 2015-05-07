@@ -243,10 +243,13 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
 
     def clean(self):
         cleaned_data = super(UpdateAccountForm, self).clean()
+        account_type = cleaned_data.get('account_type', None)
+        
+        if not account_type:
+            return cleaned_data
 
-        # TODO(garcianavalon) find a better solution to this
         role_name = next(choice[1] for choice in get_account_choices()
-            if choice[0] == cleaned_data['account_type'])
+            if choice[0] == account_type)
         
         region = cleaned_data.get('region', None)
 

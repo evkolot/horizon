@@ -37,6 +37,11 @@
       }
     }
   }
+  .panel{
+    .description{
+      padding-top: 5px;
+    }
+  }
   .panel-body{
     padding: 0 15px;
   }
@@ -65,8 +70,8 @@
   }
 }
 
-#myApplications,
-#organizations{
+#myApplications-table,
+#organizations-table{
   .panel-body{
     .panel-footer{
       padding: 4px 4px 6px;
@@ -128,7 +133,7 @@ div#update_owners_members{
   }
 }
 //#members, 
-//#applications  {
+//#applications-table  {
 //  max-height: 232px;
 //  overflow-x: hidden;
 //  overflow-y: scroll;
@@ -160,7 +165,7 @@ div#update_owners_members{
   }
 }
 
-#organizations{
+#organizations-table{
   .list-group-item{
     @include switch-hover;
   }

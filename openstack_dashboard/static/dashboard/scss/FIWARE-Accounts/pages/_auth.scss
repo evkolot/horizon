@@ -36,8 +36,20 @@
     }
     footer{
       margin-top: 15px;
+      @media (max-width: 861px){      
+        a{
+          display: block;
+          float: none !important;
+          @include text-overflow;
+          width: 100%;
+        }
+      }
       .sign_up{
         float: right;
+        margin-bottom: 0;
+        @media (max-width: 861px){
+          margin-bottom: 10px;
+        }
       }
     }
   }
@@ -61,7 +73,7 @@
 }
 
 .help-box{
-  @include make-sm-column(6, $gutter: $grid-gutter-width);
+  @include make-sm-column(12, $gutter: $grid-gutter-width);
   @include make-md-column(6, $gutter: $grid-gutter-width);
   @include make-lg-column(6, $gutter: $grid-gutter-width);
   min-height: 57px;
