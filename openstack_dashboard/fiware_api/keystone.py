@@ -16,6 +16,7 @@ import logging
 import requests
 
 from django.conf import settings
+from django.core import exceptions as django_exceptions
 from django.core.cache import cache
 
 from openstack_dashboard import api
@@ -423,8 +424,12 @@ def forward_access_token_request(request):
     """ Forwards the request to the keystone backend."""
     # TODO(garcianavalon) figure out if this method belongs to keystone client or if
     # there is a better way to do it/structure this
+    auth = request.META.get('HTTP_AUTHORIZATION', None)
+    if not auth:
+        raise django_exceptions.PermissionDenied()
+
     headers = {
-        'Authorization': request.META['HTTP_AUTHORIZATION'],
+        'Authorization': auth,
         'Content-Type': request.META['CONTENT_TYPE'],
     }
     body = request.body
