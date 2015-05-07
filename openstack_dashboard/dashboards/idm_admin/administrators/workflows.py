@@ -14,6 +14,8 @@
 
 import logging
 
+from django.core import urlresolvers
+
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import workflows as idm_workflows
@@ -103,6 +105,8 @@ class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
     no_available_text = ("No users found.")
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = AuthorizedMembersApi
+    server_filter_url = urlresolvers.reverse_lazy(
+        'fiware_server_filters_users')
 
 
 class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):
@@ -114,3 +118,5 @@ class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):
     success_url = INDEX_URL
     default_steps = (UpdateAuthorizedMembers,)
     RELATIONSHIP_CLASS = AuthorizedMembersApi
+    no_roles_message = ('Some users don\'t have any role assigned.'
+        'If you save now they won\'t be saved as administrators.')
