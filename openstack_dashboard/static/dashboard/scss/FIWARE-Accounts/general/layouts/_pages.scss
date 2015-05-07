@@ -128,8 +128,8 @@ ul#perform_filter_available_update_owners_users{
   margin-bottom: 15px;
   margin-top: 15px;
 }
-#organizations,
-#myApplications{
+#organizations-table,
+#myApplications-table{
   .panel-heading{
     padding: 0;
     .nav-tabs{ margin-bottom: 0; border-bottom: 0;}
@@ -449,8 +449,8 @@ textarea {
   }
 }
 
-#organizations,
-#myApplications{
+#organizations-table,
+#myApplications-table{
   .panel-heading{
     padding: 0;
     .nav-tabs{ margin-bottom: 0; border-bottom: 0;}
