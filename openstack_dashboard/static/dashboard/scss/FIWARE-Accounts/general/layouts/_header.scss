@@ -4,12 +4,9 @@ header.navbar{
   -moz-box-shadow: 0px 1px 8px rgba(50, 51, 51, 0.15);
   -webkit-box-shadow: 0px 1px 8px rgba(50, 51, 51, 0.15);
   box-shadow: 0px 1px 8px rgba(50, 51, 51, 0.15);
-  min-height: 42px;
+  min-height: 44px;
   .container-fluid{
     max-width: 1200px;
-  }
-  .navbar-header{
-    margin-bottom: 4px;
   }
 }
 
@@ -55,64 +52,46 @@ header.navbar{
 ul.navbar-nav > li:hover {
   background-color: #E8E8E8;
 }
-
+.container-fluid .navbar-header {
+  margin: 4px 0 0;
+}
 nav.container-fluid{
   max-width: 1200px;
   background-image: none;
   padding: 3px 15px 2px;
 }
 
-
-.logo-fl-header,
-.logo-f-header{
+.brand{
+  background-repeat: no-repeat;
+  height: 37px;
   float: left;
 }
-.logo-fl-header{
-  width: 158px;
-  @media (max-width: 480px){
-    width: 38px;
+
+.logo-fl-header .brand{
+  background-image: url(../img/FIWARE-lab-2x.png);
+  width: 150px;
+  background-size: 150px 37px;
+}
+
+.logo-f-header .brand {
+  background-image: url(../img/FIWARE-2x.png);
+  width: 123px;
+  background-size: 120px 37px;
+}
+
+
+@media (max-width: 480px){
+
+  .brand{
+    width: 37px;
   }
 
-}
-.logo-f-header{
-  width: 118px;
 }
 
 
 .logo-f-header,
 .logo-fl-header{
     float: left;
-    .brand{
-      margin: 0 0 0 -8px !important;
-      padding: 0 !important;
-      img.fiware-lab,
-      img.fiware-lab_symbol {
-        margin-top: 4px;
-        width: 158px !important;
-        @media (max-width: 480px){
-          width: 38px !important;
-        }
-      }
-      img.fiware-lab{
-        @media (max-width: 480px){
-          display: none;
-        }
-      }
-      img.fiware-lab_symbol {
-        display: none;
-        @media (max-width: 480px){
-          display: inline-block;
-          width: 38px !important;
-        }
-      }
-      img.fiware {
-        margin-top: 4px;
-        width: 118px !important;
-        @media (max-width: 480px){
-          width: 38px !important;
-        }
-      }
-    }
   }
 
 .nav-tabs > .active > a, .nav-tabs > .active > a:hover {
@@ -163,9 +142,7 @@ nav.container-fluid{
   header .navbar ul.nav{
     margin-top: 0px;
   }
-  .logo-header{
-    width: 152px !important;
-  }
+
   .brand{
     padding: 0px 4px 0 0px !important;
     float: left !important;
