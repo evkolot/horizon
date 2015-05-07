@@ -68,3 +68,16 @@
     display: block;
   }
 }
+
+#account-status{
+  p{margin-bottom: 10px}
+  .upgrade{
+    min-height: 40px;
+    padding-top: 0;
+    a{
+      padding-left: 10px;
+      border-right: 1px solid #C2C2C2;
+    }
+  }
+  span{font-size:12px}
+}
