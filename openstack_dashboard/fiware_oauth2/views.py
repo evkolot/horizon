@@ -184,7 +184,6 @@ class AuthorizeView(FormView):
             LOG.error('OAUTH2: exception when authorizing %s', e)
             msg = (('An error occurred when trying to obtain' 
                     'the authorization code.'))
-            LOG.error(msg, 'Exception message %s', e)
             messages.error(request, (msg))
             return redirect('horizon:user_home')
         
