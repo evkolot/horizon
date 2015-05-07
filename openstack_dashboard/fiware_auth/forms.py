@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 from captcha.fields import ReCaptchaField
 
 from django import forms
@@ -117,8 +119,12 @@ class RegistrationForm(ConfirmPasswordForm):
         email_domain = ".".join(domains[len(domains)-2:len(domains)])
         list_name = getattr(settings, 'EMAIL_LIST_TYPE', None)
         if list_name:
-            f = open('openstack_dashboard/fiware_auth/'+list_name+'.txt', 'rb')
+            __location__ = os.path.realpath(
+                os.path.join(os.getcwd(), os.path.dirname(__file__)))
+            
+            f = open(os.path.join(__location__, list_name + '.txt'), 'rb')
             emails = [row.strip() for row in f]
+
             if list_name == 'blacklist' and email_domain in emails:
                 raise forms.ValidationError(("The email domain is blacklisted."),
                                          code='invalid')
