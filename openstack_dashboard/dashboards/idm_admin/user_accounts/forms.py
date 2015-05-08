@@ -230,14 +230,16 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
     def clean_account_type(self):
         """ Validate that there are trial users accounts left"""
         account_type = self.cleaned_data['account_type']
-        if (account_type != fiware_api.keystone.get_trial_role(
-                self.request).id):
-            return account_type
+        # NOTE(garcianavalon) for now, we dont check max trials when updating
+        # from the admin interface
+        # if (account_type != fiware_api.keystone.get_trial_role(
+        #         self.request).id):
+        #     return account_type
 
-        if self._max_trial_users_reached(self.request):
-            raise forms.ValidationError(
-                'There are no trial accounts left.',
-                code='invalid')
+        # if self._max_trial_users_reached(self.request):
+        #     raise forms.ValidationError(
+        #         'There are no trial accounts left.',
+        #         code='invalid')
         
         return account_type
 
