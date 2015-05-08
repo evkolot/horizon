@@ -156,7 +156,7 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
             return api.keystone.user_get(self.request, 
                                          self.kwargs['user_id'])
         except Exception:
-            redirect = reverse("horizon:idm:users:index")
+            redirect = reverse("horizon:idm:home:index")
             exceptions.handle(self.request, 
                     ('Unable to update user'), redirect=redirect)
 
