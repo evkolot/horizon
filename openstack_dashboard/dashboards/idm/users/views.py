@@ -42,6 +42,15 @@ class DetailUserView(tables.MultiTableView):
     table_classes = (user_tables.OrganizationsTable,
                      user_tables.ApplicationsTable)
 
+    def dispatch(self, request, *args, **kwargs):
+        user = kwargs['user_id']
+        try:
+            api.keystone.user_get(request, user)
+        except Exception:
+            redirect = reverse("horizon:idm:home:index")
+            exceptions.handle(self.request, 
+                    ('User does not exist'), redirect=redirect)
+        return super(DetailUserView, self).dispatch(request, *args, **kwargs)
     
     def get_organizations_data(self):
         organizations = []
@@ -147,7 +156,7 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
             return api.keystone.user_get(self.request, 
                                          self.kwargs['user_id'])
         except Exception:
-            redirect = reverse("horizon:idm:users:index")
+            redirect = reverse("horizon:idm:home:index")
             exceptions.handle(self.request, 
                     ('Unable to update user'), redirect=redirect)
 
