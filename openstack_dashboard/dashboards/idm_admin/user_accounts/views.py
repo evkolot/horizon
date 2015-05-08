@@ -76,7 +76,7 @@ class UpdateAccountView(forms.ModalFormView):
 
         initial.update({
             'user_id': user_id,
-            #'region': '',
+            #'regions': '',
             'account_type': current_account,
         })
         return initial
@@ -105,15 +105,15 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
                 if not trial_left:
                     return http.HttpResponseNotAllowed()
 
-            region_id = data.get('region_id', None)
+            regions = data.get('regions', None)
 
             if (role_id != fiware_api.keystone.get_basic_role(
                     request).id
-                and not region_id):
+                and not regions):
 
                 return http.HttpResponseBadRequest()
 
-            self.update_account(request, user_id, role_id, region_id)
+            self.update_account(request, user_id, role_id, regions)
 
             return http.HttpResponse()
 
