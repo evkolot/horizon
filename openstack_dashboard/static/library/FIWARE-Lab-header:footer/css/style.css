@@ -319,7 +319,7 @@ ul.navbar-nav > li:hover {
 @media (max-width: 480px){
 
   .brand{
-    width: 37px;
+    width: 37px !important;
   }
 
 }
