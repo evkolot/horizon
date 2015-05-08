@@ -89,7 +89,7 @@ class EmailForm(forms.SelfHandlingForm):
                 recipients = [u.name for u
                              in api.keystone.user_list(request,
                                                        filters={'enabled':True})
-                             if hasattr(u, 'name')]
+                             if '@' in u.name]
             elif data['notify'] == 'organization':
                 owner_role = fiware_api.keystone.get_owner_role(request)
                 owners = [a.user['id'] for a
@@ -100,7 +100,8 @@ class EmailForm(forms.SelfHandlingForm):
                 ]
                 for owner_id in owners:
                     owner = api.keystone.user_get(request, owner_id)
-                    recipients.append(owner.name)
+                    if '@' in owner.name:
+                        recipients.append(owner.name)
 
             if not recipients:
                 msg = ('The recipients list is empty, no email will be sent.')
@@ -112,7 +113,7 @@ class EmailForm(forms.SelfHandlingForm):
                     'massive_footer':True,
                     'content': {'text':data['body']},
                 })
-
+            
             html_content = render_to_string(self.EMAIL_HTML_TEMPLATE, 
                 dictionary={
                     'massive_footer':True,

@@ -14,9 +14,10 @@
 
 import logging
 
+from django import http
 from django.contrib import auth
+from django.core import exceptions as django_exceptions
 from django.core.urlresolvers import reverse_lazy, reverse
-from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
@@ -183,7 +184,6 @@ class AuthorizeView(FormView):
             LOG.error('OAUTH2: exception when authorizing %s', e)
             msg = (('An error occurred when trying to obtain' 
                     'the authorization code.'))
-            LOG.error(msg, 'Exception message %s', e)
             messages.error(request, (msg))
             return redirect('horizon:user_home')
         
@@ -206,11 +206,17 @@ class AccessTokenView(View):
         # because is simpler than extracting all the data to make the exact same request 
         # again from it
         LOG.debug('OAUTH2: forwading the access_token request')
-        response = fiware_api.keystone.forward_access_token_request(request)
-        return HttpResponse(content=response.content, 
-                            content_type=response.headers['content-type'], 
-                            status=response.status_code, 
-                            reason=response.reason)
+        try:
+            response = fiware_api.keystone.forward_access_token_request(request)
+            return http.HttpResponse(
+                content=response.content, 
+                content_type=response.headers['content-type'], 
+                status=response.status_code, 
+                reason=response.reason)
+        except django_exceptions.PermissionDenied:
+            return http.HttpResponseBadRequest(
+                content='Authentication header missing. Use HTTP Basic.')
+        
 
 
 class UserInfoView(View):
@@ -223,7 +229,7 @@ class UserInfoView(View):
         # again from it
         LOG.debug('OAUTH2: forwading the user info (validate token) request')
         response = fiware_api.keystone.forward_validate_token_request(request)
-        return HttpResponse(content=response.content, 
+        return http.HttpResponse(content=response.content, 
                             content_type=response.headers['content-type'], 
                             status=response.status_code, 
                             reason=response.reason)

@@ -33,6 +33,8 @@ from openstack_dashboard.fiware_auth import urls as fiware_auth_urls
 from openstack_dashboard.fiware_oauth2 import urls as fiware_oauth2_urls
 from openstack_dashboard.fiware_server_filters import urls \
     as fiware_server_filters_urls
+from openstack_dashboard.dashboards.idm_admin.user_accounts \
+    import views as user_accounts_views
 
 urlpatterns = patterns(
     '',
@@ -44,6 +46,8 @@ urlpatterns = patterns(
     url(r'^auth/', include('openstack_auth.urls')),
     url(r'', include(horizon.urls)),
     url(r'^summernote/', include('django_summernote.urls')),
+    url(r'^account_category$', user_accounts_views.UpdateAccountEndpointView.as_view(), 
+        name='update_account'),
 )
 
 

@@ -22,7 +22,7 @@
                       Dear FIWARE Lab user,
                     </span>
                     <p>
-                      {{ content.html }}
+                      {{ content.html | safe }}
                     </p>
                     {% if massive_footer == True %}
                       <br>

@@ -8,6 +8,11 @@
         padding: 0 !important;
       }
     }
+    @media (max-width: 989px){
+      .help-box{
+        padding: 0 !important;
+      }
+    } 
   }
 }
 #home{ 
@@ -123,8 +128,8 @@ ul#perform_filter_available_update_owners_users{
   margin-bottom: 15px;
   margin-top: 15px;
 }
-#organizations,
-#myApplications{
+#organizations-table,
+#myApplications-table{
   .panel-heading{
     padding: 0;
     .nav-tabs{ margin-bottom: 0; border-bottom: 0;}
@@ -444,8 +449,8 @@ textarea {
   }
 }
 
-#organizations,
-#myApplications{
+#organizations-table,
+#myApplications-table{
   .panel-heading{
     padding: 0;
     .nav-tabs{ margin-bottom: 0; border-bottom: 0;}
@@ -504,8 +509,8 @@ textarea {
 }
 .cancel_account,
 .destroy_organization{
+  border-color: $brand-danger 
   &:hover{
-    border-color: $brand-danger !important;
     h3{
       color: $brand-danger !important;
     }

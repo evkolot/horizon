@@ -7,4 +7,4 @@ Dear FIWARE Lab user,
 {% endif %}
 
 2015 © FIWARE
-http://www.fiware.org/
+https://www.fiware.org/

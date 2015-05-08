@@ -23,7 +23,8 @@
 }
 
 
-#notify{
+#notify,
+#user_accounts{
   .modal-header{
     border: none;
     padding-bottom: 0;
@@ -57,4 +58,30 @@
 
 .note-editor{
   border: 1px solid $border-color !important;
+}
+
+#user_accounts{
+  h5{
+    font-family: $font-family-base;
+    margin-bottom: 10px;
+    font-size: 12px;
+    display: block;
+  }
+}
+
+#account-status{
+  p{margin-bottom: 10px}
+  .upgrade{
+    min-height: 40px;
+    padding-top: 0;
+    a{
+      padding-left: 10px;
+      border-right: 1px solid #C2C2C2;
+    }
+  }
+  span{font-size:12px}
+}
+
+#id_regions{
+  min-height: 200px;
 }
