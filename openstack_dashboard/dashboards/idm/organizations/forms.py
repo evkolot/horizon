@@ -38,12 +38,10 @@ GENERIC_ERROR_MESSAGE = 'An error ocurred. Please try again later.'
 class RemoveOrgForm(forms.SelfHandlingForm):
     orgID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
     title = 'Remove from Organization'
-    import pdb
-    pdb.set_trace()
 
     def handle(self, request, data):
-        import pdb
-        pdb.set_trace()
+        # import pdb
+        # pdb.set_trace()
         # user = request.user.id
         # project = data['orgID']
         # api.keystone.remove_tenant_user(request, project=project, user=user)

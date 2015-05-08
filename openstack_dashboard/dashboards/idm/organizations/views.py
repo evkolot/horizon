@@ -57,18 +57,31 @@ class CreateOrganizationView(forms.ModalFormView):
     form_class = organization_forms.CreateOrganizationForm
     template_name = 'idm/organizations/create.html'
 
+
 class RemoveOrganizationView(forms.ModalFormView):
     form_class = organization_forms.RemoveOrgForm
     template_name = 'idm/organizations/detail_remove.html'
     # success_url = '/thanks/'
 
-    def form_valid(self, form):
-        # This method is called when valid form data has been POSTed.
-        # It should return an HttpResponse.
+    def get_success_url(self):
+        """Redirects to the url it was called from."""
+        return self.request.META['HTTP_REFERER']
+
+    def get_context_data(self, **kwargs):
+        context = super(RemoveOrganizationView, self).get_context_data(**kwargs)
+        context['organization_id'] = self.kwargs['organization_id']
+        return context
+
+    def get_initial(self):
+        initial = super(RemoveOrganizationView, self).get_initial()
+        initial['organization_id'] = self.kwargs['organization_id']
+        return initial
+
+    def post(self, request, *args, **kwargs):
         import pdb
         pdb.set_trace()
-        return super(RemoveOrganizationView, self).form_valid(form)
-
+        if not request.user.is_authenticated():
+            return HttpResponseForbidden()
 
 
 class DetailOrganizationView(tables.MultiTableView):
@@ -84,10 +97,6 @@ class DetailOrganizationView(tables.MultiTableView):
             redirect = reverse("horizon:idm:organizations:index")
             exceptions.handle(self.request, 
                     ('Organization does not exist'), redirect=redirect)
-        # except:
-        #     messages.error(request, 
-        #         ("The organization does not exist."))
-        #     return redirect("/idm/organizations")
         return super(DetailOrganizationView, self).dispatch(request, *args, **kwargs)
     
     def get_members_data(self):
@@ -180,19 +189,19 @@ class DetailOrganizationView(tables.MultiTableView):
 
         if self._is_member():
             context['member'] = True
-        #Existing data from organizations
-        initial_data = {
-            "orgID": organization_id,
-        }
+        # #Existing data from organizations
+        # initial_data = {
+        #     "orgID": organization_id,
+        # }
         
-        #Create forms
-        remove = organization_forms.RemoveOrgForm(self.request, initial=initial_data)
+        # #Create forms
+        # remove = organization_forms.RemoveOrgForm(self.request, initial=initial_data)
         
-        #Actions and titles
-        remove.action ='remove/'
-        remove.title = 'Remove'
+        # #Actions and titles
+        # remove.action ='remove/'
+        # remove.title = 'Remove'
 
-        context['remove'] = remove       
+        # context['remove'] = remove       
         return context
 
 

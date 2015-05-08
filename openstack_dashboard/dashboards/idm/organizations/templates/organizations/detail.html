@@ -133,7 +133,7 @@
   {% if member %}
   <div class="panel panel-default">
     <div class="panel-body">
-      {% include "idm/organizations/_detail_remove.html" %}
+      <a class="btn btn-default btn-sm ajax-modal" href="{% url 'horizon:idm:organizations:remove' organization_id %}">Remove from org</a>
     </div>
   </div>
   {% endif %}
