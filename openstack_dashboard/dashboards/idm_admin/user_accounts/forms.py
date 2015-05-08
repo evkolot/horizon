@@ -164,7 +164,8 @@ class UserAccountsLogicMixin():
             use_idm_account=self.use_idm_account)
 
         for endpoint_group in endpoint_groups:
-            if 'region_id' not in endpoint_group.filters:
+            if (endpoint_group.filters #check for no filter endpoint
+                and 'region_id' not in endpoint_group.filters):
                 continue
 
             try:
