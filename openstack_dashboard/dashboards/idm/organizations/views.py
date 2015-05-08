@@ -17,12 +17,14 @@ import logging
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 
 from horizon import exceptions
 from horizon import forms
 from horizon import tables
 from horizon import tabs
 from horizon import workflows
+from horizon import messages
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
@@ -60,6 +62,20 @@ class DetailOrganizationView(tables.MultiTableView):
     template_name = 'idm/organizations/detail.html'
     table_classes = (organization_tables.MembersTable,
                      organization_tables.AuthorizingApplicationsTable)
+
+    def dispatch(self, request, *args, **kwargs):
+        organization = kwargs['organization_id']
+        try:
+            api.keystone.tenant_get(request, organization)
+        except Exception:
+            redirect = reverse("horizon:idm:organizations:index")
+            exceptions.handle(self.request, 
+                    ('Organization does not exist'), redirect=redirect)
+        # except:
+        #     messages.error(request, 
+        #         ("The organization does not exist."))
+        #     return redirect("/idm/organizations")
+        return super(DetailOrganizationView, self).dispatch(request, *args, **kwargs)
     
     def get_members_data(self):
         users = []

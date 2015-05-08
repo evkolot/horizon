@@ -197,6 +197,16 @@ class DetailApplicationView(tables.MultiTableView):
     table_classes = (application_tables.AuthUsersTable,
                      application_tables.AuthorizedOrganizationsTable)
 
+    def dispatch(self, request, *args, **kwargs):
+        application = kwargs['application_id']
+        try:
+            fiware_api.keystone.application_get(request, application)
+        except Exception:
+            redirect = reverse("horizon:idm:myApplications:index")
+            exceptions.handle(self.request, 
+                    ('Application does not exist'), redirect=redirect)
+        return super(DetailApplicationView, self).dispatch(request, *args, **kwargs)
+
     def get_auth_users_data(self):
         users = []
         try:
