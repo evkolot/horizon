@@ -11,8 +11,10 @@
       {{ organization.name }}
       {% if edit %}
       <a href="{% url 'horizon:idm:organizations:edit' organization_id %}" class="small"><i class="fa fa-edit"></i><span>edit</span></a>
-      <a href="#" data-toggle="modal" data-target="#myModal" class="small"><i class="fa fa-sign-out"></i><span>exit</span></a>
       {% endif %}
+      {%if member%}
+      <a href="{% url 'horizon:idm:organizations:remove' organization_id %}" data-target="#myModal" class="small ajax-modal"><i class="fa fa-sign-out"></i><span>exit</span></a>
+      {%endif%}
     </h3>
 
     <!-- Modal -->
@@ -42,10 +44,15 @@
           Description
         </h5>
         <div class="info expander">
+          {% if organization.description %}
           <p>{{ organization.description }}</p>
+          {% else %}
+          <p><i>No description available</i></p>
+          {% endif %}
         </div>
       </div> 
-      <div class="contac_us">
+      {% if organization.website %}
+      <div class="contact_us">
         <h5>
           Website
         </h5>
@@ -53,6 +60,7 @@
           <p>{{ organization.website }}</p>
         </div>
       </div>
+      {% endif %}
     </div>
   </div>
 
