@@ -89,6 +89,14 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
     
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
+        # Check there is a valid keystone token in the header
+        token = request.META.get('HTTP_X_AUTH_TOKEN', None)
+        if not token:
+            return http.HttpResponse('Unauthorized', status=401)
+
+        response = fiware_api.keystone.validate_keystone_token(request, token)
+        if response.status_code != 200:
+            return http.HttpResponse('Unauthorized', status=401)
         return super(UpdateAccountEndpointView, self).dispatch(request, *args, **kwargs)
 
 

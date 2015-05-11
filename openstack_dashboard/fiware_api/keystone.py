@@ -135,6 +135,21 @@ def user_delete(request, user):
     keystone = internal_keystoneclient()
     keystone.users.delete(user)
 
+# validate token
+def validate_keystone_token(request, token):
+    # TODO(garcianavalon) figure out if this method belongs to keystone client or if
+    # there is a better way to do it/structure this
+    keystone_url = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
+    endpoint = '/auth/tokens'
+    url = keystone_url + endpoint
+    headers = {
+        'X-Auth-Token': token,
+    }
+    LOG.debug('API_KEYSTONE: GET to %s', url)
+    response = requests.get(url, headers=headers)
+    return response
+
+
 # ROLES
 def role_get(request, role_id):
     manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
