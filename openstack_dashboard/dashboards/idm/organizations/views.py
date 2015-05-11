@@ -90,7 +90,7 @@ class DetailOrganizationView(tables.MultiTableView):
                 self.request,
                 project=self.kwargs['organization_id'])
             users = [user for user in all_users if user.id in project_users_roles]
-            users = sorted(users, key=lambda x: x.username.lower())
+            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
             index_mem = self.request.GET.get('index_mem', 0)
             users = idm_utils.paginate(self, users,
                                        index=index_mem, limit=LIMIT_MINI,
