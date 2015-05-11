@@ -155,13 +155,6 @@ ul#perform_filter_available_update_owners_users{
   }
 }
 
-
-
-#avatar-update{
-  @include border-top-radius ($border-radius-base);
-  @include border-bottom-radius ($border-radius-base);
-}
-
 #edit{
   .modal-footer{
     a.panel-title{
@@ -463,6 +456,7 @@ textarea {
 #avatar-update{
   @include border-top-radius ($border-radius-base);
   @include border-bottom-radius ($border-radius-base);
+  max-width: 100%;
 }
 
 #edit{
