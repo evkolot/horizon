@@ -32,8 +32,8 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
         all_users = api.keystone.user_list(request, filters={'enabled':True})
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
-                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
-            for user in all_users if hasattr(user, 'username')]
+                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + getattr(user, 'username', user.name))
+            for user in all_users]
 
     def _list_all_objects(self, request, superset_id):
         all_roles = fiware_api.keystone.role_list(request)
@@ -106,7 +106,7 @@ class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = AuthorizedMembersApi
     server_filter_url = urlresolvers.reverse_lazy(
-        'fiware_server_filters_users')
+        'fiware_server_filters_admins')
 
 
 class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):
