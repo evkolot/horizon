@@ -106,10 +106,8 @@ nav.container-fluid{
   a img {
     width: 24px;
     margin-top: -1px;
-  }
-  &:hover{
-    @include border-top-radius (3px);
-    @include border-bottom-radius (3px);
+    @include border-top-radius (2px);
+    @include border-bottom-radius (2px);
   }
   @media (max-width: 767px){
     margin-top: 0;
