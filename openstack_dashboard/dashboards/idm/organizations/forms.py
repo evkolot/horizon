@@ -40,6 +40,7 @@ class RemoveOrgForm(forms.SelfHandlingForm):
     title = 'Remove from Organization'
 
     def handle(self, request, data):
+        print '-----------------------------------HOLA------'
         # import pdb
         # pdb.set_trace()
         # user = request.user.id

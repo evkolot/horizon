@@ -18,6 +18,7 @@ import logging
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
 
 from horizon import exceptions
 from horizon import forms
@@ -78,10 +79,19 @@ class RemoveOrganizationView(forms.ModalFormView):
         return initial
 
     def post(self, request, *args, **kwargs):
-        import pdb
-        pdb.set_trace()
-        if not request.user.is_authenticated():
-            return HttpResponseForbidden()
+        user = request.user.id
+        project = kwargs['organization_id']
+        # import pdb
+        # pdb.set_trace()
+        member_role = fiware_api.keystone.get_member_role(request)
+        api.keystone.remove_tenant_user_role(request, project=project,
+                                             user=user, role=member_role)
+        response = reverse("horizon:idm:organizations:index")
+        return redirect(response)
+        # return HttpResponseRedirect('horizon:idm:organizations:detail', project)
+        # roles = api.keystone.get_project_users_roles(request, project)
+        
+
 
 
 class DetailOrganizationView(tables.MultiTableView):
@@ -95,10 +105,10 @@ class DetailOrganizationView(tables.MultiTableView):
             api.keystone.tenant_get(request, organization)
         except Exception:
             redirect = reverse("horizon:idm:organizations:index")
-            exceptions.handle(self.request, 
+            exceptions.handle(self.request,
                     ('Organization does not exist'), redirect=redirect)
         return super(DetailOrganizationView, self).dispatch(request, *args, **kwargs)
-    
+
     def get_members_data(self):
         users = []
         try:
@@ -160,8 +170,8 @@ class DetailOrganizationView(tables.MultiTableView):
         org_id = self.kwargs['organization_id']
         user_roles = api.keystone.roles_for_user(
             self.request, self.request.user.id, project=org_id)
-        owner_role = fiware_api.keystone.get_owner_role(self.request)
-        return user_roles and owner_role.id not in [r.id for r in user_roles] 
+        member_role = fiware_api.keystone.get_member_role(self.request)
+        return user_roles and member_role.id in [r.id for r in user_roles] 
 
 
     def get_context_data(self, **kwargs):
