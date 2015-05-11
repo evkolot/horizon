@@ -36,32 +36,42 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
             for user in all_users]
 
     def _list_all_objects(self, request, superset_id):
+        # TODO(garcianavalon) move to fiware_api
         all_roles = fiware_api.keystone.role_list(request)
-        default_org = api.keystone.user_get(
-            request, request.user).default_project_id
         allowed = fiware_api.keystone.list_user_allowed_roles_to_assign(
             request,
             user=request.user.id,
-            organization=default_org)
-        self.allowed = [role for role in all_roles 
+            organization=request.user.default_project_id)
+
+        self.allowed = [role for role in all_roles
                    if role.id in allowed[superset_id]]
         return self.allowed
 
     def _list_current_assignments(self, request, superset_id):
         # NOTE(garcianavalon) logic for this part:
-        # load all the organization-scoped application roles for every user
+        # load all the user-scoped application roles for every user
         # but only the ones the user can assign
         application_users_roles = {}
         allowed_ids = [r.id for r in self.allowed]
-        role_assignments = fiware_api.keystone.user_role_assignments(
-            request, application=superset_id)
-        users = set([a.user_id for a in role_assignments])
-        for user_id in users:
-            application_users_roles[user_id] = [
-                a.role_id for a in role_assignments
-                if a.user_id == user_id
-                and a.role_id in allowed_ids
-            ]
+        role_assignments = [a for a in fiware_api.keystone.user_role_assignments(
+                                request, application=superset_id)
+                            if a.role_id in allowed_ids]
+
+        all_users = api.keystone.user_list(request, filters={'enabled':True})
+
+        for assignment in role_assignments:
+            user = next((user for user in all_users
+                         if user.id == assignment.user_id
+                         and user.default_project_id == assignment.organization_id),
+                        None)
+            if not user:
+                continue
+
+            if not user.id in application_users_roles:
+                application_users_roles[user.id] = []
+
+            application_users_roles[user.id].append(assignment.role_id)
+
         return application_users_roles
 
     def _get_default_object(self, request):
