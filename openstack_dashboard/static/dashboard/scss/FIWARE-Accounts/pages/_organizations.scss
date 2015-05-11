@@ -257,15 +257,16 @@ div#update_owners_members{
       &:last-child{
         border-bottom: none; 
       }
+      .member{
+        display: inline; width: 87%;
+      }
     }
-    .data {padding-top: 8px;
-      .dropdown{
-        float: right;
-        display: inline-block;
-        margin-right: 20px;
-      }               
+    .data {padding-top: 8px; @include text-overflow;}
+    
+    .name {
+      display: inline;
+      padding-right: 0;
     }
-    .name {display: inline;}
     .fa-plus,
     .fa-close{
       float: right;
@@ -358,8 +359,8 @@ div#update_owners_members{
     margin: 0;
   }
   div.active{
-    float: right;
-    display: inline-block;
+    position: absolute;
+    right: 15px;
     margin-top: -18px;
   }
   .role_options{
