@@ -11,8 +11,25 @@
       {{ organization.name }}
       {% if edit %}
       <a href="{% url 'horizon:idm:organizations:edit' organization_id %}" class="small"><i class="fa fa-edit"></i><span>edit</span></a>
+      <a href="#" data-toggle="modal" data-target="#myModal" class="small"><i class="fa fa-sign-out"></i><span>exit</span></a>
       {% endif %}
     </h3>
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Exit of this organization</h4>
+          </div>
+          <div class="modal-body">
+            <span>Are you sure?</span>
+            <button type="button" class="btn btn-danger pull-right">Exit</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!--crear la carga de la imagen -->
     <div class="logo">
       <img alt="organization logo" src="{{ image }}">
