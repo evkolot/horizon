@@ -129,7 +129,7 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
             for meta in meta:
                 size = meta[0], meta[1]
                 img_type = meta[2]
-                output_img.resize(size)
+                output_img.thumbnail(size)
                 img = (settings.MEDIA_ROOT +'/ApplicationAvatar/' 
                        + img_type + "/" + application_id)
                 output_img.save(img, 'JPEG')
