@@ -16,8 +16,9 @@ import os
 import logging
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
 
 from horizon import exceptions
 from horizon import forms
@@ -58,6 +59,37 @@ class CreateOrganizationView(forms.ModalFormView):
     template_name = 'idm/organizations/create.html'
 
 
+class RemoveOrganizationView(forms.ModalFormView):
+    form_class = organization_forms.RemoveOrgForm
+    template_name = 'idm/organizations/detail_remove.html'
+    success_url = reverse_lazy('horizon:user:index')
+
+    def get_context_data(self, **kwargs):
+        context = super(RemoveOrganizationView, self).get_context_data(**kwargs)
+        context['organization_id'] = self.kwargs['organization_id']
+        return context
+
+    def get_initial(self):
+        initial = super(RemoveOrganizationView, self).get_initial()
+        initial['orgID'] = self.kwargs['organization_id']
+        return initial
+
+    # def post(self, request, *args, **kwargs):
+    #     user = request.user.id
+    #     project = kwargs['organization_id']
+    #     # import pdb
+    #     # pdb.set_trace()
+    #     member_role = fiware_api.keystone.get_member_role(request)
+    #     api.keystone.remove_tenant_user_role(request, project=project,
+    #                                          user=user, role=member_role)
+    #     response = reverse("horizon:idm:organizations:index")
+    #     return redirect(response)
+    #     # return HttpResponseRedirect('horizon:idm:organizations:detail', project)
+    #     # roles = api.keystone.get_project_users_roles(request, project)
+        
+
+
+
 class DetailOrganizationView(tables.MultiTableView):
     template_name = 'idm/organizations/detail.html'
     table_classes = (organization_tables.MembersTable,
@@ -69,14 +101,10 @@ class DetailOrganizationView(tables.MultiTableView):
             api.keystone.tenant_get(request, organization)
         except Exception:
             redirect = reverse("horizon:idm:organizations:index")
-            exceptions.handle(self.request, 
+            exceptions.handle(self.request,
                     ('Organization does not exist'), redirect=redirect)
-        # except:
-        #     messages.error(request, 
-        #         ("The organization does not exist."))
-        #     return redirect("/idm/organizations")
         return super(DetailOrganizationView, self).dispatch(request, *args, **kwargs)
-    
+
     def get_members_data(self):
         users = []
         try:
@@ -134,6 +162,14 @@ class DetailOrganizationView(tables.MultiTableView):
         owner_role = fiware_api.keystone.get_owner_role(self.request)
         return owner_role.id in [r.id for r in user_roles]
 
+    def _is_member(self):
+        org_id = self.kwargs['organization_id']
+        user_roles = api.keystone.roles_for_user(
+            self.request, self.request.user.id, project=org_id)
+        member_role = fiware_api.keystone.get_member_role(self.request)
+        return user_roles and member_role.id in [r.id for r in user_roles] 
+
+
     def get_context_data(self, **kwargs):
         context = super(DetailOrganizationView, self).get_context_data(
             **kwargs)
@@ -156,6 +192,22 @@ class DetailOrganizationView(tables.MultiTableView):
 
         if self._can_edit():
             context['edit'] = True
+
+        if self._is_member():
+            context['member'] = True
+        # #Existing data from organizations
+        # initial_data = {
+        #     "orgID": organization_id,
+        # }
+        
+        # #Create forms
+        # remove = organization_forms.RemoveOrgForm(self.request, initial=initial_data)
+        
+        # #Actions and titles
+        # remove.action ='remove/'
+        # remove.title = 'Remove'
+
+        # context['remove'] = remove       
         return context
 
 
