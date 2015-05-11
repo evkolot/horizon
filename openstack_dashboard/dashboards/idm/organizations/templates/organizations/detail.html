@@ -13,7 +13,7 @@
       <a href="{% url 'horizon:idm:organizations:edit' organization_id %}" class="small"><i class="fa fa-edit"></i><span>edit</span></a>
       {% endif %}
       {%if member%}
-      <a href="{% url 'horizon:idm:organizations:remove' organization_id %}" data-toggle="modal" data-target="#myModal" class="small ajax-modal"><i class="fa fa-sign-out"></i><span>exit</span></a>
+      <a href="{% url 'horizon:idm:organizations:remove' organization_id %}" data-target="#myModal" class="small ajax-modal"><i class="fa fa-sign-out"></i><span>exit</span></a>
       {%endif%}
     </h3>
 
@@ -149,12 +149,5 @@
     </div>
     {% endif %}
   </div>
-  {% if member %}
-  <div class="panel panel-default">
-    <div class="panel-body">
-      <a class="btn btn-default btn-sm ajax-modal" href="{% url 'horizon:idm:organizations:remove' organization_id %}">Remove from org</a>
-    </div>
-  </div>
-  {% endif %}
 </div>
 {% endblock %}

@@ -40,12 +40,11 @@ class RemoveOrgForm(forms.SelfHandlingForm):
     title = 'Remove from Organization'
 
     def handle(self, request, data):
-        print '-----------------------------------HOLA------'
-        # import pdb
-        # pdb.set_trace()
-        # user = request.user.id
-        # project = data['orgID']
-        # api.keystone.remove_tenant_user(request, project=project, user=user)
+        user = request.user.id
+        project = data['orgID']
+        member_role = fiware_api.keystone.get_member_role(request)
+        api.keystone.remove_tenant_user_role(request, project=project,
+                                             user=user, role=member_role)
         messages.success(request, ("You removed yourself from the organization successfully."))
         response = shortcuts.redirect('horizon:idm:organizations:detail', data['orgID'])
         return response

@@ -16,7 +16,7 @@ import os
 import logging
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
 
@@ -62,11 +62,7 @@ class CreateOrganizationView(forms.ModalFormView):
 class RemoveOrganizationView(forms.ModalFormView):
     form_class = organization_forms.RemoveOrgForm
     template_name = 'idm/organizations/detail_remove.html'
-    # success_url = '/thanks/'
-
-    def get_success_url(self):
-        """Redirects to the url it was called from."""
-        return self.request.META['HTTP_REFERER']
+    success_url = reverse_lazy('horizon:user:index')
 
     def get_context_data(self, **kwargs):
         context = super(RemoveOrganizationView, self).get_context_data(**kwargs)
@@ -75,21 +71,21 @@ class RemoveOrganizationView(forms.ModalFormView):
 
     def get_initial(self):
         initial = super(RemoveOrganizationView, self).get_initial()
-        initial['organization_id'] = self.kwargs['organization_id']
+        initial['orgID'] = self.kwargs['organization_id']
         return initial
 
-    def post(self, request, *args, **kwargs):
-        user = request.user.id
-        project = kwargs['organization_id']
-        # import pdb
-        # pdb.set_trace()
-        member_role = fiware_api.keystone.get_member_role(request)
-        api.keystone.remove_tenant_user_role(request, project=project,
-                                             user=user, role=member_role)
-        response = reverse("horizon:idm:organizations:index")
-        return redirect(response)
-        # return HttpResponseRedirect('horizon:idm:organizations:detail', project)
-        # roles = api.keystone.get_project_users_roles(request, project)
+    # def post(self, request, *args, **kwargs):
+    #     user = request.user.id
+    #     project = kwargs['organization_id']
+    #     # import pdb
+    #     # pdb.set_trace()
+    #     member_role = fiware_api.keystone.get_member_role(request)
+    #     api.keystone.remove_tenant_user_role(request, project=project,
+    #                                          user=user, role=member_role)
+    #     response = reverse("horizon:idm:organizations:index")
+    #     return redirect(response)
+    #     # return HttpResponseRedirect('horizon:idm:organizations:detail', project)
+    #     # roles = api.keystone.get_project_users_roles(request, project)
         
 
 
