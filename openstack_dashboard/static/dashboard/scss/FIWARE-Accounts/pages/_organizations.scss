@@ -4,6 +4,17 @@
     display: inline-block;
   }
 }
+#remove_org {
+  p.alert{
+    margin: 0;
+    font-size: 12px;
+    i{
+      margin-right: 4px;
+      color: $brand-primary;
+    }
+  }
+}
+
 
 #edit_organization_modal{
    @extend .well;
@@ -201,6 +212,9 @@ div#update_owners_members{
   .avatar{
     float: left;
     margin-right: 0px;
+    min-width: 36px;
+    @include border-top-radius (2px);
+    @include border-bottom-radius (2px);
   }
   .all-users{
     border-right: 1px solid $border-color;
