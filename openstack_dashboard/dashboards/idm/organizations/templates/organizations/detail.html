@@ -44,10 +44,15 @@
           Description
         </h5>
         <div class="info expander">
+          {% if organization.description %}
           <p>{{ organization.description }}</p>
+          {% else %}
+          <p><i>No description available</i></p>
+          {% endif %}
         </div>
       </div> 
-      <div class="contac_us">
+      {% if organization.website %}
+      <div class="contact_us">
         <h5>
           Website
         </h5>
@@ -55,6 +60,7 @@
           <p>{{ organization.website }}</p>
         </div>
       </div>
+      {% endif %}
     </div>
   </div>
 

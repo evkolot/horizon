@@ -25,9 +25,14 @@
           Description
         </h5>
           <div class="info expander">
+            {% if user.description %}
             <p>{{ user.description }}</p>
+            {% else %}
+            <p><i>No description available</i></p>
+            {% endif %}
           </div>
       </div> 
+      {% if user.website %}
       <div class="contact_us">
         <h5>
           Website
@@ -36,6 +41,7 @@
           <p>{{ user.website }}</p>
         </div>
       </div>
+      {% endif %}
 		</div>
 	</div>
     
