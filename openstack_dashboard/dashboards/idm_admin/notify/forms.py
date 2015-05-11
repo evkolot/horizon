@@ -123,7 +123,7 @@ class EmailForm(forms.SelfHandlingForm):
             connection = mail.get_connection(fail_silently=True)
 
             msg = mail.EmailMultiAlternatives(
-                subject=data['subject'], 
+                subject='[FIWARE Lab] ' + data['subject'], 
                 body=text_content, 
                 from_email='no-reply@account.lab.fi-ware.org', 
                 bcc=recipients, 
