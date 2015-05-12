@@ -1,4 +1,4 @@
-Guía FIWARE Header & Footer
+[Guía FIWARE Header & Footer] (https://github.com/ging/horizon/blob/design-header/openstack_dashboard/static/library/FIWARE-Lab-header:footer/README.jpg)
 
 Todos los portales de FIWARE Lab deben usar una cabecera y un pie de página igual, por ello hemos creado una plantilla para que cubra esta necesidad. Está compuesta por los elementos necesarios del framework Bootstrap3, la librería Font awesome, HTML y los css propios de la cabecera y el pié de página.
 
@@ -30,6 +30,3 @@ En la carpeta js el archivo collapse.js (procedente de Bootstrap3). Para enlazar
 
 
 Por último el código HTML, se encuentra en index.html 
-
-
-[ScreenShot](https://github.com/ging/horizon/blob/design-header/openstack_dashboard/static/library/FIWARE-Lab-header:footer/README.jpg)
