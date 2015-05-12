@@ -59,9 +59,6 @@ class ProvidingTab(tabs.TableTab):
                                               index=index, limit=LIMIT,
                                               table_name='providing_table')
 
-            for app in applications:
-                users = idm_utils.get_counter(self, application=app)
-                setattr(app, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))
@@ -102,10 +99,6 @@ class PurchasedTab(tabs.TableTab):
             applications = idm_utils.paginate(self, applications,
                                               index=index, limit=LIMIT,
                                               table_name='purchased_table')
-
-            for app in applications:
-                users = idm_utils.get_counter(self, application=app)
-                setattr(app, 'counter', users)
             
         except Exception:
             exceptions.handle(self.request,
@@ -148,10 +141,6 @@ class AuthorizedTab(tabs.TableTab):
             applications = idm_utils.paginate(self, applications,
                                               index=index, limit=LIMIT,
                                               table_name='authorized_table')
-
-            for app in applications:
-                users = idm_utils.get_counter(self, application=app)
-                setattr(app, 'counter', users)
             
         except Exception:
             exceptions.handle(self.request,

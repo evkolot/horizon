@@ -52,9 +52,6 @@ class IndexView(tables.MultiTableView):
                                         in self.request.organizations]
             organizations = sorted(organizations, key=lambda x: x.name.lower())
             for org in organizations:
-                users = idm_utils.get_counter(self, organization=org)
-                setattr(org, 'counter', users)
-
                 if org.id in switchable_organizations:
                     setattr(org, 'switchable', True)
         except Exception:
@@ -77,10 +74,6 @@ class IndexView(tables.MultiTableView):
             applications = [app for app in all_apps
                             if app.id in apps_with_roles]
             applications = sorted(applications, key=lambda x: x.name.lower())
-
-            for app in applications:
-                users = idm_utils.get_counter(self, application=app)
-                setattr(app, 'counter', users)
 
         except Exception:
             exceptions.handle(self.request,

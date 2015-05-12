@@ -24,7 +24,6 @@ class ProvidingApplicationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
-    counter = tables.Column('counter')
     
     class Meta:
         name = "providing_table"
@@ -38,7 +37,6 @@ class PurchasedApplicationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))  
-    counter = tables.Column('counter')
 
     class Meta:
         name = "purchased_table"
@@ -52,7 +50,6 @@ class AuthorizedApplicationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))  
-    counter = tables.Column('counter')
 
     class Meta:
         name = "authorized_table"
@@ -133,7 +130,6 @@ class AuthorizedOrganizationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Applications'))
     description = tables.Column(lambda obj: getattr(obj, 'description', ''))
-    counter = tables.Column('counter')
 
     class Meta:
         name = "organizations"
