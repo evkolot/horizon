@@ -5,8 +5,9 @@ Todos los portales de FIWARE Lab deben usar una cabecera y un pie de página igu
 
 La carpeta css contiene los estilos, hay que enlazar los archivos: 
   - boottrap-frame.css, 
-  - font-awesome.css  
-  - style.css 
+  - font-awesome.css,  
+  - style.css,
+  
 con las siguientes líneas de código dentro de la etiqueta <head>
 
   <link href="css/bootstrap-frame.css" rel="stylesheet" media="screen">
