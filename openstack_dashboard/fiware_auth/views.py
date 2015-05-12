@@ -228,7 +228,7 @@ class RegistrationView(_RequestPassingFormView):
 
     def send_activation_email(self, user):
         # TODO(garcianavalon) subject, message and from_email as settings/files
-        subject = 'Welcome to FIWARE'
+        subject = '[FIWARE Lab] Welcome to FIWARE'
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         context = {
@@ -323,7 +323,7 @@ class RequestPasswordResetView(_RequestPassingFormView):
 
     def send_reset_email(self, email, token, user):
         # TODO(garcianavalon) subject, message and from_email as settings/files
-        subject = 'Reset password instructions - FIWARE'
+        subject = '[FIWARE Lab] Reset password instructions'
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         context = {
@@ -436,7 +436,7 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
 
     def send_reactivation_email(self, user, activation_key):
         # TODO(garcianavalon) subject, message and from_email as settings/files
-        subject = 'Welcome to FIWARE'
+        subject = '[FIWARE Lab] Welcome to FIWARE'
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         context = {

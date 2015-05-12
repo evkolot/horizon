@@ -54,17 +54,14 @@ class DetailApplicationView(tables.MultiTableView):
                     self.request).id)
             users = [user for user in all_users if user.id
                      in set([a.user_id for a in role_assignments])]
-
-            users = sorted(users, key=lambda x: x.username.lower())
+            
+            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
 
             index = self.request.GET.get('index', 0)
             users = idm_admin_utils.paginate(self, users,
                                              index=index, limit=LIMIT,
                                              table_name='members')
         
-        
-
-
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))

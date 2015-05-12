@@ -28,7 +28,11 @@
         </h5>
 
         <div class="info expander">
+            {% if application.description %}
           <p>{{ application.description }}</p>
+          {% else %}
+          <p><i>No description available</i></p>
+          {% endif %}
         </div>
       </div>
       

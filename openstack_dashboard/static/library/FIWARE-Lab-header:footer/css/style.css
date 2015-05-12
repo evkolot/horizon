@@ -340,10 +340,14 @@ ul.navbar-nav > li {
 }
 #profile_editor_switcher {
   margin-top: 9px;
+  font-size: 12px;
 }
 #profile_editor_switcher a img {
   width: 24px;
   margin-top: -1px;
+  -moz-border-radius: (2px);
+  -webkit-border-radius: (2px);
+  border-radius: (2px);
 }
 
 @media (min-width: 768px){

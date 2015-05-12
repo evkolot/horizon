@@ -54,7 +54,7 @@ class IndexView(tables.MultiTableView):
                 self.request,
                 project=self.request.organization.id)
             users = [user for user in all_users if user.id in project_users_roles]
-            users = sorted(users, key=lambda x: x.username.lower())
+            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
 
         except Exception:
             exceptions.handle(self.request,

@@ -167,23 +167,29 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
 
     def _list_current_assignments(self, request, superset_id):
         # NOTE(garcianavalon) logic for this part:
-        # load all the organization-scoped application roles for every user
+        # load all the user-scoped application roles for every user
         # but only the ones the user can assign
         application_users_roles = {}
         allowed_ids = [r.id for r in self.allowed]
-        role_assignments = fiware_api.keystone.user_role_assignments(
-                request, application=superset_id)
-        users_with_roles = set([a.user_id for a in role_assignments])
-        users = [user for user in api.keystone.user_list(request,
-                                                         filters={'enabled':True})
-                 if user.id in users_with_roles]
-        for user in users:
-            application_users_roles[user.id] = [
-                a.role_id for a in role_assignments
-                if a.user_id == user.id
-                and a.role_id in allowed_ids
-                and a.organization_id == user.default_project_id
-            ]
+        role_assignments = [a for a in fiware_api.keystone.user_role_assignments(
+                                request, application=superset_id)
+                            if a.role_id in allowed_ids]
+
+        all_users = api.keystone.user_list(request, filters={'enabled':True})
+
+        for assignment in role_assignments:
+            user = next((user for user in all_users
+                         if user.id == assignment.user_id
+                         and user.default_project_id == assignment.organization_id),
+                        None)
+            if not user:
+                continue
+
+            if not user.id in application_users_roles:
+                application_users_roles[user.id] = []
+
+            application_users_roles[user.id].append(assignment.role_id)
+
         return application_users_roles
 
 

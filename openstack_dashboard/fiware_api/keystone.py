@@ -614,6 +614,31 @@ def get_owner_role(request, use_idm_account=False):
                 break
     return cache.get('owner_role')
 
+def get_member_role(request, use_idm_account=False):
+    """Gets the member role object from Keystone and caches it.
+
+    Since this is configured in settings and should not change from request
+    to request. Supports lookup by name or id.
+    """
+    member = 'member'
+    if member and cache.get('member_role') is None:
+        # TODO(garcianavalon) use filters to filter by name
+        try:
+            if use_idm_account:
+                manager = internal_keystoneclient()
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.roles.list()
+        except Exception:
+            roles = []
+            exceptions.handle(request)
+        for role in roles:
+            if role.id == member or role.name == member:
+                pickle_role = PickleObject(name=role.name, id=role.id)
+                cache.set('member_role', pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
+                break
+    return cache.get('member_role')
+
 def get_trial_role(request, use_idm_account=False):
     """Gets the trial role object from Keystone and caches it.
 
