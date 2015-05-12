@@ -12,7 +12,9 @@ La carpeta css contiene los estilos, hay que enlazar los archivos:
 con las siguientes líneas de código dentro de la etiqueta < head >
 
   < link href="css/bootstrap-frame.css" rel="stylesheet" media="screen" >
+
   < link href="css/style.css" rel="stylesheet" media="screen" >
+
   < link href="css/font-awesome.css" rel="stylesheet" media="screen" >
 
 
@@ -31,6 +33,7 @@ La carpeta img contiene:
 En la carpeta js el archivo collapse.js (procedente de Bootstrap3). Para enlazar el archivo hay que escribir las siguientes líneas antes de cerrar la etiqueta < body > 
 
   < script src="http://code.jquery.com/jquery.js" >< /script >
+  
   < script src="js/collapse.js">< /script >
 
 
