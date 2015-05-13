@@ -72,12 +72,12 @@ class RegistrationForm(ConfirmPasswordForm):
         'custom_theme_widget': 'recaptcha_widget'
         })
     username = forms.RegexField(
-        regex=r'^[\w.@+-]+$',
+        regex=r'^([\w]+[\s\-_]?)+[\w]+$',
         max_length=30,
         label=("Username"),
         error_messages={
             'invalid': ("This value may contain only letters, "
-                "numbers and @/./+/-/_ characters.")
+                "numbers and - _ or space characters.")
         })
     email = forms.EmailField(label=("E-mail"),
                              required=True)
@@ -99,16 +99,16 @@ class RegistrationForm(ConfirmPasswordForm):
             self.fields['trial'].widget.attrs['disabled'] = 'disabled'
             self.fields['trial'].label += (' (Not available)')
     
-    def clean_username(self):
-        """ Validate that the username is not already in use."""
-        username = self.cleaned_data['username']
+    # def clean_username(self):
+    #     """ Validate that the username is not already in use."""
+    #     username = self.cleaned_data['username']
 
-        try:
-            existing = fiware_api.keystone.check_username(username)
-            raise forms.ValidationError(("A user with that username already exists."),
-                                        code='invalid')
-        except keystoneclient_exceptions.NotFound:
-            return username
+    #     try:
+    #         existing = fiware_api.keystone.check_username(username)
+    #         raise forms.ValidationError(("A user with that username already exists."),
+    #                                     code='invalid')
+    #     except keystoneclient_exceptions.NotFound:
+    #         return username
 
     def clean_email(self):
         """ Validate that the email is not already in use and if its banned
