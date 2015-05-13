@@ -620,7 +620,7 @@ def get_member_role(request, use_idm_account=False):
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.
     """
-    member = 'member'
+    member = getattr(local_settings, "OPENSTACK_KEYSTONE_DEFAULT_ROLE", None)
     if member and cache.get('member_role') is None:
         # TODO(garcianavalon) use filters to filter by name
         try:
