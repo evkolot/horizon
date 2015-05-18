@@ -128,6 +128,7 @@ class RegistrationView(_RequestPassingFormView):
         # delegate to the manager to create all the stuff
         try:
             new_user = fiware_api.keystone.register_user(
+                request,
                 name=cleaned_data['email'],
                 password=cleaned_data['password1'],
                 username=cleaned_data['username'])
@@ -146,8 +147,7 @@ class RegistrationView(_RequestPassingFormView):
                 request,
                 user=new_user.id,
                 role=fiware_user_role.id,
-                domain='default',
-                use_idm_account=True)
+                domain='default')
 
             LOG.debug('granted role %s.', fiware_user_role.name)
 
@@ -269,7 +269,7 @@ class ActivationView(TemplateView):
         LOG.info('Requested activation for key %s.', activation_key)
         try:
             activated_user = fiware_api.keystone.activate_user(
-                user, activation_key)
+                request, user, activation_key)
             LOG.debug('user %s was successfully activated.', 
                       activated_user.username)
             messages.success(request, 
@@ -303,8 +303,8 @@ class RequestPasswordResetView(_RequestPassingFormView):
     def _create_reset_password_token(self, request, email):
         LOG.info('Creating reset token for {0}.'.format(email))
         try:
-            user = fiware_api.keystone.check_email(email)
-            reset_password_token = fiware_api.keystone.get_reset_token(user)
+            user = fiware_api.keystone.check_email(request, email)
+            reset_password_token = fiware_api.keystone.get_reset_token(request, user)
             token = reset_password_token.id
             user = reset_password_token.user
             self.send_reset_email(email, token, user)
@@ -374,8 +374,8 @@ class ResetPasswordView(_RequestPassingFormView):
         LOG.info('Reseting password for token {0}.'.format(token))
         user_email = self.email
         try:
-            user = fiware_api.keystone.check_email(user_email)
-            user = fiware_api.keystone.reset_password(user, token, password)
+            user = fiware_api.keystone.check_email(request, user_email)
+            user = fiware_api.keystone.reset_password(request, user, token, password)
             if user:
                 messages.success(request, ('password successfully changed.'))
                 return user
@@ -406,7 +406,7 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
             
     def _resend_confirmation_email(self, request, email):
         try:
-            user = fiware_api.keystone.check_email(email)
+            user = fiware_api.keystone.check_email(request, email)
 
             if user.enabled:
                 msg = ('Email was already confirmed, please try signing in')
@@ -414,7 +414,7 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
                 messages.error(request, msg)
                 return False
 
-            activation_key = fiware_api.keystone.new_activation_key(user)
+            activation_key = fiware_api.keystone.new_activation_key(request, user)
 
             self.send_reactivation_email(user, activation_key)
             msg = ('Resended confirmation instructions to %s') %email
