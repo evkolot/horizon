@@ -30,7 +30,6 @@ class OrganizationsTable(tables.DataTable):
     name = tables.Column('name', verbose_name=('Name'))
     description = tables.Column(lambda obj: getattr(obj, 'description', ''),
                                 verbose_name=('Description'))
-    counter = tables.Column('counter')
 
     class Meta:
         name = "organizations"
@@ -44,7 +43,6 @@ class ApplicationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Applications'))
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
-    counter = tables.Column('counter')
 
     class Meta:
         name = "applications"

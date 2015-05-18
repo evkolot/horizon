@@ -53,9 +53,6 @@ class OtherOrganizationsTab(tabs.TableTab):
                                                index=index, limit=LIMIT,
                                                table_name='other_organizations')
 
-            for org in organizations:
-                users = idm_utils.get_counter(self, organization=org)
-                setattr(org, 'counter', users)
         except Exception as e:
             self._more = False
             exceptions.handle(self.request,
@@ -85,9 +82,6 @@ class OwnedOrganizationsTab(tabs.TableTab):
                                                index=index, limit=LIMIT,
                                                table_name='owned_organizations')
 
-            for org in organizations:
-                users = idm_utils.get_counter(self, organization=org)
-                setattr(org, 'counter', users)
         except Exception:
             self._more = False
             exceptions.handle(self.request,

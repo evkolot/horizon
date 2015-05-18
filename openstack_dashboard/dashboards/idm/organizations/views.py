@@ -145,9 +145,6 @@ class DetailOrganizationView(tables.MultiTableView):
             applications = idm_utils.paginate(self, applications,
                                               index=index_app, limit=LIMIT_MINI,
                                               table_name='applications')
-            for app in applications:
-                users = idm_utils.get_counter(self, application=app)
-                setattr(app, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))

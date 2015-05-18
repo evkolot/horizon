@@ -249,9 +249,6 @@ class DetailApplicationView(tables.MultiTableView):
             organizations = idm_utils.paginate(self, organizations,
                                                index=index_org, limit=LIMIT_MINI,
                                                table_name='organizations')
-            for org in organizations:
-                users = idm_utils.get_counter(self, organization=org)
-                setattr(org, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
