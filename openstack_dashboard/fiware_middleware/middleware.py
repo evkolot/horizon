@@ -42,7 +42,7 @@ class UserInfoMiddleware(object):
             or not request.user.is_authenticated()):
             return
         try:
-            user_data = api.keystone.user_get(request, request.user.id)
+            user_data = fiware_api.keystone.user_get(request, request.user.id)
             # setattr(user_data, 'username', user_data.name)
             for attr, value in user_data.__dict__.iteritems():
                 setattr(request.user, attr, value)

@@ -87,7 +87,7 @@ class EmailForm(forms.SelfHandlingForm):
             recipients = []
             if data['notify'] == 'all_users':
                 recipients = [u.name for u
-                             in api.keystone.user_list(request,
+                             in fiware_api.keystone.user_list(request,
                                                        filters={'enabled':True})
                              if '@' in u.name]
             elif data['notify'] == 'organization':
@@ -99,7 +99,7 @@ class EmailForm(forms.SelfHandlingForm):
                             project=data['organization'])
                 ]
                 for owner_id in owners:
-                    owner = api.keystone.user_get(request, owner_id)
+                    owner = fiware_api.keystone.user_get(request, owner_id)
                     if '@' in owner.name:
                         recipients.append(owner.name)
 

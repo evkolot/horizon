@@ -20,6 +20,7 @@ from django.core import urlresolvers
 from horizon import exceptions
 
 from openstack_dashboard import api
+from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import workflows as idm_workflows
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 
@@ -31,7 +32,7 @@ class UserRoleApi(idm_workflows.RelationshipApiInterface):
     """Holds the api calls for each specific relationship"""
     
     def _list_all_owners(self, request, superset_id):
-        all_users = api.keystone.user_list(request, filters={'enabled':True})
+        all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
                 idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 

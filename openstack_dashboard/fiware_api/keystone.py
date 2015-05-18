@@ -467,14 +467,30 @@ def forward_validate_token_request(request):
     response = requests.get(url)
     return response
 
-# STUFF
+# CALLS FORBIDDEN FOR THE USER THAT NEED TO USE THE IDM ACCOUNT
+# USERS
+def user_get(request, user_id):
+    manager = internal_keystoneclient().users
+    return manager.get(user_id)
+
+def user_list(request, project=None, domain=None, group=None, filters=None):
+    manager = internal_keystoneclient().users
+
+    kwargs = {
+        "project": project,
+        "domain": domain,
+        "group": group
+    }
+    if filters is not None:
+        kwargs.update(filters)
+    return manager.list(**kwargs)
+
 def user_update(request, user, use_idm_account=False, **data):
     if use_idm_account:
         manager = internal_keystoneclient().users
     else:
         manager = api.keystone.keystoneclient(
             request, admin=True).users
-    error = None
 
     if not data['password']:
         data.pop('password')
@@ -485,37 +501,27 @@ def user_update(request, user, use_idm_account=False, **data):
             "Password changed. Please log in again to continue."
         )
 
-def user_get(request, user_id, admin=True, use_idm_account=False):
-    if use_idm_account:
-        manager = internal_keystoneclient().users
-    else:
-        manager = api.keystone.keystoneclient(
-            request, admin=True).users
-    return manager.get(user_id)
+# PROJECTS
+def project_get(request, project_id):
+    manager = internal_keystoneclient().projects
+    return manager.get(project_id)
 
-def add_domain_user_role(request, user, role, domain, use_idm_account=False):
-    if use_idm_account:
-        manager = internal_keystoneclient().roles
-    else:
-        manager = api.keystone.keystoneclient(
-            request, admin=True).roles
+def project_list(request):
+    manager = internal_keystoneclient().projects
+    return manager.list()
+
+# ROLES
+def add_domain_user_role(request, user, role, domain):
+    manager = internal_keystoneclient().roles
     return manager.grant(role, user=user, domain=domain)
 
-def remove_domain_user_role(request, user, role, domain, use_idm_account=False):
-    if use_idm_account:
-        manager = internal_keystoneclient().roles
-    else:
-        manager = api.keystone.keystoneclient(
-            request, admin=True).roles
+def remove_domain_user_role(request, user, role, domain):
+    manager = internal_keystoneclient().roles
     return manager.revoke(role, user=user, domain=domain)
 
 def role_assignments_list(request, project=None, user=None, role=None,
-                          group=None, domain=None, effective=False, use_idm_account=False):
-    if use_idm_account:
-        manager = internal_keystoneclient().role_assignments
-    else:
-        manager = api.keystone.keystoneclient(
-            request, admin=True).role_assignments
+                          group=None, domain=None, effective=False):
+    manager = internal_keystoneclient().role_assignments
     return manager.list(project=project, user=user, role=role, group=group,
                         domain=domain, effective=effective)
 

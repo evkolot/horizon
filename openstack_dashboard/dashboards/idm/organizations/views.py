@@ -112,7 +112,7 @@ class DetailOrganizationView(tables.MultiTableView):
             # filters by default_project_id.
             # We need to get the role_assignments for the user's
             # id's and then filter the user list ourselves
-            all_users = api.keystone.user_list(self.request,
+            all_users = fiware_api.keystone.user_list(self.request,
                 filters={'enabled':True})
             project_users_roles = api.keystone.get_project_users_roles(
                 self.request,
