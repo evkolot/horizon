@@ -131,11 +131,13 @@ class AuthorizeView(FormView):
     def get(self, request, *args, **kwargs):
         """Show a form with info about the scopes and the application to the user"""
         if self.application_credentials:
+            self._request_authorization(request, self.application_credentials)
+            
             # check if user already authorized this app
             if self._already_authorized(request, self.application_credentials):
                 return self.obtain_access_token(request)
-            # if not, request authorization
-            self._request_authorization(request, self.application_credentials)
+
+            # if not, request authorization from user
             return super(AuthorizeView, self).get(request, *args, **kwargs)
         else:
             LOG.debug('OAUTH2: there is no pending authorization request, redirect to index')
