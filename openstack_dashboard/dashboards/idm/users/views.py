@@ -16,6 +16,7 @@ import logging
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 
 from horizon import exceptions
 from horizon import forms
@@ -131,6 +132,17 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
         user_forms.AvatarForm,
         user_forms.CancelForm
     ]
+
+    def _can_edit(self):
+        # Allowed if its the same user
+        return (self.request.user.id == self.kwargs['user_id']
+            and self.request.organization.id == self.request.user.default_project_id)
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_edit():
+            return super(BaseUsersMultiFormView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
     
     def get_endpoint(self, form_class):
         """Override to allow runtime endpoint declaration"""
