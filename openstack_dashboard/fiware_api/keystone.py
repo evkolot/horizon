@@ -538,6 +538,13 @@ def project_list(request, domain=None, user=None, filters=None):
         kwargs.update(filters)
     return manager.list(**kwargs)
 
+def project_create(request, name, description=None, enabled=None,
+                   domain=None, **kwargs):
+    manager = internal_keystoneclient(request).projects
+    return manager.create(name, domain,
+                          description=description,
+                          enabled=enabled, **kwargs)
+
 # ROLES
 def add_domain_user_role(request, user, role, domain):
     manager = internal_keystoneclient(request).roles

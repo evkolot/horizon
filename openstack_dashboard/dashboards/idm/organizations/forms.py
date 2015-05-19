@@ -75,17 +75,15 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
                               ignore=True)
 
     def handle(self, request, data):
-        #create organization
+        # Create organization
         default_domain = api.keystone.get_default_domain(request)
         try:
-            self.object = api.keystone.tenant_create(
+            self.object = fiware_api.keystone.project_create(
                 request,
                 name=data['name'],
                 description=data['description'],
                 enabled=True,
                 domain=default_domain,
-                # city='',
-                # email='',
                 website='')
                                                      
         except Exception:

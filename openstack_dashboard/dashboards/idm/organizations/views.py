@@ -158,7 +158,7 @@ class DetailOrganizationView(tables.MultiTableView):
             **kwargs)
         organization_id = self.kwargs['organization_id']
         organization = fiware_api.keystone.project_get(self.request, 
-            organization_id, admin=True)
+            organization_id)
         context['organization'] = organization
 
         if hasattr(organization, 'img_original'):
@@ -178,19 +178,7 @@ class DetailOrganizationView(tables.MultiTableView):
 
         if self._is_member():
             context['member'] = True
-        # #Existing data from organizations
-        # initial_data = {
-        #     "orgID": organization_id,
-        # }
-        
-        # #Create forms
-        # remove = organization_forms.RemoveOrgForm(self.request, initial=initial_data)
-        
-        # #Actions and titles
-        # remove.action ='remove/'
-        # remove.title = 'Remove'
-
-        # context['remove'] = remove       
+      
         return context
 
 
