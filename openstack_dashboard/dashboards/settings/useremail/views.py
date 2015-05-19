@@ -13,6 +13,7 @@
 
 from horizon import forms
 from openstack_dashboard import api
+from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.settings.useremail import forms as useremail_forms
 
 
@@ -24,7 +25,7 @@ class EmailView(forms.ModalFormView):
     def get_form_kwargs(self):
         kwargs = super(EmailView, self).get_form_kwargs()
         user_id = self.request.user.id
-        user = api.keystone.user_get(self.request, user_id, admin=False)
+        user = fiware_api.keystone.user_get(self.request, user_id)
         kwargs['initial']['email'] = getattr(user, 'name', '')
         return kwargs
 

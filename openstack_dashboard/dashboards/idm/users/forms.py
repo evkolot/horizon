@@ -21,6 +21,8 @@ from django import forms
 
 from horizon import forms
 from horizon import messages
+
+from openstack_dashboard import fiware_api
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.idm import forms as idm_forms
 
@@ -48,7 +50,7 @@ class InfoForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            user = api.keystone.user_get(request, data['userID'])
+            user = fiware_api.keystone.user_get(request, data['userID'])
             api.keystone.user_update(request,
                                      user.id,
                                      username=data['username'],
@@ -67,22 +69,6 @@ class InfoForm(forms.SelfHandlingForm):
                 
         return shortcuts.redirect('horizon:idm:users:detail',
             data['userID'])
-
-# class ContactForm(forms.SelfHandlingForm):
-#     userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-#     website = forms.URLField(label=("Website"), required=False)
-#     title = 'Contact Information'
-
-#     def handle(self, request, data):
-#         api.keystone.user_update(request, 
-#                                 data['userID'], 
-#                                 website=data['website'],
-#                                 password='')
-#         LOG.debug('User {0} updated'.format(data['userID']))
-#         messages.success(request, ("User updated successfully."))
-#         response = shortcuts.redirect('horizon:idm:users:detail', 
-#             data['userID'])
-#         return response
 
 
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):

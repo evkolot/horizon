@@ -45,7 +45,7 @@ class DetailUserView(tables.MultiTableView):
     def dispatch(self, request, *args, **kwargs):
         user = kwargs['user_id']
         try:
-            api.keystone.user_get(request, user)
+            fiware_api.keystone.user_get(request, user)
         except Exception:
             redirect = reverse("horizon:idm:home:index")
             exceptions.handle(self.request, 
@@ -111,7 +111,7 @@ class DetailUserView(tables.MultiTableView):
     def get_context_data(self, **kwargs):
         context = super(DetailUserView, self).get_context_data(**kwargs)
         user_id = self.kwargs['user_id']
-        user = api.keystone.user_get(self.request, user_id, admin=True)
+        user = fiware_api.keystone.user_get(self.request, user_id)
         context['user'] = user
         if hasattr(user, 'img_original'):
             image = getattr(user, 'img_original')
@@ -147,7 +147,7 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
 
     def get_object(self):
         try:
-            return api.keystone.user_get(self.request, 
+            return fiware_api.keystone.user_get(self.request, 
                                          self.kwargs['user_id'])
         except Exception:
             redirect = reverse("horizon:idm:home:index")

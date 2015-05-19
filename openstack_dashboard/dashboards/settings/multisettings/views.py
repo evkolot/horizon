@@ -17,6 +17,7 @@ import logging
 from horizon import views
 
 from openstack_dashboard import api
+from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.settings.cancelaccount import forms \
                                                             as cancelaccount_forms
 from openstack_dashboard.dashboards.settings.password import forms as password_forms
@@ -33,7 +34,7 @@ class MultiFormView(views.APIView):
 
         # Initial data
         user_id = self.request.user.id
-        user = api.keystone.user_get(self.request, user_id, admin=False)
+        user = fiware_api.keystone.user_get(self.request, user_id)
         email = getattr(user, 'name', '') 
         initial_email = {
             'email': email
