@@ -1,0 +1,29 @@
+<form accept-charset="UTF-8" action="{{ form.action }}" method="post">{% csrf_token %}
+  Your account is {{ account_type }}.
+  {% if started_at %}
+    Since {{ started_at }}
+  {% endif %}
+  <fieldset>
+    <legend></legend>
+    {% include "horizon/common/_form_fields.html" %}
+  </fieldset>
+
+  {% if show_community_request %}
+    <a href="#" id="myCustomTrigger" class="btn btn-default">Request Community Account upgrade</a>
+  {% endif %}
+
+  {% if show_trial_request %}
+    <a href="#" id="" class="btn btn-default disabled">Request Trial Account upgrade</a>
+  {% endif %}
+</form>
+
+<script type="text/javascript" src="https://jira.fiware.org/s/4d99dfea096a41baa8a46feda6f85823-T/en_GBek2res/6346/29/1.4.16/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-GB&amp;collectorId=a188b867"></script>
+<script type="text/javascript">window.ATL_JQ_PAGE_PROPS =  {
+  "triggerFunction": function(showCollectorDialog) {
+    //Requires that jQuery is available! 
+    jQuery("#myCustomTrigger").click(function(e) {
+      e.preventDefault();
+      showCollectorDialog();
+    });
+  }};
+</script>

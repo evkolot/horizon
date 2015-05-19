@@ -157,7 +157,7 @@ class OrganizationsWorkflowFilter(AjaxKeystoneFilter):
     filter_key = 'name__startswith'
 
     def api_call(self, request, filters=None):
-        organizations, more = api.keystone.tenant_list(request, 
+        organizations = fiware_api.keystone.project_list(request, 
             filters=filters)
         organizations = idm_utils.filter_default(organizations)
         attrs = [

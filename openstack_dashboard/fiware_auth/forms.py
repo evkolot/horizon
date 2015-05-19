@@ -134,7 +134,7 @@ class RegistrationForm(ConfirmPasswordForm):
                     "You are using a forbidden e-mail domain in this project.",
                     code='invalid')
         try:
-            existing = fiware_api.keystone.check_email(email)
+            existing = fiware_api.keystone.check_email(self.request, email)
             raise forms.ValidationError(("The email is already in use."),
                                          code='invalid')
         except keystoneclient_exceptions.NotFound:

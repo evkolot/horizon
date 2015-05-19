@@ -37,7 +37,12 @@ LOG = logging.getLogger('idm_logger')
 DEFAULT_OBJECTS_CACHE_TIME = 60 * 15
 
 def internal_keystoneclient(request):
-    cache_attr = "_internal_keystoneclient" 
+    """Creates a connection with keystone using the IdM account.
+
+    The client is cached so that subsequent API calls during the same
+    request/response cycle don't have to be re-authenticated.
+    """
+    cache_attr = "_internal_keystoneclient"
     keystoneclient = cache.get(cache_attr, None)
     if not keystoneclient:
         idm_user_session = _password_session(request)
@@ -523,9 +528,28 @@ def project_get(request, project_id):
     manager = internal_keystoneclient(request).projects
     return manager.get(project_id)
 
-def project_list(request):
+def project_list(request, domain=None, user=None, filters=None):
     manager = internal_keystoneclient(request).projects
-    return manager.list()
+    kwargs = {
+        "domain": domain,
+        "user": user
+    }
+    if filters is not None:
+        kwargs.update(filters)
+    return manager.list(**kwargs)
+
+def project_create(request, name, description=None, enabled=None,
+                   domain=None, **kwargs):
+    manager = internal_keystoneclient(request).projects
+    return manager.create(name, domain,
+                          description=description,
+                          enabled=enabled, **kwargs)
+
+def project_update(request, project, name=None, description=None,
+                  enabled=None, domain=None, **kwargs):
+    manager = internal_keystoneclient(request).projects
+    return manager.update(project, name=name, description=description,
+                          enabled=enabled, domain=domain, **kwargs)
 
 # ROLES
 def add_domain_user_role(request, user, role, domain):

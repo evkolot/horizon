@@ -263,7 +263,7 @@ class AuthorizedOrganizationsApi(idm_workflows.RelationshipApiInterface):
     """FIWARE roles and organization logic"""
 
     def _list_all_owners(self, request, superset_id):
-        all_organizations, _more = api.keystone.tenant_list(request)
+        all_organizations = fiware_api.keystone.project_list(request)
         return [
             (org.id, idm_utils.get_avatar(org, 'img_small', 
                 idm_utils.DEFAULT_ORG_SMALL_AVATAR) + '$' + org.name) 
