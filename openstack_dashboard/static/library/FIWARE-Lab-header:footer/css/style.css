@@ -463,8 +463,8 @@ footer.footer-main {
   right: 0;
 }
 .footer-main .container-fluid{
-  border-top: 1px solid #193B6B;
-  border-bottom: 1px solid #F2E826;
+  border-top: 1px solid #F2E826;
+  border-bottom: 1px solid #193B6B;
   height: 0px;
 }
      
