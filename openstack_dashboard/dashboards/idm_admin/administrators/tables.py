@@ -35,7 +35,7 @@ class ManageAuthorizedMembersLink(tables.LinkAction):
         idm_admin = fiware_api.keystone.get_idm_admin_app(request)
         if not idm_admin:
             return False
-        default_org = api.keystone.user_get(
+        default_org = fiware_api.keystone.user_get(
             request, request.user).default_project_id
         allowed = fiware_api.keystone.list_user_allowed_roles_to_assign(
             request,
