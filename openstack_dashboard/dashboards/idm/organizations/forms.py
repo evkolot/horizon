@@ -154,9 +154,6 @@ class InfoForm(forms.SelfHandlingForm):
         widget=forms.widgets.Textarea(attrs={'rows':4, 'cols':40}), 
         required=True)
     website = forms.URLField(label=("Website"), required=False)
-    # city = forms.CharField(label=("City"), 
-    #                        max_length=64, 
-    #                        required=False)
     title = 'Information'
 
     def handle(self, request, data):
@@ -167,8 +164,7 @@ class InfoForm(forms.SelfHandlingForm):
                 name=data['name'], 
                 description=data['description'],
                 website=data['website'])
-                #city=data['city'])
-
+            
             LOG.debug('Organization %s updated', data['orgID'])
             messages.success(request, 
                 ("Organization updated successfully."))
