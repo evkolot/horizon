@@ -238,8 +238,8 @@ class DetailApplicationView(tables.MultiTableView):
         try:
             # NOTE(garcianavalon) Get all the orgs' ids that belong to
             # the application (they have one or more roles)
-            all_organizations, _more = api.keystone.tenant_list(
-                self.request, admin=False)
+            all_organizations = fiware_api.keystone.project_list(
+                self.request)
             role_assignments = fiware_api.keystone.organization_role_assignments(
                 self.request, application=self.kwargs['application_id'])
             organizations = [org for org in all_organizations if org.id

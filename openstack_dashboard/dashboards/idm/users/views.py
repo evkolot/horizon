@@ -61,10 +61,9 @@ class DetailUserView(tables.MultiTableView):
 
         #domain_context = self.request.session.get('domain_context', None)
         try:
-            organizations, self._more = api.keystone.tenant_list(
+            organizations = fiware_api.keystone.project_list(
                 self.request,
-                user=user_id,
-                admin=False)
+                user=user_id)
 
             organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
             organizations = idm_utils.paginate(self, organizations,

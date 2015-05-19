@@ -39,15 +39,14 @@ class IndexView(tables.MultiTableView):
         return super(IndexView, self).dispatch(request, *args, **kwargs)
 
     def has_more_data(self, table):
-        return self._more
+        return False
 
     def get_organizations_data(self):
         organizations = []
         try:
-            organizations, self._more = api.keystone.tenant_list(
+            organizations = fiware_api.keystone.project_list(
                 self.request,
-                user=self.request.user.id,
-                admin=False)
+                user=self.request.user.id)
             switchable_organizations = [org.id for org
                                         in self.request.organizations]
             organizations = sorted(organizations, key=lambda x: x.name.lower())
@@ -55,7 +54,6 @@ class IndexView(tables.MultiTableView):
                 if org.id in switchable_organizations:
                     setattr(org, 'switchable', True)
         except Exception:
-            self._more = False
             exceptions.handle(self.request,
                               ("Unable to retrieve organization list."))
 

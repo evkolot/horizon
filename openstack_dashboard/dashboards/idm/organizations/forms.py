@@ -61,7 +61,7 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
         """ Validate that the name is not already in use."""
         org_name = self.cleaned_data['name']
         try:
-            all_organizations, more = api.keystone.tenant_list(self.request)
+            all_organizations = fiware_api.keystone.project_list(self.request)
             names_in_use = [org.name for org 
                              in all_organizations]
             if org_name in names_in_use:

@@ -74,21 +74,6 @@ class RemoveOrganizationView(forms.ModalFormView):
         initial['orgID'] = self.kwargs['organization_id']
         return initial
 
-    # def post(self, request, *args, **kwargs):
-    #     user = request.user.id
-    #     project = kwargs['organization_id']
-    #     # import pdb
-    #     # pdb.set_trace()
-    #     member_role = fiware_api.keystone.get_member_role(request)
-    #     api.keystone.remove_tenant_user_role(request, project=project,
-    #                                          user=user, role=member_role)
-    #     response = reverse("horizon:idm:organizations:index")
-    #     return redirect(response)
-    #     # return HttpResponseRedirect('horizon:idm:organizations:detail', project)
-    #     # roles = api.keystone.get_project_users_roles(request, project)
-        
-
-
 
 class DetailOrganizationView(tables.MultiTableView):
     template_name = 'idm/organizations/detail.html'
@@ -98,11 +83,12 @@ class DetailOrganizationView(tables.MultiTableView):
     def dispatch(self, request, *args, **kwargs):
         organization = kwargs['organization_id']
         try:
-            api.keystone.tenant_get(request, organization)
+            fiware_api.keystone.project_get(request, organization)
         except Exception:
-            redirect = reverse("horizon:idm:organizations:index")
-            exceptions.handle(self.request,
-                    ('Organization does not exist'), redirect=redirect)
+            exceptions.handle(
+                self.request,
+                'Organization does not exist',
+                redirect=reverse("horizon:idm:organizations:index"))
         return super(DetailOrganizationView, self).dispatch(request, *args, **kwargs)
 
     def get_members_data(self):
@@ -171,7 +157,7 @@ class DetailOrganizationView(tables.MultiTableView):
         context = super(DetailOrganizationView, self).get_context_data(
             **kwargs)
         organization_id = self.kwargs['organization_id']
-        organization = api.keystone.tenant_get(self.request, 
+        organization = fiware_api.keystone.project_get(self.request, 
             organization_id, admin=True)
         context['organization'] = organization
 
@@ -246,12 +232,13 @@ class BaseOrganizationsMultiFormView(idm_views.BaseMultiFormView):
 
     def get_object(self):
         try:
-            return api.keystone.tenant_get(
+            return fiware_api.keystone.project_get(
                 self.request, self.kwargs['organization_id'])
         except Exception:
-            redirect = reverse("horizon:idm:organizations:index")
-            exceptions.handle(self.request, 
-                    ('Unable to update organization'), redirect=redirect)
+            exceptions.handle(
+                self.request, 
+                'Unable to update organization',
+                redirect=reverse("horizon:idm:organizations:index"))
 
     def get_initial(self, form_class):
         initial = super(BaseOrganizationsMultiFormView, 

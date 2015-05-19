@@ -70,7 +70,8 @@ class EmailForm(forms.SelfHandlingForm):
                 code='invalid')
         else:
             try:
-                organization = api.keystone.tenant_get(self.request, 
+                organization = fiware_api.keystone.project_get(
+                    self.request, 
                     organization_id)
                 return cleaned_data
 
