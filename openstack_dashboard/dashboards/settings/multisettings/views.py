@@ -39,10 +39,34 @@ class MultiFormView(views.APIView):
         # Initial data
         user_id = self.request.user.id
         user = fiware_api.keystone.user_get(self.request, user_id)
-        email = getattr(user, 'name', '') 
         initial_email = {
-            'email': email
+            'email': user.name
         }
+
+        # Current account_type
+        # TODO(garcianavalon) find a better solution to this
+        user_roles = [a.role['id'] for a in fiware_api.keystone.role_assignments_list(self.request, 
+            user=user_id, domain='default')]
+        basic_role = fiware_api.keystone.get_basic_role(self.request, use_idm_account=True)
+        trial_role = fiware_api.keystone.get_trial_role(self.request, use_idm_account=True)
+        community_role = fiware_api.keystone.get_community_role(self.request, use_idm_account=True)
+        account_roles = [
+            basic_role,
+            trial_role,
+            community_role,
+        ]
+        context['account_type'] = next((r.name for r in account_roles 
+            if r.id in user_roles), None)
+        if context['account_type'] == trial_role.name:
+            context['started_at'] = getattr(user, 'trial_started_at', 'start date not available')
+        elif context['account_type'] == community_role.name:
+            context['started_at'] = getattr(user, 'community_started_at', 'start date not available')
+
+        if context['account_type'] != community_role.name:
+            context['show_community_request'] = True
+
+        if context['account_type'] == basic_role.name:
+            context['show_trial_request'] = True
         
         #Create forms
         status = status_forms.UpgradeForm(self.request)
@@ -51,15 +75,20 @@ class MultiFormView(views.APIView):
         email = useremail_forms.EmailForm(self.request, initial=initial_email)
 
         #Actions and titles
-        # TODO(garcianavalon) quizas es mejor meterlo en el __init__ del form
+        # TODO(garcianavalon) move all of this to each form
         status.action = 'accountstatus/'
         email.action = 'useremail/'
         password.action = "password/"
         cancel.action = "cancelaccount/"
-        status.description = 'Account Status'
+        status.description = 'Account status'
         email.description = ('Change your email')
         password.description = ('Change your password')
         cancel.description = ('Cancel account')
+
+        status.template = 'settings/accountstatus/_status.html'
+        email.template = 'settings/multisettings/_collapse_form.html'
+        password.template = 'settings/multisettings/_collapse_form.html'
+        cancel.template = 'settings/multisettings/_collapse_form.html'
 
         context['forms'] = [status, password, email, cancel]
         return context
