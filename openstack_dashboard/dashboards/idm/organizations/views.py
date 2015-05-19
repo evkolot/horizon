@@ -185,6 +185,21 @@ class DetailOrganizationView(tables.MultiTableView):
 class OrganizationMembersView(workflows.WorkflowView):
     workflow_class = organization_workflows.ManageOrganizationMembers
 
+    def _can_edit(self):
+        # Allowed if he is an owner in the organization
+        # TODO(garcianavalon) move to fiware_api
+        org_id = self.kwargs['organization_id']
+        user_roles = api.keystone.roles_for_user(
+            self.request, self.request.user.id, project=org_id)
+        owner_role = fiware_api.keystone.get_owner_role(self.request)
+        return owner_role.id in [r.id for r in user_roles]
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_edit():
+            return super(OrganizationMembersView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
+
     def get_initial(self):
         initial = super(OrganizationMembersView, self).get_initial()
         initial['superset_id'] = self.kwargs['organization_id']
@@ -199,6 +214,21 @@ class BaseOrganizationsMultiFormView(idm_views.BaseMultiFormView):
         organization_forms.AvatarForm, 
         organization_forms.CancelForm
     ]
+
+    def _can_edit(self):
+        # Allowed if he is an owner in the organization
+        # TODO(garcianavalon) move to fiware_api
+        org_id = self.kwargs['organization_id']
+        user_roles = api.keystone.roles_for_user(
+            self.request, self.request.user.id, project=org_id)
+        owner_role = fiware_api.keystone.get_owner_role(self.request)
+        return owner_role.id in [r.id for r in user_roles]
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_edit():
+            return super(BaseOrganizationsMultiFormView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
     
     def get_endpoint(self, form_class):
         """Override to allow runtime endpoint declaration"""
