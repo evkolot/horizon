@@ -58,9 +58,11 @@ class InfoForm(forms.SelfHandlingForm):
                                      description=data['description'],
                                      # city=data['city'],
                                      password='')
-            api.keystone.tenant_update(request,
-                                       user.default_project_id,
-                                       name=data['username'])
+            # NOTE(garcianavalon) No need for keeping this name updated
+            # anymore
+            # api.keystone.tenant_update(request,
+            #                            user.default_project_id,
+            #                            name=data['username'])
             LOG.debug('User {0} updated'.format(data['userID']))
             messages.success(request, ('User updated successfully'))
             

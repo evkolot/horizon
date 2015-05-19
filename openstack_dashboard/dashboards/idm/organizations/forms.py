@@ -158,7 +158,7 @@ class InfoForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            api.keystone.tenant_update(
+            fiware_api.keystone.project_update(
                 request, 
                 data['orgID'], 
                 name=data['name'], 
@@ -174,22 +174,6 @@ class InfoForm(forms.SelfHandlingForm):
 
         return shortcuts.redirect(
             'horizon:idm:organizations:detail', data['orgID'])
-
-# class ContactForm(forms.SelfHandlingForm):
-#     orgID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-#     email = forms.EmailField(label=("E-mail"), required=False)
-#     website = forms.URLField(label=("Website"), required=False)
-#     title = 'Contact Information'
-
-#     def handle(self, request, data):
-#         api.keystone.tenant_update(request, 
-#                                 data['orgID'], 
-#                                 email=data['email'], 
-#                                 website=data['website'])
-#         LOG.debug('Organization {0} updated'.format(data['orgID']))
-#         messages.success(request, ("Organization updated successfully."))
-#         response = shortcuts.redirect('horizon:idm:organizations:detail', data['orgID'])
-#         return response
 
 
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
@@ -214,11 +198,11 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
                 output_img.save(settings.MEDIA_ROOT + "/" + img, 'JPEG')
         
                 if img_type == 'small':
-                    api.keystone.tenant_update(request, data['orgID'], img_small=img)
+                    fiware_api.keystone.project_update(request, data['orgID'], img_small=img)
                 elif img_type == 'medium':
-                    api.keystone.tenant_update(request, data['orgID'], img_medium=img)
+                    fiware_api.keystone.project_update(request, data['orgID'], img_medium=img)
                 else:
-                    api.keystone.tenant_update(request, data['orgID'], img_original=img)
+                    fiware_api.keystone.project_update(request, data['orgID'], img_original=img)
 
             LOG.debug('Organization {0} image updated'.format(data['orgID']))
             messages.success(request, ("Organization updated successfully."))
