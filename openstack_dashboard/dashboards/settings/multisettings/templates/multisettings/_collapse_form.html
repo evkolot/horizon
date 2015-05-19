@@ -10,14 +10,6 @@
         <legend></legend>
         {% include "horizon/common/_form_fields.html" %}
       </fieldset>
-      {% comment %}
-        {% for field in form %}
-          <div class="form-group">
-            <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-          </div>
-        {% endfor %}
-      {% endcomment %}
       {% if forloop.last %}
          Unhappy? <a href="{{ form.action }}" class="ajax-modal" rel="nofollow">Cancel my account</a>
       {% else %}

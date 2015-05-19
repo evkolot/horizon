@@ -1,0 +1,20 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block form_id %}account_status_modal{% endblock %}
+{% block form_action %}{% url 'horizon:settings:accountstatus:index' %}{% endblock %}
+
+{% block modal_id %}account_status_modal{% endblock %}
+{% block modal-header %}{% trans "Account Status" %}{% endblock %}
+
+{% block modal-body %}
+<div class="left">
+</div>
+<div class="right">
+</div>
+{% endblock %}
+
+{% block modal-footer %}
+{% endblock %}
+

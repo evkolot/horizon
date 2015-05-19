@@ -18,10 +18,14 @@ from horizon import views
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
-from openstack_dashboard.dashboards.settings.cancelaccount import forms \
-                                                            as cancelaccount_forms
-from openstack_dashboard.dashboards.settings.password import forms as password_forms
-from openstack_dashboard.dashboards.settings.useremail import forms as useremail_forms
+from openstack_dashboard.dashboards.settings.accountstatus \
+    import forms as status_forms
+from openstack_dashboard.dashboards.settings.cancelaccount \
+    import forms as cancelaccount_forms
+from openstack_dashboard.dashboards.settings.password \
+    import forms as password_forms
+from openstack_dashboard.dashboards.settings.useremail \
+    import forms as useremail_forms
 
 
 LOG = logging.getLogger('idm_logger')
@@ -41,18 +45,21 @@ class MultiFormView(views.APIView):
         }
         
         #Create forms
+        status = status_forms.UpgradeForm(self.request)
         cancel = cancelaccount_forms.BasicCancelForm(self.request)
         password = password_forms.PasswordForm(self.request)
         email = useremail_forms.EmailForm(self.request, initial=initial_email)
 
         #Actions and titles
         # TODO(garcianavalon) quizas es mejor meterlo en el __init__ del form
+        status.action = 'accountstatus/'
         email.action = 'useremail/'
         password.action = "password/"
         cancel.action = "cancelaccount/"
+        status.description = 'Account Status'
         email.description = ('Change your email')
         password.description = ('Change your password')
         cancel.description = ('Cancel account')
 
-        context['forms'] = [password, email, cancel]
+        context['forms'] = [status, password, email, cancel]
         return context
