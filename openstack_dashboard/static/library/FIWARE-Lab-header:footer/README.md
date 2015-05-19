@@ -1,37 +1,35 @@
-[Guía FIWARE Header & Footer] (https://github.com/ging/horizon/blob/design-header/openstack_dashboard/static/library/FIWARE-Lab-header:footer/README.jpg)
-
-Todos los portales de FIWARE Lab deben usar una cabecera y un pie de página igual, por ello hemos creado una plantilla para que cubra esta necesidad. Está compuesta por los elementos necesarios del framework Bootstrap3, la librería Font awesome, HTML y los css propios de la cabecera y el pié de página.
+[FIWARE Lab Header & Footer guide] (https://github.com/ging/horizon/blob/design-header/openstack_dashboard/static/library/FIWARE-Lab-header:footer/README.jpg)
 
 
+FIWARE Lab portals use a header & footer template. It is composed of the necessary elements of the framework Bootstrap3, the Font Awesome library and HTML and CSS.
 
-La carpeta css contiene los estilos, hay que enlazar los archivos: 
-  - boottrap-frame.css, 
-  - font-awesome.css,  
-  - style.css,
+The folder contains the CSS styles, you have to include the files:
 
-con las siguientes líneas de código dentro de la etiqueta < head >
+- boottrap-frame.css
+- font-awesome.css
+- style.css
+
+
+Inside the < head > tag using the following tags: 
 
   <link href="css/bootstrap-frame.css" rel="stylesheet" media="screen">
   <link href="css/style.css" rel="stylesheet" media="screen">
   <link href="css/font-awesome.css" rel="stylesheet" media="screen">
 
 
-
-En la carpeta fonts tenemos la tipografía corporativa “Neotech” y la fuente de iconos “Font Awesome”. El css necesario se encuentra en style.css
-
+In the fonts folder you will find the corporate font "Neotech" and the source of icons "Font Awesome". (the css is located in style.css)
 
 
-La carpeta img contiene: 
-  - favicon.ico
-  - avatar por defecto de organizaciones, usuarios y aplicaciones.
-  - logo FIWARE y FIWARE Lab
+The img folder contains: 
+- favicon.ico 
+- avatar by default (organizations, users and applications)
+- Logo and FIWARE FIWARE Lab
 
 
+In the “js” folder you will find the file collapse.js (from Bootstrap 3). To link the file you have to write the following lines before closing the < body > tag:
 
-En la carpeta js el archivo collapse.js (procedente de Bootstrap3). Para enlazar el archivo hay que escribir las siguientes líneas antes de cerrar la etiqueta < body >
-
-  <script src="http://code.jquery.com/jquery.js"></script>
-  <script src="js/collapse.js"></script>
+<script src="http://code.jquery.com/jquery.js"></script>
+<script src="js/collapse.js"></script>
 
 
-Por último el código HTML, se encuentra en index.html 
+Finally the HTML code, is located in index.html
