@@ -61,7 +61,7 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
         """ Validate that the name is not already in use."""
         org_name = self.cleaned_data['name']
         try:
-            all_organizations, more = api.keystone.tenant_list(self.request)
+            all_organizations = fiware_api.keystone.project_list(self.request)
             names_in_use = [org.name for org 
                              in all_organizations]
             if org_name in names_in_use:
@@ -75,17 +75,15 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
                               ignore=True)
 
     def handle(self, request, data):
-        #create organization
+        # Create organization
         default_domain = api.keystone.get_default_domain(request)
         try:
-            self.object = api.keystone.tenant_create(
+            self.object = fiware_api.keystone.project_create(
                 request,
                 name=data['name'],
                 description=data['description'],
                 enabled=True,
                 domain=default_domain,
-                # city='',
-                # email='',
                 website='')
                                                      
         except Exception:
@@ -156,21 +154,17 @@ class InfoForm(forms.SelfHandlingForm):
         widget=forms.widgets.Textarea(attrs={'rows':4, 'cols':40}), 
         required=True)
     website = forms.URLField(label=("Website"), required=False)
-    # city = forms.CharField(label=("City"), 
-    #                        max_length=64, 
-    #                        required=False)
     title = 'Information'
 
     def handle(self, request, data):
         try:
-            api.keystone.tenant_update(
+            fiware_api.keystone.project_update(
                 request, 
                 data['orgID'], 
                 name=data['name'], 
                 description=data['description'],
                 website=data['website'])
-                #city=data['city'])
-
+            
             LOG.debug('Organization %s updated', data['orgID'])
             messages.success(request, 
                 ("Organization updated successfully."))
@@ -180,22 +174,6 @@ class InfoForm(forms.SelfHandlingForm):
 
         return shortcuts.redirect(
             'horizon:idm:organizations:detail', data['orgID'])
-
-# class ContactForm(forms.SelfHandlingForm):
-#     orgID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-#     email = forms.EmailField(label=("E-mail"), required=False)
-#     website = forms.URLField(label=("Website"), required=False)
-#     title = 'Contact Information'
-
-#     def handle(self, request, data):
-#         api.keystone.tenant_update(request, 
-#                                 data['orgID'], 
-#                                 email=data['email'], 
-#                                 website=data['website'])
-#         LOG.debug('Organization {0} updated'.format(data['orgID']))
-#         messages.success(request, ("Organization updated successfully."))
-#         response = shortcuts.redirect('horizon:idm:organizations:detail', data['orgID'])
-#         return response
 
 
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
@@ -220,11 +198,11 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
                 output_img.save(settings.MEDIA_ROOT + "/" + img, 'JPEG')
         
                 if img_type == 'small':
-                    api.keystone.tenant_update(request, data['orgID'], img_small=img)
+                    fiware_api.keystone.project_update(request, data['orgID'], img_small=img)
                 elif img_type == 'medium':
-                    api.keystone.tenant_update(request, data['orgID'], img_medium=img)
+                    fiware_api.keystone.project_update(request, data['orgID'], img_medium=img)
                 else:
-                    api.keystone.tenant_update(request, data['orgID'], img_original=img)
+                    fiware_api.keystone.project_update(request, data['orgID'], img_original=img)
 
             LOG.debug('Organization {0} image updated'.format(data['orgID']))
             messages.success(request, ("Organization updated successfully."))

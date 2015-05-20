@@ -19,6 +19,7 @@ from horizon import tabs
 from django.core.cache import cache
 
 from openstack_dashboard import api
+from openstack_dashboard import fiware_api
 from openstack_dashboard.local import local_settings as settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm.organizations \
@@ -39,17 +40,17 @@ class OtherOrganizationsTab(tabs.TableTab):
         organizations = []
         index = self.request.GET.get('index', 0)
         try:
-            organizations_full, self._more = api.keystone.tenant_list(
-                self.request, admin=False)
-            my_organizations, self._more = api.keystone.tenant_list(
-                self.request, user=self.request.user.id, admin=False)
-            organizations_full = idm_utils.filter_default([t for t in
-                                                           organizations_full
+            all_organizations = fiware_api.keystone.project_list(
+                self.request)
+            my_organizations = fiware_api.keystone.project_list(
+                self.request, user=self.request.user.id)
+            all_organizations = idm_utils.filter_default([t for t in
+                                                           all_organizations
                                                            if not t in
                                                            my_organizations])
-            organizations_full = sorted(organizations_full, key=lambda x: x.name.lower())
+            all_organizations = sorted(all_organizations, key=lambda x: x.name.lower())
         
-            organizations = idm_utils.paginate(self, organizations_full,
+            organizations = idm_utils.paginate(self, all_organizations,
                                                index=index, limit=LIMIT,
                                                table_name='other_organizations')
 
@@ -99,8 +100,8 @@ class MemberOrganizationsTab(tabs.TableTab):
     def get_member_organizations_data(self):
         organizations = []
         try:
-            my_organizations, self._more = api.keystone.tenant_list(
-                self.request, user=self.request.user.id, admin=False)
+            my_organizations = fiware_api.keystone.project_list(
+                self.request, user=self.request.user.id)
             owner_organizations = [org.id for org in self.request.organizations]
             organizations = [o for o in my_organizations 
                              if not o.id in owner_organizations]
@@ -113,7 +114,6 @@ class MemberOrganizationsTab(tabs.TableTab):
 
 
         except Exception:
-            self._more = False
             exceptions.handle(self.request,
                               ("Unable to retrieve organization information."))
         return organizations

@@ -72,7 +72,7 @@ class UserRoleApi(idm_workflows.RelationshipApiInterface):
                             role=obj)
 
     def _get_supersetid_name(self, request, superset_id):
-        organization = api.keystone.tenant_get(request, superset_id)
+        organization = fiware_api.keystone.project_get(request, superset_id)
         return organization.name
 
 
