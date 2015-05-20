@@ -7,14 +7,15 @@
     <legend></legend>
     {% include "horizon/common/_form_fields.html" %}
   </fieldset>
+  <div class="btn-group-vertical" role="group">
+    {% if show_community_request %}
+      <button href="#" id="myCustomTrigger" class="btn btn-primary">Request Community Account upgrade</button>
+    {% endif %}
 
-  {% if show_community_request %}
-    <a href="#" id="myCustomTrigger" class="btn btn-primary">Request Community Account upgrade</a>
-  {% endif %}
-
-  {% if show_trial_request %}
-    <a href="#" id="" class="btn btn-default disabled">Request Trial Account upgrade</a>
-  {% endif %}
+    {% if show_trial_request %}
+      <button href="#" id="" class="btn btn-default disabled">Request Trial Account upgrade</button>
+    {% endif %}
+  </div>
 </form>
 
 <script type="text/javascript" src="https://jira.fiware.org/s/4d99dfea096a41baa8a46feda6f85823-T/en_GBek2res/6346/29/1.4.16/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-GB&amp;collectorId=a188b867"></script>
