@@ -1,5 +1,5 @@
 <form accept-charset="UTF-8" action="{{ form.action }}" method="post">{% csrf_token %}
-  Your account is {{ account_type }}.
+  Your account is <b>{{ account_type }}</b>.
   {% if started_at %}
     Since {{ started_at }}
   {% endif %}
