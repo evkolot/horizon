@@ -20,41 +20,32 @@ LOG = logging.getLogger('idm_logger')
 AC_URL = 'https://az.testbed.fi-ware.eu/authzforce/\
         domains/f764202c-fc7a-11e2-8cc3-fa163e3515ad/pap/policySet'
 XACML_TEMPLATE = 'access_control/policy_set.xacml'
-SSL_CERTIFICATE= 'TODO'
 
-def policies_update(roles_permisions):
+def policies_update(application, roles_permisions):
     """Gets all role's permissions and generates a xacml file to
     update the Access Control.
     """
     context = {
         'policy_set_description': 'TODO',
         'roles': roles_permisions,
+        'app': application,
     }
     xml = render_to_string(XACML_TEMPLATE, context)
-    LOG.debug('Created new XACML {0}'.format(xml))
+    LOG.debug('XACML: %s', xml)
 
-def policy_delete(role_id):
-    LOG.debug('Deleting role {0} from AC GE'.format(role_id))
-    return delete(role_id)
-
-def put(xml):
-    
-    # POST the data to the AC GE
     headers = {
         'content-type': 'application/xml'
     }
-    response = requests.put(AC_URL, 
-                            data=xml, 
-                            headers=headers,
-                            cert=SSL_CERTIFICATE)
-    LOG.debug('Response code from the AC GE: {0}'.format(
-                                        response.status_code))
+    response = requests.put(
+        AC_URL, data=xml, headers=headers)
+    LOG.debug('Response code from the AC GE: %s', response.status_code)
+
     return response
 
-def delete(role_id):
+def policy_delete(role_id):
+
     # TODO(garcianavalon) send the id
-    response = requests.delete(AC_URL, 
-                            cert=SSL_CERTIFICATE)
-    LOG.debug('Response code from the AC GE: {0}'.format(
-                                        response.status_code))
+    response = requests.delete(AC_URL)
+
+    LOG.debug('Response code from the AC GE: %s', response.status_code)
     return response
