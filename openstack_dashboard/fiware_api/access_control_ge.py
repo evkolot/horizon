@@ -17,8 +17,8 @@ from django.template.loader import render_to_string
 LOG = logging.getLogger('idm_logger')
 
 # TODO(garcianavalon) extract as conf options
-AC_URL = 'https://az.testbed.fi-ware.eu/authzforce/\
-        domains/f764202c-fc7a-11e2-8cc3-fa163e3515ad/pap/policySet'
+AC_URL = 'http://10.0.64.5/authzforce/\
+        domains/5e022256-6d0f-4eb8-aa9d-77db3d4ad141/pap/policySet'
 XACML_TEMPLATE = 'access_control/policy_set.xacml'
 SSL_CERTIFICATE= 'TODO'
 
