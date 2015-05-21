@@ -12,24 +12,28 @@
 
 import logging
 import requests
+
+from django.conf import settings
 from django.template.loader import render_to_string
 
 LOG = logging.getLogger('idm_logger')
 
-# TODO(garcianavalon) extract as conf options
-AC_URL = 'http://10.0.64.5/authzforce/\
-        domains/5e022256-6d0f-4eb8-aa9d-77db3d4ad141/pap/policySet'
 XACML_TEMPLATE = 'access_control/policy_set.xacml'
 
-def policies_update(application, roles_permisions):
+def policyset_update(app_id, role_permissions):
     """Gets all role's permissions and generates a xacml file to
     update the Access Control.
     """
+    if not settings.ACCESS_CONTROL_URL:
+        LOG.warning('ACCESS_CONTROL_URL setting is not set.')
+        return
+
     context = {
         'policy_set_description': 'TODO',
-        'roles': roles_permisions,
-        'app': application,
+        'role_permissions': role_permissions,
+        'app_id': app_id,
     }
+    
     xml = render_to_string(XACML_TEMPLATE, context)
     LOG.debug('XACML: %s', xml)
 
@@ -37,15 +41,19 @@ def policies_update(application, roles_permisions):
         'content-type': 'application/xml'
     }
     response = requests.put(
-        AC_URL, data=xml, headers=headers)
+        settings.ACCESS_CONTROL_URL, data=xml, headers=headers)
+
     LOG.debug('Response code from the AC GE: %s', response.status_code)
 
     return response
 
 def policy_delete(role_id):
+    if not settings.ACCESS_CONTROL_URL:
+        LOG.warning('ACCESS_CONTROL_URL setting is not set.')
+        return
 
     # TODO(garcianavalon) send the id
-    response = requests.delete(AC_URL)
+    response = requests.delete(settings.ACCESS_CONTROL_URL)
 
     LOG.debug('Response code from the AC GE: %s', response.status_code)
     return response

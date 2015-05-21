@@ -16,15 +16,13 @@ import logging
 
 from django.core import urlresolvers
 
+from horizon import exceptions
+
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import workflows as idm_workflows
 
-# NOTE(garcianavalon) Beware! we are reusing the membership stuff
-# but changing assign roles to users to assign permissions to roles.
-# TODO(garcianavalon) rename al the 'role' stuff from the membership workflow
-# to 'permission' and the 'user' one to 'role'
 INDEX_URL = "horizon:idm:myApplications:index"
 APPLICATION_ROLE_PERMISSION_SLUG = "fiware_roles"
 LOG = logging.getLogger('idm_logger')
@@ -134,6 +132,37 @@ class ManageApplicationRoles(idm_workflows.RelationshipWorkflow):
         # Overwrite to allow passing kwargs
         return urlresolvers.reverse(self.success_url,
                     kwargs={'application_id':self.context['superset_id']})
+
+    def handle(self, request, data):
+        success = super(ManageApplicationRoles, self).handle(request, data)
+        app_id = data['superset_id']
+        try:
+            role_permissions = {}
+            public_roles = [
+                role for role in fiware_api.keystone.role_list(
+                    request, application=app_id)
+                if role.is_internal == False
+            ]
+
+            for role in public_roles:
+                public_permissions = [
+                    perm for perm in fiware_api.keystone.permission_list(
+                        request, role=role.id)
+                    if perm.is_internal == False
+                ]
+                if public_permissions:
+                    role_permissions[role.id] = public_permissions
+
+            fiware_api.access_control_ge.policyset_update(
+                app_id=app_id, 
+                role_permissions=role_permissions)
+
+        except Exception:
+            exceptions.handle(
+                request,
+                'Failed to update policies in Access Control GE')
+
+        return success
 
 
 

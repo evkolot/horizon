@@ -1,5 +1,5 @@
 <Rule RuleId="{{ permission.id }}" Effect="Permit">
-  <Description>{{ permission.description }}</Description>
+  <Description>{{ permission.name }}</Description>
   <Target>
     <AnyOf>
       <AllOf>
@@ -25,7 +25,7 @@
   <Condition>
     <Apply FunctionId="urn:oasis:names:tc:xacml:3.0:function:any-of">
       <Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal" />
-      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">{{ role.id }}</AttributeValue>
+      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">{{ role_id }}</AttributeValue>
       <AttributeDesignator AttributeId="urn:oasis:names:tc:xacml:2.0:subject:role"
           DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false"
           Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" />

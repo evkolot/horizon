@@ -164,7 +164,7 @@ class CreateRoleForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            LOG.info('Creating role with name "%s"' % data['name'])
+            LOG.debug('Creating role with name "%s"' % data['name'])
             new_role = fiware_api.keystone.role_create(
                 request, name=data['name'], application=data['application_id'])
             messages.success(request,
@@ -183,7 +183,7 @@ class EditRoleForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            LOG.info('Updating role with id {0}'.format(data['role_id']))
+            LOG.debug('Updating role with id {0}'.format(data['role_id']))
             role = fiware_api.keystone.role_update(request,
                                             role=data['role_id'],
                                             name=data['name'])
@@ -202,7 +202,7 @@ class DeleteRoleForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            LOG.info('Deleting role with id {0}'.format(data['role_id']))
+            LOG.debug('Deleting role with id {0}'.format(data['role_id']))
             fiware_api.keystone.role_delete(request,
                                             role_id=data['role_id'])
             messages.success(request,
@@ -224,7 +224,7 @@ class CreatePermissionForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            LOG.info('Creating permission with name "%s"' % data['name'])
+            LOG.debug('Creating permission with name "%s"' % data['name'])
             new_permission = fiware_api.keystone.permission_create(
                 request, name=data['name'], application=data['application_id'])
             # TODO(garcianavalon) add support for extra arguments in permissions
@@ -252,7 +252,7 @@ class CancelForm(forms.SelfHandlingForm):
             os.remove(AVATAR_ORIGINAL + application.id)
             LOG.debug('Avatar deleted from server')    
         fiware_api.keystone.application_delete(request, application.id)
-        LOG.info('Application {0} deleted'.format(application.id))
+        LOG.debug('Application %s deleted', application.id)
         messages.success(request, ("Application deleted successfully."))
         response = shortcuts.redirect('horizon:idm:myApplications:index')
         return response
