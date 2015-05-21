@@ -33,7 +33,7 @@ def policyset_update(app_id, role_permissions):
         'role_permissions': role_permissions,
         'app_id': app_id,
     }
-    
+
     xml = render_to_string(XACML_TEMPLATE, context)
     LOG.debug('XACML: %s', xml)
 
@@ -45,15 +45,4 @@ def policyset_update(app_id, role_permissions):
 
     LOG.debug('Response code from the AC GE: %s', response.status_code)
 
-    return response
-
-def policy_delete(role_id):
-    if not settings.ACCESS_CONTROL_URL:
-        LOG.warning('ACCESS_CONTROL_URL setting is not set.')
-        return
-
-    # TODO(garcianavalon) send the id
-    response = requests.delete(settings.ACCESS_CONTROL_URL)
-
-    LOG.debug('Response code from the AC GE: %s', response.status_code)
     return response
