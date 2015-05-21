@@ -36,22 +36,44 @@ LOG = logging.getLogger('idm_logger')
 # and other objects
 DEFAULT_OBJECTS_CACHE_TIME = 60 * 15
 
-def internal_keystoneclient():
-    idm_user_session = _password_session()
-    keystone = client.Client(session=idm_user_session)
-    return keystone
+def internal_keystoneclient(request):
+    """Creates a connection with keystone using the IdM account.
 
-def _password_session():
-    conf_params = getattr(settings, 'IDM_USER_CREDENTIALS')
-    conf_params['auth_url'] = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
+    The client is cached so that subsequent API calls during the same
+    request/response cycle don't have to be re-authenticated.
+    """
+    cache_attr = "_internal_keystoneclient"
+    keystoneclient = cache.get(cache_attr, None)
+    if not keystoneclient:
+        idm_user_session = _password_session(request)
+        keystoneclient = client.Client(session=idm_user_session)
+        cache.set(cache_attr, keystoneclient, DEFAULT_OBJECTS_CACHE_TIME)
+    return keystoneclient
+
+def _password_session(request):
     # TODO(garcianavalon) better domain usage
     domain = 'default'
-    auth = v3.Password(auth_url=conf_params['auth_url'],
-                       username=conf_params['username'],
-                       password=conf_params['password'],
-                       project_name=conf_params['project'],
-                       user_domain_id=domain,
-                       project_domain_id=domain)
+    endpoint = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
+    # insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
+    # cacert = getattr(settings, 'OPENSTACK_SSL_CACERT', None)
+    credentials = getattr(settings, 'IDM_USER_CREDENTIALS')
+
+    LOG.debug(
+        ('Creating a new internal keystoneclient '
+         'connection to %s.'),
+        endpoint)
+    
+    auth = v3.Password(
+        username=credentials['username'],
+        password=credentials['password'],
+        project_name=credentials['project'],
+        user_domain_id=domain,
+        project_domain_id=domain,
+        #insecure=insecure,
+        #cacert=cacert,
+        auth_url=endpoint)
+        #debug=settings.DEBUG)
+
     return session.Session(auth=auth)
 
 # USER REGISTRATION
@@ -71,13 +93,13 @@ def _find_user(keystone, email=None, username=None):
 def get_trial_role_assignments(request, domain='default', use_idm_account=True):
     trial_role = get_trial_role(request, use_idm_account=True)
     if trial_role:
-        manager = internal_keystoneclient().role_assignments
+        manager = internal_keystoneclient(request).role_assignments
         return manager.list(role=trial_role.id, domain=domain)
     else:
         return []
 
-def register_user(name, username, password):
-    keystone = internal_keystoneclient()
+def register_user(request, name, username, password):
+    keystone = internal_keystoneclient(request)
     #domain_name = getattr(settings, 'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN', 'Default')
     #default_domain = keystone.domains.find(name=domain_name)
     # TODO(garcianavalon) better domain usage
@@ -90,49 +112,49 @@ def register_user(name, username, password):
         username=username)
     return new_user
 
-def activate_user(user, activation_key):
-    keystone = internal_keystoneclient()
+def activate_user(request, user, activation_key):
+    keystone = internal_keystoneclient(request)
     user = keystone.user_registration.users.activate_user(user, activation_key)
     return user
 
-def change_password(user_email, new_password):
-    keystone = internal_keystoneclient()
+def change_password(request, user_email, new_password):
+    keystone = internal_keystoneclient(request)
     user = _find_user(keystone, email=user_email)
     user = keystone.users.update(user, password=new_password, enabled=True)
     return user
 
-def check_username(username):
-    keystone = internal_keystoneclient()
+def check_username(request, username):
+    keystone = internal_keystoneclient(request)
     user = _find_user(keystone, username=username)
     return user
 
-def check_email(email):
-    keystone = internal_keystoneclient()
+def check_email(request, email):
+    keystone = internal_keystoneclient(request)
     user = _find_user(keystone, email=email)
     return user
 
-def get_reset_token(user):
-    keystone = internal_keystoneclient()
+def get_reset_token(request, user):
+    keystone = internal_keystoneclient(request)
     token = keystone.user_registration.token.get_reset_token(user)
     return token
 
-def new_activation_key(user):
-    keystone = internal_keystoneclient()
+def new_activation_key(request, user):
+    keystone = internal_keystoneclient(request)
     activation_key = keystone.user_registration.activation_key.new_activation_key(user)
     return activation_key
 
-def reset_password(user, token, new_password):
-    keystone = internal_keystoneclient()
+def reset_password(request, user, token, new_password):
+    keystone = internal_keystoneclient(request)
 
     user = keystone.user_registration.users.reset_password(user, token, new_password)
     return user
 
 def project_delete(request, project):
-    keystone = internal_keystoneclient()
+    keystone = internal_keystoneclient(request)
     keystone.projects.delete(project)
 
 def user_delete(request, user):
-    keystone = internal_keystoneclient()
+    keystone = internal_keystoneclient(request)
     keystone.users.delete(user)
 
 # validate token
@@ -186,7 +208,7 @@ def role_delete(request, role_id):
 def add_role_to_user(request, role, user, organization, 
                      application, use_idm_account=False):
     if use_idm_account:
-        manager = internal_keystoneclient().fiware_roles.roles
+        manager = internal_keystoneclient(request).fiware_roles.roles
     else:
         manager = api.keystone.keystoneclient(
             request, admin=True).fiware_roles.roles
@@ -195,7 +217,7 @@ def add_role_to_user(request, role, user, organization,
 def remove_role_from_user(request, role, user, organization, application,
                           use_idm_account=False):
     if use_idm_account:
-        manager = internal_keystoneclient().fiware_roles.roles
+        manager = internal_keystoneclient(request).fiware_roles.roles
     else:
         manager = api.keystone.keystoneclient(
             request, admin=True).fiware_roles.roles
@@ -212,7 +234,7 @@ def user_role_assignments(request, user=None, organization=None,
 def add_role_to_organization(request, role, organization, 
                              application, use_idm_account=False):
     if use_idm_account:
-        manager = internal_keystoneclient().fiware_roles.roles
+        manager = internal_keystoneclient(request).fiware_roles.roles
     else:
         manager = api.keystone.keystoneclient(
             request, admin=True).fiware_roles.roles
@@ -331,7 +353,7 @@ def application_list(request, user=None):
 
 def application_get(request, application_id, use_idm_account=False):
     if use_idm_account:
-        manager = internal_keystoneclient().oauth2.consumers
+        manager = internal_keystoneclient(request).oauth2.consumers
     else:
         manager = api.keystone.keystoneclient(request, admin=True).oauth2.consumers
     return manager.get(application_id)
@@ -350,7 +372,7 @@ def application_update(request, consumer_id, name=None, description=None, client
 
 def application_delete(request, application_id, use_idm_account=False):
     if use_idm_account:
-        manager = internal_keystoneclient()
+        manager = internal_keystoneclient(request)
     else:
         manager = api.keystone.keystoneclient(request, admin=True)
 
@@ -360,7 +382,7 @@ def application_delete(request, application_id, use_idm_account=False):
 # OAUTH2 FLOW
 def get_user_access_tokens(request, user):
     """Gets all authorized access_tokens for the user"""
-    manager = internal_keystoneclient().oauth2.access_tokens
+    manager = internal_keystoneclient(request).oauth2.access_tokens
 
     return manager.list_for_user(user=user)
 
@@ -428,7 +450,7 @@ def obtain_access_token(request, consumer_id, consumer_secret, code,
     # method intented to be use by the client/consumer. For the IdM is much more 
     # convenient to simply forward the request, see forward_access_token_request method
     LOG.debug('Exchanging code: {0} by application: {1}'.format(code, consumer_id))
-    manager = internal_keystoneclient().oauth2.access_tokens
+    manager = internal_keystoneclient(request).oauth2.access_tokens
     access_token = manager.create(consumer_id=consumer_id,
                                   consumer_secret=consumer_secret,
                                   authorization_code=code,
@@ -467,14 +489,30 @@ def forward_validate_token_request(request):
     response = requests.get(url)
     return response
 
-# STUFF
+# CALLS FORBIDDEN FOR THE USER THAT NEED TO USE THE IDM ACCOUNT
+# USERS
+def user_get(request, user_id):
+    manager = internal_keystoneclient(request).users
+    return manager.get(user_id)
+
+def user_list(request, project=None, domain=None, group=None, filters=None):
+    manager = internal_keystoneclient(request).users
+
+    kwargs = {
+        "project": project,
+        "domain": domain,
+        "group": group
+    }
+    if filters is not None:
+        kwargs.update(filters)
+    return manager.list(**kwargs)
+
 def user_update(request, user, use_idm_account=False, **data):
     if use_idm_account:
-        manager = internal_keystoneclient().users
+        manager = internal_keystoneclient(request).users
     else:
         manager = api.keystone.keystoneclient(
             request, admin=True).users
-    error = None
 
     if not data['password']:
         data.pop('password')
@@ -485,37 +523,46 @@ def user_update(request, user, use_idm_account=False, **data):
             "Password changed. Please log in again to continue."
         )
 
-def user_get(request, user_id, admin=True, use_idm_account=False):
-    if use_idm_account:
-        manager = internal_keystoneclient().users
-    else:
-        manager = api.keystone.keystoneclient(
-            request, admin=True).users
-    return manager.get(user_id)
+# PROJECTS
+def project_get(request, project_id):
+    manager = internal_keystoneclient(request).projects
+    return manager.get(project_id)
 
-def add_domain_user_role(request, user, role, domain, use_idm_account=False):
-    if use_idm_account:
-        manager = internal_keystoneclient().roles
-    else:
-        manager = api.keystone.keystoneclient(
-            request, admin=True).roles
+def project_list(request, domain=None, user=None, filters=None):
+    manager = internal_keystoneclient(request).projects
+    kwargs = {
+        "domain": domain,
+        "user": user
+    }
+    if filters is not None:
+        kwargs.update(filters)
+    return manager.list(**kwargs)
+
+def project_create(request, name, description=None, enabled=None,
+                   domain=None, **kwargs):
+    manager = internal_keystoneclient(request).projects
+    return manager.create(name, domain,
+                          description=description,
+                          enabled=enabled, **kwargs)
+
+def project_update(request, project, name=None, description=None,
+                  enabled=None, domain=None, **kwargs):
+    manager = internal_keystoneclient(request).projects
+    return manager.update(project, name=name, description=description,
+                          enabled=enabled, domain=domain, **kwargs)
+
+# ROLES
+def add_domain_user_role(request, user, role, domain):
+    manager = internal_keystoneclient(request).roles
     return manager.grant(role, user=user, domain=domain)
 
-def remove_domain_user_role(request, user, role, domain, use_idm_account=False):
-    if use_idm_account:
-        manager = internal_keystoneclient().roles
-    else:
-        manager = api.keystone.keystoneclient(
-            request, admin=True).roles
+def remove_domain_user_role(request, user, role, domain):
+    manager = internal_keystoneclient(request).roles
     return manager.revoke(role, user=user, domain=domain)
 
 def role_assignments_list(request, project=None, user=None, role=None,
-                          group=None, domain=None, effective=False, use_idm_account=False):
-    if use_idm_account:
-        manager = internal_keystoneclient().role_assignments
-    else:
-        manager = api.keystone.keystoneclient(
-            request, admin=True).role_assignments
+                          group=None, domain=None, effective=False):
+    manager = internal_keystoneclient(request).role_assignments
     return manager.list(project=project, user=user, role=role, group=group,
                         domain=domain, effective=effective)
 
@@ -523,7 +570,7 @@ def role_assignments_list(request, project=None, user=None, role=None,
 # REGIONS AND ENDPOINT GROUPS
 def region_list(request, use_idm_account=False):
     if use_idm_account:
-        manager = internal_keystoneclient().regions
+        manager = internal_keystoneclient(request).regions
     else:
         manager = api.keystone.keystoneclient(
             request, admin=True).regions
@@ -531,7 +578,7 @@ def region_list(request, use_idm_account=False):
 
 def endpoint_group_list(request, use_idm_account=False):
     if use_idm_account:
-        manager = internal_keystoneclient().endpoint_groups
+        manager = internal_keystoneclient(request).endpoint_groups
     else:
         manager = api.keystone.keystoneclient(
             request, admin=True).endpoint_groups
@@ -540,7 +587,7 @@ def endpoint_group_list(request, use_idm_account=False):
 def add_endpoint_group_to_project(request, project, endpoint_group, 
                                   use_idm_account=False):
     if use_idm_account:
-        manager = internal_keystoneclient().endpoint_groups
+        manager = internal_keystoneclient(request).endpoint_groups
     else:
         manager = api.keystone.keystoneclient(
             request, admin=True).endpoint_groups
@@ -551,7 +598,7 @@ def add_endpoint_group_to_project(request, project, endpoint_group,
 def delete_endpoint_group_from_project(request, project, endpoint_group, 
                                        use_idm_account=False):
     if use_idm_account:
-        manager = internal_keystoneclient().endpoint_groups
+        manager = internal_keystoneclient(request).endpoint_groups
     else:
         manager = api.keystone.keystoneclient(
             request, admin=True).endpoint_groups
@@ -562,7 +609,7 @@ def delete_endpoint_group_from_project(request, project, endpoint_group,
 def check_endpoint_group_in_project(request, project, endpoint_group, 
                                     use_idm_account=False):
     if use_idm_account:
-        manager = internal_keystoneclient().endpoint_groups
+        manager = internal_keystoneclient(request).endpoint_groups
     else:
         manager = api.keystone.keystoneclient(
             request, admin=True).endpoint_groups
@@ -573,7 +620,7 @@ def check_endpoint_group_in_project(request, project, endpoint_group,
 # NOTE(garcianavalon) this is documented but not suported in keystone...
 # def list_endpoint_groups_for_project(request, project, use_idm_account=False):
 #     if use_idm_account:
-#         manager = internal_keystoneclient().endpoint_groups
+#         manager = internal_keystoneclient(request).endpoint_groups
 #     else:
 #         manager = api.keystone.keystoneclient(
 #             request, admin=True).endpoint_groups
@@ -600,7 +647,7 @@ def get_owner_role(request, use_idm_account=False):
         # TODO(garcianavalon) use filters to filter by name
         try:
             if use_idm_account:
-                manager = internal_keystoneclient()
+                manager = internal_keystoneclient(request)
             else:
                 manager = api.keystone.keystoneclient(request, admin=True)
             roles = manager.roles.list()
@@ -620,12 +667,12 @@ def get_member_role(request, use_idm_account=False):
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.
     """
-    member = 'member'
+    member = getattr(local_settings, "OPENSTACK_KEYSTONE_DEFAULT_ROLE", None)
     if member and cache.get('member_role') is None:
         # TODO(garcianavalon) use filters to filter by name
         try:
             if use_idm_account:
-                manager = internal_keystoneclient()
+                manager = internal_keystoneclient(request)
             else:
                 manager = api.keystone.keystoneclient(request, admin=True)
             roles = manager.roles.list()
@@ -650,7 +697,7 @@ def get_trial_role(request, use_idm_account=False):
         # TODO(garcianavalon) use filters to filter by name
         try:
             if use_idm_account:
-                manager = internal_keystoneclient()
+                manager = internal_keystoneclient(request)
             else:
                 manager = api.keystone.keystoneclient(request, admin=True)
             roles = manager.roles.list()
@@ -675,7 +722,7 @@ def get_basic_role(request, use_idm_account=False):
         # TODO(garcianavalon) use filters to filter by name
         try:
             if use_idm_account:
-                manager = internal_keystoneclient()
+                manager = internal_keystoneclient(request)
             else:
                 manager = api.keystone.keystoneclient(request, admin=True)
             roles = manager.roles.list()
@@ -700,7 +747,7 @@ def get_community_role(request, use_idm_account=False):
         # TODO(garcianavalon) use filters to filter by name
         try:
             if use_idm_account:
-                manager = internal_keystoneclient()
+                manager = internal_keystoneclient(request)
             else:
                 manager = api.keystone.keystoneclient(request, admin=True)
             roles = manager.roles.list()
@@ -745,7 +792,7 @@ def get_purchaser_role(request, use_idm_account=False):
     if purchaser and cache.get('purchaser_role') is None:
         try:
             if use_idm_account:
-                manager = internal_keystoneclient()
+                manager = internal_keystoneclient(request)
             else:
                 manager = api.keystone.keystoneclient(request, admin=True)
             roles = manager.fiware_roles.roles.list()
@@ -769,7 +816,7 @@ def get_default_cloud_role(request, cloud_app_id, use_idm_account=False):
     if default_cloud and cache.get('default_cloud_role') is None:
         try:
             if use_idm_account:
-                manager = internal_keystoneclient()
+                manager = internal_keystoneclient(request)
             else:
                 manager = api.keystone.keystoneclient(request, admin=True)
             roles = manager.fiware_roles.roles.list(
@@ -807,7 +854,7 @@ def get_fiware_cloud_app(request, use_idm_account=False):
     if cloud_app and cache.get('cloud_app') is None:
         try:
             if use_idm_account:
-                manager = internal_keystoneclient()
+                manager = internal_keystoneclient(request)
             else:
                 manager = api.keystone.keystoneclient(request, admin=True)
             apps = manager.oauth2.consumers.list()
@@ -825,7 +872,7 @@ def get_fiware_default_app(request, app_name, use_idm_account=False):
     if cache.get(app_name) is None:
         try:
             if use_idm_account:
-                manager = internal_keystoneclient()
+                manager = internal_keystoneclient(request)
             else:
                 manager = api.keystone.keystoneclient(request, admin=True)
             apps = manager.oauth2.consumers.list()

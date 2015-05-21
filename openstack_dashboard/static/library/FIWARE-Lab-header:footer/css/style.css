@@ -340,10 +340,14 @@ ul.navbar-nav > li {
 }
 #profile_editor_switcher {
   margin-top: 9px;
+  font-size: 12px;
 }
 #profile_editor_switcher a img {
   width: 24px;
   margin-top: -1px;
+  -moz-border-radius: (2px);
+  -webkit-border-radius: (2px);
+  border-radius: (2px);
 }
 
 @media (min-width: 768px){
@@ -455,16 +459,15 @@ footer.footer-main {
   height: 50px;
   font-size: 12px;
   border-top: 1px solid rgb(72, 185, 201);
-  padding-top: 1px;
   left: 0;
   right: 0;
 }
 .footer-main .container-fluid{
-  border-top: 1px solid #193B6B;
-}
-.footer-main .footer-content{
   border-top: 1px solid #F2E826;
-}      
+  border-bottom: 1px solid #193B6B;
+  height: 0px;
+}
+     
 .footer-main .cred{
   padding-top: 12px;
   padding-bottom: 15px;

@@ -142,7 +142,7 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
     """FIWARE roles and user logic"""
 
     def _list_all_owners(self, request, superset_id):
-        all_users = api.keystone.user_list(request, filters={'enabled':True})
+        all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
                 idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
@@ -175,7 +175,7 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
                                 request, application=superset_id)
                             if a.role_id in allowed_ids]
 
-        all_users = api.keystone.user_list(request, filters={'enabled':True})
+        all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
 
         for assignment in role_assignments:
             user = next((user for user in all_users
@@ -198,7 +198,7 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
 
 
     def _add_object_to_owner(self, request, superset, owner, obj):
-        default_org = api.keystone.user_get(request, owner).default_project_id
+        default_org = fiware_api.keystone.user_get(request, owner).default_project_id
         fiware_api.keystone.add_role_to_user(request,
                                              application=superset,
                                              user=owner,
@@ -207,7 +207,7 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
 
 
     def _remove_object_from_owner(self, request, superset, owner, obj):
-        default_org = api.keystone.user_get(request, owner).default_project_id
+        default_org = fiware_api.keystone.user_get(request, owner).default_project_id
         fiware_api.keystone.remove_role_from_user(request,
                                                   application=superset,
                                                   user=owner,
@@ -263,7 +263,7 @@ class AuthorizedOrganizationsApi(idm_workflows.RelationshipApiInterface):
     """FIWARE roles and organization logic"""
 
     def _list_all_owners(self, request, superset_id):
-        all_organizations, _more = api.keystone.tenant_list(request)
+        all_organizations = fiware_api.keystone.project_list(request)
         return [
             (org.id, idm_utils.get_avatar(org, 'img_small', 
                 idm_utils.DEFAULT_ORG_SMALL_AVATAR) + '$' + org.name) 

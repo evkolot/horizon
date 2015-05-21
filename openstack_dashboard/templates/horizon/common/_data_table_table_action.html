@@ -12,10 +12,10 @@
     </span>
   </button>
 {% else %}
-  <a href='{{ action.get_link_url }}' title='{{ action.verbose_name }}' {{ action.attr_string|safe }}>
+  <button href='{{ action.get_link_url }}' title='{{ action.verbose_name }}' {{ action.attr_string|safe }}>
     {% if action.icon != None %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}
     <span>
       {{ action.verbose_name }}
     </span>
-  </a>
+  </button>
 {% endif %}

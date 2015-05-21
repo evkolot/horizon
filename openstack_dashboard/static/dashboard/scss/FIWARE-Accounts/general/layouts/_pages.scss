@@ -136,6 +136,11 @@ ul#perform_filter_available_update_owners_users{
   }
 }
 
+.panel-heading{
+  .btn-group{
+    float: right;
+  }
+}
 
 .panel.members,
 .panel.applications,
@@ -153,13 +158,6 @@ ul#perform_filter_available_update_owners_users{
       }
     }
   }
-}
-
-
-
-#avatar-update{
-  @include border-top-radius ($border-radius-base);
-  @include border-bottom-radius ($border-radius-base);
 }
 
 #edit{

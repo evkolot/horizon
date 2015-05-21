@@ -34,7 +34,7 @@ from openstack_dashboard.dashboards.idm \
 LOG = logging.getLogger('idm_logger')
 
 class UserAccountsLogicMixin():
-    use_idm_account = False
+    use_idm_account = True
 
     def _max_trial_users_reached(self, request):
         trial_users = len(
@@ -46,8 +46,7 @@ class UserAccountsLogicMixin():
         activate_cloud = role_id != fiware_api.keystone.get_basic_role(
             request, use_idm_account=self.use_idm_account).id
         
-        user = fiware_api.keystone.user_get(request, user_id,
-            use_idm_account=self.use_idm_account)
+        user = fiware_api.keystone.user_get(request, user_id)
 
         # clean previous status
         self._clean_roles(request, user_id)
@@ -55,8 +54,7 @@ class UserAccountsLogicMixin():
 
         # grant the selected role
         fiware_api.keystone.add_domain_user_role(request,
-            user=user_id, role=role_id, domain='default',
-            use_idm_account=self.use_idm_account)
+            user=user_id, role=role_id, domain='default')
         date = str(datetime.date.today())
         if (role_id == fiware_api.keystone.get_trial_role(request, 
             use_idm_account=self.use_idm_account).id):
@@ -98,7 +96,7 @@ class UserAccountsLogicMixin():
     def _clean_roles(self, request, user_id):
         # TODO(garcianavalon) find a better solution to this
         user_roles = fiware_api.keystone.role_assignments_list(request, 
-            user=user_id, domain='default', use_idm_account=self.use_idm_account)
+            user=user_id, domain='default')
         account_roles = [
             fiware_api.keystone.get_basic_role(None,
                 use_idm_account=True).id,
@@ -111,8 +109,7 @@ class UserAccountsLogicMixin():
             if a.role['id'] in account_roles), None)
         if current_account:
             fiware_api.keystone.remove_domain_user_role(request,
-                user=user_id, role=current_account, domain='default',
-                use_idm_account=self.use_idm_account)
+                user=user_id, role=current_account, domain='default')
 
     def _activate_cloud(self, request, user_id, cloud_project_id):
         # grant purchaser in cloud app to cloud org
@@ -307,7 +304,7 @@ class FindUserByEmailForm(forms.SelfHandlingForm):
     def clean_email(self):
         try:
             email = self.cleaned_data['email']
-            user = api.keystone.user_list(self.request,
+            user = fiware_api.keystone.user_list(self.request,
                 filters={'name':email})
 
             if not user:

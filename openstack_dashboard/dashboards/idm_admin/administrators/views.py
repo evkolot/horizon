@@ -46,7 +46,7 @@ class DetailApplicationView(tables.MultiTableView):
         try:
             # NOTE(garcianavalon) Get all the users' ids that belong to
             # the application (they have one or more roles)
-            all_users = api.keystone.user_list(self.request,
+            all_users = fiware_api.keystone.user_list(self.request,
                                                filters={'enabled':True})
             role_assignments = fiware_api.keystone.user_role_assignments(
                 self.request,

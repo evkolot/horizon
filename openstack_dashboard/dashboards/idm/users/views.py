@@ -16,6 +16,7 @@ import logging
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 
 from horizon import exceptions
 from horizon import forms
@@ -45,7 +46,7 @@ class DetailUserView(tables.MultiTableView):
     def dispatch(self, request, *args, **kwargs):
         user = kwargs['user_id']
         try:
-            api.keystone.user_get(request, user)
+            fiware_api.keystone.user_get(request, user)
         except Exception:
             redirect = reverse("horizon:idm:home:index")
             exceptions.handle(self.request, 
@@ -61,10 +62,9 @@ class DetailUserView(tables.MultiTableView):
 
         #domain_context = self.request.session.get('domain_context', None)
         try:
-            organizations, self._more = api.keystone.tenant_list(
+            organizations = fiware_api.keystone.project_list(
                 self.request,
-                user=user_id,
-                admin=False)
+                user=user_id)
 
             organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
             organizations = idm_utils.paginate(self, organizations,
@@ -111,7 +111,7 @@ class DetailUserView(tables.MultiTableView):
     def get_context_data(self, **kwargs):
         context = super(DetailUserView, self).get_context_data(**kwargs)
         user_id = self.kwargs['user_id']
-        user = api.keystone.user_get(self.request, user_id, admin=True)
+        user = fiware_api.keystone.user_get(self.request, user_id)
         context['user'] = user
         if hasattr(user, 'img_original'):
             image = getattr(user, 'img_original')
@@ -132,6 +132,17 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
         user_forms.AvatarForm,
         user_forms.CancelForm
     ]
+
+    def _can_edit(self):
+        # Allowed if its the same user
+        return (self.request.user.id == self.kwargs['user_id']
+            and self.request.organization.id == self.request.user.default_project_id)
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_edit():
+            return super(BaseUsersMultiFormView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
     
     def get_endpoint(self, form_class):
         """Override to allow runtime endpoint declaration"""
@@ -147,7 +158,7 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
 
     def get_object(self):
         try:
-            return api.keystone.user_get(self.request, 
+            return fiware_api.keystone.user_get(self.request, 
                                          self.kwargs['user_id'])
         except Exception:
             redirect = reverse("horizon:idm:home:index")

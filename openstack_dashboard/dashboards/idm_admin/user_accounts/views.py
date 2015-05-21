@@ -14,6 +14,7 @@ import logging
 import json
 
 from django import http
+from django.conf import settings
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
@@ -53,14 +54,17 @@ class UpdateAccountView(forms.ModalFormView):
 
     def get_context_data(self, **kwargs):
         context = super(UpdateAccountView, self).get_context_data(**kwargs)
-        context['user'] = api.keystone.user_get(self.request, 
+        context['user'] = fiware_api.keystone.user_get(self.request, 
             self.kwargs['user_id'])
+
+        context['allowed_regions'] = json.dumps(
+            getattr(settings, 'FIWARE_ALLOWED_REGIONS', None))
         return context
 
     def get_initial(self):
         initial = super(UpdateAccountView, self).get_initial()
         user_id = self.kwargs['user_id']
-        user_roles = api.keystone.role_assignments_list(self.request, 
+        user_roles = fiware_api.keystone.role_assignments_list(self.request, 
             user=user_id, domain='default')
         # TODO(garcianavalon) find a better solution to this
         account_roles = [

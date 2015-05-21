@@ -29,7 +29,7 @@ class BasicCancelForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            user = api.keystone.user_get(request, request.user.id)
+            user = fiware_api.keystone.user_get(request, request.user.id)
             delete_orgs = self._get_orgs_to_delete(request, user)
             delete_apps = self._get_apps_to_delete(request, user)
 
