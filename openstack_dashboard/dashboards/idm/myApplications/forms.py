@@ -28,7 +28,6 @@ from horizon.utils import functions as utils
 from openstack_dashboard import fiware_api
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.idm import forms as idm_forms
-from openstack_dashboard.local import local_settings
 
 
 LOG = logging.getLogger('idm_logger')
@@ -226,10 +225,11 @@ class CreatePermissionForm(forms.SelfHandlingForm):
         try:
             LOG.debug('Creating permission with name "%s"' % data['name'])
             new_permission = fiware_api.keystone.permission_create(
-                request, name=data['name'], application=data['application_id'])
-            # TODO(garcianavalon) add support for extra arguments in permissions
-                                            # resource=data['resource'],
-                                            # action=data['action'])
+                request,
+                name=data['name'],
+                application=data['application_id'],
+                resource=data['resource'],
+                action=data['action'])
 
             messages.success(request,
                              ('Permission "%s" was successfully created.')
