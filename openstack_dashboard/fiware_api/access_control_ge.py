@@ -28,6 +28,10 @@ def policyset_update(app_id, role_permissions):
         LOG.warning('ACCESS_CONTROL_URL setting is not set.')
         return
 
+    if not settings.ACCESS_CONTROL_MAGIC_KEY:
+        LOG.warning('ACCESS_CONTROL_MAGIC_KEY setting is not set.')
+        return 
+
     context = {
         'policy_set_description': 'TODO',
         'role_permissions': role_permissions,
@@ -38,7 +42,8 @@ def policyset_update(app_id, role_permissions):
     LOG.debug('XACML: %s', xml)
 
     headers = {
-        'content-type': 'application/xml'
+        'content-type': 'application/xml',
+        'X-Auth-Token': settings.ACCESS_CONTROL_MAGIC_KEY
     }
     response = requests.put(
         settings.ACCESS_CONTROL_URL, data=xml, headers=headers)
