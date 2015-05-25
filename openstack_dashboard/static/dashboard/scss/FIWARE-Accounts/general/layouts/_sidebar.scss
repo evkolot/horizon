@@ -118,6 +118,10 @@
             }
           }
         }
+        &:focus,
+        i{
+          outline: none;
+        }
       }
       h4.active{
         span,

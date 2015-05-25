@@ -71,6 +71,8 @@ textarea {
   .avatar {
     float: left; 
     margin-right: 15px;
+    min-width: 36px;
+    min-height: 36px;
     img{   
       margin-left: 0 !important;
       width: 36px;   

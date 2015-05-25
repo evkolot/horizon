@@ -12,9 +12,11 @@ The folder contains the CSS styles, you have to include the files:
 
 Inside the < head > tag using the following tags: 
 
-  <link href="css/bootstrap-frame.css" rel="stylesheet" media="screen">
-  <link href="css/style.css" rel="stylesheet" media="screen">
-  <link href="css/font-awesome.css" rel="stylesheet" media="screen">
+  < link href="css/bootstrap-frame.css" rel="stylesheet" media="screen" >
+
+  < link href="css/style.css" rel="stylesheet" media="screen" >
+
+  < link href="css/font-awesome.css" rel="stylesheet" media="screen" >
 
 
 In the fonts folder you will find the corporate font "Neotech" and the source of icons "Font Awesome". (the css is located in style.css)
@@ -28,8 +30,8 @@ The img folder contains:
 
 In the “js” folder you will find the file collapse.js (from Bootstrap 3). To link the file you have to write the following lines before closing the < body > tag:
 
-<script src="http://code.jquery.com/jquery.js"></script>
-<script src="js/collapse.js"></script>
+< script src="http://code.jquery.com/jquery.js">< /script >
+< script src="js/collapse.js">< /script >
 
 
 Finally the HTML code, is located in index.html
