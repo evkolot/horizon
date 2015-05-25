@@ -1,16 +1,18 @@
-<Policy PolicyId="{{role.id}}" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:permit-overrides">
-    <Description>{{ role.description }}</Description>
-    <Target>
-      <Subjects>
-        <Subject>
-          <SubjectMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-            <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">{{role.id}}</AttributeValue>
-            <SubjectAttributeDesignator DataType="http://www.w3.org/2001/XMLSchema#string" AttributeId="urn:oasis:names:tc:xacml:2.0:subject:role" MustBePresent="true"/>
-          </SubjectMatch>
-        </Subject>
-      </Subjects>
-    </Target>
-    {% for rule in role.permissions %}
-      {% include 'access_control/rule.xacml' %}
-    {% endfor %}
-  </Policy>
+<Policy PolicyId="{{role.id}}" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+  <Description>Role {{ role_id }} from application {{ app_id }}</Description>
+  <Target>
+    <AnyOf>
+      <AllOf>
+        <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+          <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">{{app_id}}</AttributeValue>
+          <AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+              AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id" DataType="http://www.w3.org/2001/XMLSchema#string"
+              MustBePresent="true" />
+        </Match>
+      </AllOf>
+    </AnyOf>
+  </Target>
+  {% for permission in permissions %}
+    {% include 'access_control/rule.xacml' with role=role app_id=app_id %}
+  {% endfor %}
+</Policy>

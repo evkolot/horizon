@@ -34,7 +34,7 @@ from openstack_dashboard.dashboards.idm \
 LOG = logging.getLogger('idm_logger')
 
 class UserAccountsLogicMixin():
-    use_idm_account = False
+    use_idm_account = True
 
     def _max_trial_users_reached(self, request):
         trial_users = len(
