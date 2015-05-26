@@ -11,9 +11,34 @@
 {% endblock %}
 
 {% block modal-body %}
-    <fieldset>
-        {% include "horizon/common/_form_fields.html"%}
-    </fieldset>
+  <fieldset>
+    {% include 'horizon/common/_form_errors.html' with form=form %}
+    {# Name and Description #}
+    {% include 'horizon/common/_form_field.html' with field=form.name %}
+    {% include 'horizon/common/_form_field.html' with field=form.description %}
+    
+    <div class="panel-group settings" id="accordion">
+      <a data-toggle="collapse" data-parent="#accordion" href="#collapse-verb-resource" class="panel-heading collapsed">
+        <h4 class="panel-title panel-close">
+          HTTP Verb and Resource Rule
+        </h4>
+      </a>
+      <div id="collapse-verb-resource" class="panel-collapse collapse">
+        {# Action and Resource #}
+        {% include 'horizon/common/_form_field.html' with field=form.action %}
+        {% include 'horizon/common/_form_field.html' with field=form.resource %}
+      </div>
+      <a data-toggle="collapse" data-parent="#accordion" href="#collapse-xacml" class="panel-heading collapsed">
+        <h4 class="panel-title panel-close">
+          Advanced XACML Rule
+        </h4>
+      </a>
+      <div id="collapse-xacml" class="panel-collapse collapse">
+        {# Advanced XACML Rule #}
+        {% include 'horizon/common/_form_field.html' with field=form.xml %}
+      </div>
+    </div>
+  </fieldset>
 {% endblock %}
 
 {% block modal-footer %}

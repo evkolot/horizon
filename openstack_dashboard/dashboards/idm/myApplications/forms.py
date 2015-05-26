@@ -219,6 +219,7 @@ class CreatePermissionForm(forms.SelfHandlingForm):
     description = forms.CharField(max_length=255, label=("Description"))
     action = forms.CharField(max_length=255, label=("HTTP action"))
     resource = forms.CharField(max_length=255, label=("Resource"))
+    xml = forms.CharField(label="Advanced XACML Rule", widget=forms.Textarea())
     no_autocomplete = True
 
     def handle(self, request, data):
