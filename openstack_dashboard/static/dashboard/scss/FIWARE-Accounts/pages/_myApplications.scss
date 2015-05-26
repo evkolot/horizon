@@ -72,7 +72,37 @@
     padding-top: 15px;
   }
 }
-
+#create_permission_form{
+  .panel-group{
+    margin-top: -7px;
+    margin-bottom: -13px;
+  }
+  .panel-body{
+    padding: 0;
+  }
+  .panel{
+    box-shadow: none;
+    &:first-child{
+      border-bottom: 1px solid $border-color
+    }
+  }
+  .in{
+    .panel-title{
+      padding: 0;
+      min-height: 1px;
+      background-color: transparent;
+      color: $brand-secundary;
+      &:hover{
+        cursor: pointer;
+        border-color: $brand-secundary !important;
+        color: $brand-secundary !important;
+      }
+    }
+  }
+  a.collapsed{
+    color: #222;
+  }
+}
 #create_application_roles{
   .modal-dialog,
   .modal-content{
