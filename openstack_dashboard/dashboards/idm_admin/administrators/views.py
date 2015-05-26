@@ -27,7 +27,9 @@ from openstack_dashboard.dashboards.idm_admin \
     import utils as idm_admin_utils
 from openstack_dashboard.dashboards.idm_admin.administrators \
     import workflows as administrators_workflows
+from openstack_dashboard.local import local_settings
 
+LIMIT = getattr(local_settings, 'PAGE_LIMIT', 8)
 
 class DetailApplicationView(tables.MultiTableView):
     template_name = 'idm_admin/administrators/index.html'
@@ -44,14 +46,22 @@ class DetailApplicationView(tables.MultiTableView):
         try:
             # NOTE(garcianavalon) Get all the users' ids that belong to
             # the application (they have one or more roles)
-            all_users = api.keystone.user_list(self.request,
-                filters={'enabled':True})
+            all_users = fiware_api.keystone.user_list(self.request,
+                                               filters={'enabled':True})
             role_assignments = fiware_api.keystone.user_role_assignments(
-                self.request, 
+                self.request,
                 application=fiware_api.keystone.get_idm_admin_app(
                     self.request).id)
             users = [user for user in all_users if user.id
                      in set([a.user_id for a in role_assignments])]
+            
+            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
+
+            index = self.request.GET.get('index', 0)
+            users = idm_admin_utils.paginate(self, users,
+                                             index=index, limit=LIMIT,
+                                             table_name='members')
+        
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))

@@ -29,46 +29,56 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
     """FIWARE Roles logic to assign"""
 
     def _list_all_owners(self, request, superset_id):
-        all_users = api.keystone.user_list(request, filters={'enabled':True})
+        all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
-                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
-            for user in all_users if hasattr(user, 'username')]
+                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + getattr(user, 'username', user.name))
+            for user in all_users]
 
     def _list_all_objects(self, request, superset_id):
+        # TODO(garcianavalon) move to fiware_api
         all_roles = fiware_api.keystone.role_list(request)
-        default_org = api.keystone.user_get(
-            request, request.user).default_project_id
         allowed = fiware_api.keystone.list_user_allowed_roles_to_assign(
             request,
             user=request.user.id,
-            organization=default_org)
-        self.allowed = [role for role in all_roles 
+            organization=request.user.default_project_id)
+
+        self.allowed = [role for role in all_roles
                    if role.id in allowed[superset_id]]
         return self.allowed
 
     def _list_current_assignments(self, request, superset_id):
         # NOTE(garcianavalon) logic for this part:
-        # load all the organization-scoped application roles for every user
+        # load all the user-scoped application roles for every user
         # but only the ones the user can assign
         application_users_roles = {}
         allowed_ids = [r.id for r in self.allowed]
-        role_assignments = fiware_api.keystone.user_role_assignments(
-            request, application=superset_id)
-        users = set([a.user_id for a in role_assignments])
-        for user_id in users:
-            application_users_roles[user_id] = [
-                a.role_id for a in role_assignments
-                if a.user_id == user_id
-                and a.role_id in allowed_ids
-            ]
+        role_assignments = [a for a in fiware_api.keystone.user_role_assignments(
+                                request, application=superset_id)
+                            if a.role_id in allowed_ids]
+
+        all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
+
+        for assignment in role_assignments:
+            user = next((user for user in all_users
+                         if user.id == assignment.user_id
+                         and user.default_project_id == assignment.organization_id),
+                        None)
+            if not user:
+                continue
+
+            if not user.id in application_users_roles:
+                application_users_roles[user.id] = []
+
+            application_users_roles[user.id].append(assignment.role_id)
+
         return application_users_roles
 
     def _get_default_object(self, request):
         return None
 
     def _add_object_to_owner(self, request, superset, owner, obj):
-        default_org = api.keystone.user_get(request, owner).default_project_id
+        default_org = fiware_api.keystone.user_get(request, owner).default_project_id
         fiware_api.keystone.add_role_to_user(request,
                                              application=superset,
                                              user=owner,
@@ -76,7 +86,7 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
                                              role=obj)
 
     def _remove_object_from_owner(self, request, superset, owner, obj):
-        default_org = api.keystone.user_get(request, owner).default_project_id
+        default_org = fiware_api.keystone.user_get(request, owner).default_project_id
         fiware_api.keystone.remove_role_from_user(request,
                                                   application=superset,
                                                   user=owner,
@@ -106,7 +116,7 @@ class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = AuthorizedMembersApi
     server_filter_url = urlresolvers.reverse_lazy(
-        'fiware_server_filters_users')
+        'fiware_server_filters_admins')
 
 
 class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):

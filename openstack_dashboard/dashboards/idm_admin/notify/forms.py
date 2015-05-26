@@ -70,7 +70,8 @@ class EmailForm(forms.SelfHandlingForm):
                 code='invalid')
         else:
             try:
-                organization = api.keystone.tenant_get(self.request, 
+                organization = fiware_api.keystone.project_get(
+                    self.request, 
                     organization_id)
                 return cleaned_data
 
@@ -87,7 +88,7 @@ class EmailForm(forms.SelfHandlingForm):
             recipients = []
             if data['notify'] == 'all_users':
                 recipients = [u.name for u
-                             in api.keystone.user_list(request,
+                             in fiware_api.keystone.user_list(request,
                                                        filters={'enabled':True})
                              if '@' in u.name]
             elif data['notify'] == 'organization':
@@ -99,7 +100,7 @@ class EmailForm(forms.SelfHandlingForm):
                             project=data['organization'])
                 ]
                 for owner_id in owners:
-                    owner = api.keystone.user_get(request, owner_id)
+                    owner = fiware_api.keystone.user_get(request, owner_id)
                     if '@' in owner.name:
                         recipients.append(owner.name)
 
@@ -123,7 +124,7 @@ class EmailForm(forms.SelfHandlingForm):
             connection = mail.get_connection(fail_silently=True)
 
             msg = mail.EmailMultiAlternatives(
-                subject=data['subject'], 
+                subject='[FIWARE Lab] ' + data['subject'], 
                 body=text_content, 
                 from_email='no-reply@account.lab.fi-ware.org', 
                 bcc=recipients, 

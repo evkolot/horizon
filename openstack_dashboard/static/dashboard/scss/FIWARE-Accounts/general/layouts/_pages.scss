@@ -136,6 +136,11 @@ ul#perform_filter_available_update_owners_users{
   }
 }
 
+.panel-heading{
+  .btn-group{
+    float: right;
+  }
+}
 
 .panel.members,
 .panel.applications,
@@ -153,13 +158,6 @@ ul#perform_filter_available_update_owners_users{
       }
     }
   }
-}
-
-
-
-#avatar-update{
-  @include border-top-radius ($border-radius-base);
-  @include border-bottom-radius ($border-radius-base);
 }
 
 #edit{
@@ -236,17 +234,20 @@ ul#perform_filter_available_update_owners_users{
       display: none;
     }
   }
-  .panel-title{
-    h3{
-      margin: 0 !important;
-      font-size: 17px !important;
-      color: #48B9C9;
-      display: block !important;
-      text-decoration: none;
-    }    
+  .panel-title h3{
+    margin: 0 !important;
+    font-size: 17px !important;
+    color: $brand-danger !important;
+    display: block !important;
+    text-decoration: none;
   }
   .modal-footer{
     border-top: none !important;
+    padding: 0 !important
+    .collapsing,
+    .in{
+      margin-bottom: 15px;
+    }
     .panel-collapse{
       border-top: 1px solid $border-color;
       button.btn-danger{

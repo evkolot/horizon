@@ -14,9 +14,9 @@
 
 import logging
 
-from django.core.urlresolvers import reverse
-
 from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 
 from horizon import exceptions
 from horizon import forms
@@ -95,6 +95,27 @@ class RolesView(workflows.WorkflowView):
         # out super and **kwargs
         super(workflows.WorkflowView, self).__init__(*args, **kwargs)
 
+    def _can_manage_roles(self):
+        # Allowed to manage roles if owns a role with the
+        # 'Manage roles' permission.
+        user = self.request.user
+        if user.default_project_id == self.request.organization.id:
+            allowed_applications = \
+                fiware_api.keystone.list_user_allowed_applications_to_manage_roles(
+                    self.request, user=user.id, organization=user.default_project_id)
+        else:
+            allowed_applications = \
+                fiware_api.keystone.list_organization_allowed_applications_to_manage_roles(
+                    self.request, organization=self.request.organization.id)
+        app_id = self.kwargs['application_id']
+        return app_id in allowed_applications
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_manage_roles():
+            return super(RolesView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
+
     def get_initial(self):
         initial = super(RolesView, self).get_initial()
         initial['superset_id'] = self.kwargs['application_id']
@@ -113,6 +134,27 @@ class CreateRoleView(forms.ModalFormView):
     form_class = application_forms.CreateRoleForm
     template_name = 'idm/myApplications/roles/role_create.html'
     success_url = ''
+
+    def _can_manage_roles(self):
+        # Allowed to manage roles if owns a role with the
+        # 'Manage roles' permission.
+        user = self.request.user
+        if user.default_project_id == self.request.organization.id:
+            allowed_applications = \
+                fiware_api.keystone.list_user_allowed_applications_to_manage_roles(
+                    self.request, user=user.id, organization=user.default_project_id)
+        else:
+            allowed_applications = \
+                fiware_api.keystone.list_organization_allowed_applications_to_manage_roles(
+                    self.request, organization=self.request.organization.id)
+        app_id = self.kwargs['application_id']
+        return app_id in allowed_applications
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_manage_roles():
+            return super(CreateRoleView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
 
     def get_success_url(self):
         """Redirects to the url it was called from."""
@@ -133,6 +175,27 @@ class EditRoleView(forms.ModalFormView):
     form_class = application_forms.EditRoleForm
     template_name = 'idm/myApplications/roles/role_edit.html'
     success_url = 'no use, all ajax!'
+
+    def _can_manage_roles(self):
+        # Allowed to manage roles if owns a role with the
+        # 'Manage roles' permission.
+        user = self.request.user
+        if user.default_project_id == self.request.organization.id:
+            allowed_applications = \
+                fiware_api.keystone.list_user_allowed_applications_to_manage_roles(
+                    self.request, user=user.id, organization=user.default_project_id)
+        else:
+            allowed_applications = \
+                fiware_api.keystone.list_organization_allowed_applications_to_manage_roles(
+                    self.request, organization=self.request.organization.id)
+        app_id = self.kwargs['application_id']
+        return app_id in allowed_applications
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_manage_roles():
+            return super(EditRoleView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
 
     def get_context_data(self, **kwargs):
         context = super(EditRoleView, self).get_context_data(**kwargs)
@@ -156,6 +219,27 @@ class DeleteRoleView(forms.ModalFormView):
     template_name = 'idm/myApplications/roles/role_delete.html'
     success_url = ''
 
+    def _can_manage_roles(self):
+        # Allowed to manage roles if owns a role with the
+        # 'Manage roles' permission.
+        user = self.request.user
+        if user.default_project_id == self.request.organization.id:
+            allowed_applications = \
+                fiware_api.keystone.list_user_allowed_applications_to_manage_roles(
+                    self.request, user=user.id, organization=user.default_project_id)
+        else:
+            allowed_applications = \
+                fiware_api.keystone.list_organization_allowed_applications_to_manage_roles(
+                    self.request, organization=self.request.organization.id)
+        app_id = self.kwargs['application_id']
+        return app_id in allowed_applications
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_manage_roles():
+            return super(DeleteRoleView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
+
     def get_success_url(self):
         """Redirects to the url it was called from."""
         return self.request.META['HTTP_REFERER']
@@ -177,6 +261,27 @@ class CreatePermissionView(forms.ModalFormView):
     template_name = 'idm/myApplications/roles/permission_create.html'
     success_url = ''
 
+    def _can_manage_roles(self):
+        # Allowed to manage roles if owns a role with the
+        # 'Manage roles' permission.
+        user = self.request.user
+        if user.default_project_id == self.request.organization.id:
+            allowed_applications = \
+                fiware_api.keystone.list_user_allowed_applications_to_manage_roles(
+                    self.request, user=user.id, organization=user.default_project_id)
+        else:
+            allowed_applications = \
+                fiware_api.keystone.list_organization_allowed_applications_to_manage_roles(
+                    self.request, organization=self.request.organization.id)
+        app_id = self.kwargs['application_id']
+        return app_id in allowed_applications
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_manage_roles():
+            return super(CreatePermissionView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
+
     def get_success_url(self):
         """Redirects to the url it was called from."""
         return self.request.META['HTTP_REFERER']
@@ -197,13 +302,23 @@ class DetailApplicationView(tables.MultiTableView):
     table_classes = (application_tables.AuthUsersTable,
                      application_tables.AuthorizedOrganizationsTable)
 
+    def dispatch(self, request, *args, **kwargs):
+        application = kwargs['application_id']
+        try:
+            fiware_api.keystone.application_get(request, application)
+        except Exception:
+            redirect = reverse("horizon:idm:myApplications:index")
+            exceptions.handle(self.request, 
+                    ('Application does not exist'), redirect=redirect)
+        return super(DetailApplicationView, self).dispatch(request, *args, **kwargs)
+
     def get_auth_users_data(self):
         users = []
         try:
             # NOTE(garcianavalon) Get all the users' ids that belong to
             # the application (they have one or more roles in their default
             # organization)
-            all_users = api.keystone.user_list(self.request,
+            all_users = fiware_api.keystone.user_list(self.request,
                 filters={'enabled':True})
             role_assignments = fiware_api.keystone.user_role_assignments(
                 self.request, application=self.kwargs['application_id'])
@@ -228,8 +343,8 @@ class DetailApplicationView(tables.MultiTableView):
         try:
             # NOTE(garcianavalon) Get all the orgs' ids that belong to
             # the application (they have one or more roles)
-            all_organizations, _more = api.keystone.tenant_list(
-                self.request, admin=False)
+            all_organizations = fiware_api.keystone.project_list(
+                self.request)
             role_assignments = fiware_api.keystone.organization_role_assignments(
                 self.request, application=self.kwargs['application_id'])
             organizations = [org for org in all_organizations if org.id
@@ -239,9 +354,6 @@ class DetailApplicationView(tables.MultiTableView):
             organizations = idm_utils.paginate(self, organizations,
                                                index=index_org, limit=LIMIT_MINI,
                                                table_name='organizations')
-            for org in organizations:
-                users = idm_utils.get_counter(self, organization=org)
-                setattr(org, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
@@ -336,6 +448,27 @@ class BaseApplicationsMultiFormView(idm_views.BaseMultiFormView):
         application_forms.AvatarForm,
         application_forms.CancelForm
     ]
+
+    def _can_edit(self):
+        # Allowed to edit the application if owns a role with the
+        # 'Manage the application' permission.
+        user = self.request.user
+        if user.default_project_id == self.request.organization.id:
+            allowed_applications = \
+                fiware_api.keystone.list_user_allowed_applications_to_manage(
+                    self.request, user=user.id, organization=user.default_project_id)
+        else:
+            allowed_applications = \
+                fiware_api.keystone.list_organization_allowed_applications_to_manage(
+                    self.request, organization=self.request.organization.id)
+        app_id = self.kwargs['application_id']
+        return app_id in allowed_applications
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_edit():
+            return super(BaseApplicationsMultiFormView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
 
     def get_endpoint(self, form_class):
         """Override to allow runtime endpoint declaration"""

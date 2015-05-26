@@ -16,15 +16,13 @@ import logging
 
 from django.core import urlresolvers
 
+from horizon import exceptions
+
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import workflows as idm_workflows
 
-# NOTE(garcianavalon) Beware! we are reusing the membership stuff
-# but changing assign roles to users to assign permissions to roles.
-# TODO(garcianavalon) rename al the 'role' stuff from the membership workflow
-# to 'permission' and the 'user' one to 'role'
 INDEX_URL = "horizon:idm:myApplications:index"
 APPLICATION_ROLE_PERMISSION_SLUG = "fiware_roles"
 LOG = logging.getLogger('idm_logger')
@@ -135,6 +133,37 @@ class ManageApplicationRoles(idm_workflows.RelationshipWorkflow):
         return urlresolvers.reverse(self.success_url,
                     kwargs={'application_id':self.context['superset_id']})
 
+    def handle(self, request, data):
+        success = super(ManageApplicationRoles, self).handle(request, data)
+        app_id = data['superset_id']
+        try:
+            role_permissions = {}
+            public_roles = [
+                role for role in fiware_api.keystone.role_list(
+                    request, application=app_id)
+                if role.is_internal == False
+            ]
+
+            for role in public_roles:
+                public_permissions = [
+                    perm for perm in fiware_api.keystone.permission_list(
+                        request, role=role.id)
+                    if perm.is_internal == False
+                ]
+                if public_permissions:
+                    role_permissions[role.id] = public_permissions
+
+            fiware_api.access_control_ge.policyset_update(
+                app_id=app_id, 
+                role_permissions=role_permissions)
+
+        except Exception:
+            exceptions.handle(
+                request,
+                'Failed to update policies in Access Control GE')
+
+        return success
+
 
 
 # APPLICATION MEMBERS
@@ -142,7 +171,7 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
     """FIWARE roles and user logic"""
 
     def _list_all_owners(self, request, superset_id):
-        all_users = api.keystone.user_list(request, filters={'enabled':True})
+        all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
                 idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
@@ -167,23 +196,29 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
 
     def _list_current_assignments(self, request, superset_id):
         # NOTE(garcianavalon) logic for this part:
-        # load all the organization-scoped application roles for every user
+        # load all the user-scoped application roles for every user
         # but only the ones the user can assign
         application_users_roles = {}
         allowed_ids = [r.id for r in self.allowed]
-        role_assignments = fiware_api.keystone.user_role_assignments(
-                request, application=superset_id)
-        users_with_roles = set([a.user_id for a in role_assignments])
-        users = [user for user in api.keystone.user_list(request,
-                                                         filters={'enabled':True})
-                 if user.id in users_with_roles]
-        for user in users:
-            application_users_roles[user.id] = [
-                a.role_id for a in role_assignments
-                if a.user_id == user.id
-                and a.role_id in allowed_ids
-                and a.organization_id == user.default_project_id
-            ]
+        role_assignments = [a for a in fiware_api.keystone.user_role_assignments(
+                                request, application=superset_id)
+                            if a.role_id in allowed_ids]
+
+        all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
+
+        for assignment in role_assignments:
+            user = next((user for user in all_users
+                         if user.id == assignment.user_id
+                         and user.default_project_id == assignment.organization_id),
+                        None)
+            if not user:
+                continue
+
+            if not user.id in application_users_roles:
+                application_users_roles[user.id] = []
+
+            application_users_roles[user.id].append(assignment.role_id)
+
         return application_users_roles
 
 
@@ -192,7 +227,7 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
 
 
     def _add_object_to_owner(self, request, superset, owner, obj):
-        default_org = api.keystone.user_get(request, owner).default_project_id
+        default_org = fiware_api.keystone.user_get(request, owner).default_project_id
         fiware_api.keystone.add_role_to_user(request,
                                              application=superset,
                                              user=owner,
@@ -201,7 +236,7 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
 
 
     def _remove_object_from_owner(self, request, superset, owner, obj):
-        default_org = api.keystone.user_get(request, owner).default_project_id
+        default_org = fiware_api.keystone.user_get(request, owner).default_project_id
         fiware_api.keystone.remove_role_from_user(request,
                                                   application=superset,
                                                   user=owner,
@@ -257,7 +292,7 @@ class AuthorizedOrganizationsApi(idm_workflows.RelationshipApiInterface):
     """FIWARE roles and organization logic"""
 
     def _list_all_owners(self, request, superset_id):
-        all_organizations, _more = api.keystone.tenant_list(request)
+        all_organizations = fiware_api.keystone.project_list(request)
         return [
             (org.id, idm_utils.get_avatar(org, 'img_small', 
                 idm_utils.DEFAULT_ORG_SMALL_AVATAR) + '$' + org.name) 

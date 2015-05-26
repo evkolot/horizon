@@ -28,7 +28,6 @@ from horizon.utils import functions as utils
 from openstack_dashboard import fiware_api
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.idm import forms as idm_forms
-from openstack_dashboard.local import local_settings
 
 
 LOG = logging.getLogger('idm_logger')
@@ -129,7 +128,7 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
             for meta in meta:
                 size = meta[0], meta[1]
                 img_type = meta[2]
-                output_img.resize(size)
+                output_img.thumbnail(size)
                 img = (settings.MEDIA_ROOT +'/ApplicationAvatar/' 
                        + img_type + "/" + application_id)
                 output_img.save(img, 'JPEG')
@@ -164,7 +163,7 @@ class CreateRoleForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            LOG.info('Creating role with name "%s"' % data['name'])
+            LOG.debug('Creating role with name "%s"' % data['name'])
             new_role = fiware_api.keystone.role_create(
                 request, name=data['name'], application=data['application_id'])
             messages.success(request,
@@ -183,7 +182,7 @@ class EditRoleForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            LOG.info('Updating role with id {0}'.format(data['role_id']))
+            LOG.debug('Updating role with id {0}'.format(data['role_id']))
             role = fiware_api.keystone.role_update(request,
                                             role=data['role_id'],
                                             name=data['name'])
@@ -202,7 +201,7 @@ class DeleteRoleForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            LOG.info('Deleting role with id {0}'.format(data['role_id']))
+            LOG.debug('Deleting role with id {0}'.format(data['role_id']))
             fiware_api.keystone.role_delete(request,
                                             role_id=data['role_id'])
             messages.success(request,
@@ -225,12 +224,13 @@ class CreatePermissionForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:
-            LOG.info('Creating permission with name "%s"' % data['name'])
+            LOG.debug('Creating permission with name "%s"' % data['name'])
             new_permission = fiware_api.keystone.permission_create(
-                request, name=data['name'], application=data['application_id'])
-            # TODO(garcianavalon) add support for extra arguments in permissions
-                                            # resource=data['resource'],
-                                            # action=data['action'])
+                request,
+                name=data['name'],
+                application=data['application_id'],
+                resource=data['resource'],
+                action=data['action'])
 
             messages.success(request,
                              ('Permission "%s" was successfully created.')
@@ -253,7 +253,7 @@ class CancelForm(forms.SelfHandlingForm):
             os.remove(AVATAR_ORIGINAL + application.id)
             LOG.debug('Avatar deleted from server')    
         fiware_api.keystone.application_delete(request, application.id)
-        LOG.info('Application {0} deleted'.format(application.id))
+        LOG.debug('Application %s deleted', application.id)
         messages.success(request, ("Application deleted successfully."))
         response = shortcuts.redirect('horizon:idm:myApplications:index')
         return response

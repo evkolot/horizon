@@ -1,3 +1,24 @@
+#detailOrganization{
+  header .modal span{
+    min-height: 30px;
+    display: inline-block;
+  }
+}
+#remove_org {
+  p.alert{
+    margin: 0;
+    font-size: 12px;
+    i{
+      margin-right: 4px;
+      color: $brand-primary;
+    }
+  }
+}
+.n-avail{
+  color: #BEBEBE;
+  font-style: italic;
+}
+
 #edit_organization_modal{
    @extend .well;
   .modal-header{
@@ -194,6 +215,9 @@ div#update_owners_members{
   .avatar{
     float: left;
     margin-right: 0px;
+    min-width: 36px;
+    @include border-top-radius (2px);
+    @include border-bottom-radius (2px);
   }
   .all-users{
     border-right: 1px solid $border-color;
@@ -233,15 +257,16 @@ div#update_owners_members{
       &:last-child{
         border-bottom: none; 
       }
+      .member{
+        display: inline; width: 87%;
+      }
     }
-    .data {padding-top: 8px;
-      .dropdown{
-        float: right;
-        display: inline-block;
-        margin-right: 20px;
-      }               
+    .data {padding-top: 8px; @include text-overflow;}
+    
+    .name {
+      display: inline;
+      padding-right: 0;
     }
-    .name {display: inline;}
     .fa-plus,
     .fa-close{
       float: right;
@@ -334,8 +359,8 @@ div#update_owners_members{
     margin: 0;
   }
   div.active{
-    float: right;
-    display: inline-block;
+    position: absolute;
+    right: 15px;
     margin-top: -18px;
   }
   .role_options{

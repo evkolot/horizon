@@ -25,7 +25,7 @@ from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 
-SHORT_CACHE_TIME = 10 # seconds
+SHORT_CACHE_TIME = 20 # seconds
 
 class AjaxKeystoneFilter(generic.View):
     """view to handle ajax filtering in modals. 
@@ -89,19 +89,46 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
     filter_key = 'username__startswith'
 
     def api_call(self, request, filters=None):
+        json_users = self._get_json_users(request, filters)
+
+        # now filter by username
+        if not filters:
+            return json_users
+
+        filtered_users = self._apply_filters(json_users, filters)
+
+        organization = request.POST.get('organization', None)
+        if not organization:
+            return filtered_users
+
+        members = [a.user['id'] for a 
+                   in api.keystone.role_assignments_list(request, project=organization)]
+
+        return [u for u in filtered_users 
+                if u['id'] in members]
+        
+    def _apply_filters(self, json_users, filters):
+        filter_by = filters[self.filter_key]
+        filtered_users = [u for u in json_users
+                          if 'username' in u
+                          and u['username'].startswith(filter_by)]
+
+        return filtered_users
+    
+    def _get_json_users(self, request, filters):
         # NOTE(garcianavalon) because we chose to store the display
         # name in extra to use the email as name for login, we can't
         # use keystone filters, we need to filter locally.
         # We cache the query to save some petitions here
         json_users = cache.get('json_users')
-        organization = request.POST.get('organization', None)
         if json_users is None:
             filters.update({'enabled':True})
-            users = api.keystone.user_list(request, filters=filters)
+            users = fiware_api.keystone.user_list(request, filters=filters)
             attrs = [
                 'id',
                 'username',
-                'img_small'
+                'img_small',
+                'name' # for no-username users
             ]
             temp_json_users = [self._obj_to_jsonable_dict(u, attrs) 
                                for u in users]
@@ -113,31 +140,24 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
                 json_users.append(user)
 
             cache.set('json_users', json_users, SHORT_CACHE_TIME)
-        # now filter by username
-        if filters:
-            filter_by = filters[self.filter_key]
-            members_filter = [u for u in json_users 
-                                if 'username' in u
-                                and u['username'].startswith(filter_by)]
-            
-            if organization:
-                members = api.keystone.role_assignments_list(request, project=organization)
-                filtered_users = [a.user['id'] for a in members]
-                # print filtered_users by organization
-                return [u for u in members_filter 
-                        if u['id'] in filtered_users]
-            else:
-                # print filtered_users
-                return members_filter
-        else:
-            return json_users
+
+        return json_users
+
+class UsersAndKeystoneAdminsWorkflowFilter(UsersWorkflowFilter):
+    """Don't filter by username so it also shows Keystone users and admins."""
+    def _apply_filters(self, json_users, filters):
+        filter_by = filters[self.filter_key]
+        filtered_users = [u for u in json_users
+                          if u.get('username', u['name']).startswith(filter_by)]
+
+        return filtered_users
 
 
 class OrganizationsWorkflowFilter(AjaxKeystoneFilter):
     filter_key = 'name__startswith'
 
     def api_call(self, request, filters=None):
-        organizations, more = api.keystone.tenant_list(request, 
+        organizations = fiware_api.keystone.project_list(request, 
             filters=filters)
         organizations = idm_utils.filter_default(organizations)
         attrs = [

@@ -12,49 +12,42 @@
 
 import logging
 import requests
+
+from django.conf import settings
 from django.template.loader import render_to_string
 
 LOG = logging.getLogger('idm_logger')
 
-# TODO(garcianavalon) extract as conf options
-AC_URL = 'https://az.testbed.fi-ware.eu/authzforce/\
-        domains/f764202c-fc7a-11e2-8cc3-fa163e3515ad/pap/policySet'
 XACML_TEMPLATE = 'access_control/policy_set.xacml'
-SSL_CERTIFICATE= 'TODO'
 
-def policies_update(roles_permisions):
+def policyset_update(app_id, role_permissions):
     """Gets all role's permissions and generates a xacml file to
     update the Access Control.
     """
+    if not settings.ACCESS_CONTROL_URL:
+        LOG.warning('ACCESS_CONTROL_URL setting is not set.')
+        return
+
+    if not settings.ACCESS_CONTROL_MAGIC_KEY:
+        LOG.warning('ACCESS_CONTROL_MAGIC_KEY setting is not set.')
+        return 
+
     context = {
         'policy_set_description': 'TODO',
-        'roles': roles_permisions,
+        'role_permissions': role_permissions,
+        'app_id': app_id,
     }
+
     xml = render_to_string(XACML_TEMPLATE, context)
-    LOG.debug('Created new XACML {0}'.format(xml))
+    LOG.debug('XACML: %s', xml)
 
-def policy_delete(role_id):
-    LOG.debug('Deleting role {0} from AC GE'.format(role_id))
-    return delete(role_id)
-
-def put(xml):
-    
-    # POST the data to the AC GE
     headers = {
-        'content-type': 'application/xml'
+        'content-type': 'application/xml',
+        'X-Auth-Token': settings.ACCESS_CONTROL_MAGIC_KEY
     }
-    response = requests.put(AC_URL, 
-                            data=xml, 
-                            headers=headers,
-                            cert=SSL_CERTIFICATE)
-    LOG.debug('Response code from the AC GE: {0}'.format(
-                                        response.status_code))
-    return response
+    response = requests.put(
+        settings.ACCESS_CONTROL_URL, data=xml, headers=headers)
 
-def delete(role_id):
-    # TODO(garcianavalon) send the id
-    response = requests.delete(AC_URL, 
-                            cert=SSL_CERTIFICATE)
-    LOG.debug('Response code from the AC GE: {0}'.format(
-                                        response.status_code))
+    LOG.debug('Response code from the AC GE: %s', response.status_code)
+
     return response

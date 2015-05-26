@@ -34,7 +34,7 @@ from openstack_dashboard.dashboards.idm \
 LOG = logging.getLogger('idm_logger')
 
 class UserAccountsLogicMixin():
-    use_idm_account = False
+    use_idm_account = True
 
     def _max_trial_users_reached(self, request):
         trial_users = len(
@@ -42,12 +42,11 @@ class UserAccountsLogicMixin():
                 use_idm_account=self.use_idm_account))
         return trial_users >= getattr(settings, 'MAX_TRIAL_USERS', 0)
 
-    def update_account(self, request, user_id, role_id, region_id=None):
+    def update_account(self, request, user_id, role_id, regions):
         activate_cloud = role_id != fiware_api.keystone.get_basic_role(
             request, use_idm_account=self.use_idm_account).id
         
-        user = fiware_api.keystone.user_get(request, user_id,
-            use_idm_account=self.use_idm_account)
+        user = fiware_api.keystone.user_get(request, user_id)
 
         # clean previous status
         self._clean_roles(request, user_id)
@@ -55,8 +54,7 @@ class UserAccountsLogicMixin():
 
         # grant the selected role
         fiware_api.keystone.add_domain_user_role(request,
-            user=user_id, role=role_id, domain='default',
-            use_idm_account=self.use_idm_account)
+            user=user_id, role=role_id, domain='default')
         date = str(datetime.date.today())
         if (role_id == fiware_api.keystone.get_trial_role(request, 
             use_idm_account=self.use_idm_account).id):
@@ -74,32 +72,31 @@ class UserAccountsLogicMixin():
         else:
             self._deactivate_cloud(request, user_id, user.cloud_project_id)
         
-        # assign endpoint group for the selected region
-        if not region_id:
-            return
+        # assign endpoint group for the selected regions
+        for region in regions:
+            endpoint_groups = fiware_api.keystone.endpoint_group_list(
+                request, use_idm_account=self.use_idm_account)
+            region_group = next(group for group in endpoint_groups
+                if group.filters.get('region_id', None) == region)
 
-        endpoint_groups = fiware_api.keystone.endpoint_group_list(
-            request, use_idm_account=self.use_idm_account)
-        region_group = next(group for group in endpoint_groups
-            if group.filters.get('region_id', None) == region_id)
-
-        if not region_group:
-            messages.error(
-                request, 'There is no endpoint group defined for that region')
-            return
+            if not region_group:
+                messages.error(
+                    request,
+                    'There is no endpoint group defined for {}'.format(region))
+                continue
         
-        fiware_api.keystone.add_endpoint_group_to_project(
-            request,
-            project=user.cloud_project_id,
-            endpoint_group=region_group,
-            use_idm_account=self.use_idm_account)
+            fiware_api.keystone.add_endpoint_group_to_project(
+                request,
+                project=user.cloud_project_id,
+                endpoint_group=region_group,
+                use_idm_account=self.use_idm_account)
 
         # done!
 
     def _clean_roles(self, request, user_id):
         # TODO(garcianavalon) find a better solution to this
         user_roles = fiware_api.keystone.role_assignments_list(request, 
-            user=user_id, domain='default', use_idm_account=self.use_idm_account)
+            user=user_id, domain='default')
         account_roles = [
             fiware_api.keystone.get_basic_role(None,
                 use_idm_account=True).id,
@@ -112,8 +109,7 @@ class UserAccountsLogicMixin():
             if a.role['id'] in account_roles), None)
         if current_account:
             fiware_api.keystone.remove_domain_user_role(request,
-                user=user_id, role=current_account, domain='default',
-                use_idm_account=self.use_idm_account)
+                user=user_id, role=current_account, domain='default')
 
     def _activate_cloud(self, request, user_id, cloud_project_id):
         # grant purchaser in cloud app to cloud org
@@ -164,7 +160,8 @@ class UserAccountsLogicMixin():
             use_idm_account=self.use_idm_account)
 
         for endpoint_group in endpoint_groups:
-            if 'region_id' not in endpoint_group.filters:
+            if (endpoint_group.filters #check for no filter endpoint
+                and 'region_id' not in endpoint_group.filters):
                 continue
 
             try:
@@ -206,7 +203,6 @@ def get_account_choices():
 def get_regions():
     """Loads all posible regions for the FIWARE cloud portal"""
     choices = [
-        ('', 'No region'),
     ]
     regions = fiware_api.keystone.region_list(None, use_idm_account=True)
     for region in regions:
@@ -222,24 +218,31 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
         label=("Account type"),
         choices=get_account_choices())
 
-    region = forms.ChoiceField(
+    regions = forms.MultipleChoiceField(
         required=False,
-        label=("Select new Cloud region"),
+        label=("Select new Cloud regions. Important: these regions will overwrite every regions assigned previously."),
         choices=get_regions())
 
     def clean_account_type(self):
         """ Validate that there are trial users accounts left"""
         account_type = self.cleaned_data['account_type']
-        if (account_type != fiware_api.keystone.get_trial_role(
-                self.request).id):
-            return account_type
+        # NOTE(garcianavalon) for now, we dont check max trials when updating
+        # from the admin interface
+        # if (account_type != fiware_api.keystone.get_trial_role(
+        #         self.request).id):
+        #     return account_type
 
-        if self._max_trial_users_reached(self.request):
-            raise forms.ValidationError(
-                'There are no trial accounts left.',
-                code='invalid')
+        # if self._max_trial_users_reached(self.request):
+        #     raise forms.ValidationError(
+        #         'There are no trial accounts left.',
+        #         code='invalid')
         
         return account_type
+
+    def clean_regions(self):
+        """Make sure we get an emtpy list"""
+        regions = self.cleaned_data.get('regions', [])
+        return regions
 
     def clean(self):
         cleaned_data = super(UpdateAccountForm, self).clean()
@@ -251,7 +254,7 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
         role_name = next(choice[1] for choice in get_account_choices()
             if choice[0] == account_type)
         
-        region = cleaned_data.get('region', None)
+        regions = cleaned_data.get('regions', [])
 
         allowed_regions = getattr(settings, 'FIWARE_ALLOWED_REGIONS', None)
         if not allowed_regions:
@@ -260,21 +263,22 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
                 code='invalid')
         
         if not allowed_regions[role_name]:
-            if region:
+            if regions:
                 messages.info(self.request, 
                     'The account type selected is not allowed any region')
 
-            cleaned_data['region'] = None
+            cleaned_data['regions'] = []
             return cleaned_data
 
-        if not region in allowed_regions[role_name]:
-            if not region:
-                msg = 'You must choose a region for this accout type.'
-            else:
-                msg = 'The region {0} is not allowed for that account type.'.format(region)
-            raise forms.ValidationError(
-                msg,
-                code='invalid')
+        for region in regions:
+            if not region in allowed_regions[role_name]:
+                if not region:
+                    msg = 'You must choose a region for this accout type.'
+                else:
+                    msg = '{0} is not allowed for that account type.'.format(region)
+                raise forms.ValidationError(
+                    msg,
+                    code='invalid')
 
         return cleaned_data
 
@@ -283,9 +287,9 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
         try:
             user_id = data['user_id']
             role_id = data['account_type']
-            region_id = data['region']
+            regions = data['regions']
 
-            self.update_account(request, user_id, role_id, region_id)
+            self.update_account(request, user_id, role_id, regions)
 
             messages.success(request,
                 'User account upgraded succesfully')
@@ -300,7 +304,7 @@ class FindUserByEmailForm(forms.SelfHandlingForm):
     def clean_email(self):
         try:
             email = self.cleaned_data['email']
-            user = api.keystone.user_list(self.request,
+            user = fiware_api.keystone.user_list(self.request,
                 filters={'name':email})
 
             if not user:

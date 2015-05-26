@@ -230,8 +230,8 @@ ul.navbar-nav > li {
 @font-face {
   font-family: "NeoTechMedium";
   font-style: normal;
-  src: url('..fonts/neotechstd/neotechstd-medium.eot');
-    src: url('..fonts/neotechstd/neotechstd-medium.eot') format('embedded-opentype'),
+  src: url('../fonts/neotechstd/neotechstd-medium.eot');
+    src: url('../fonts/neotechstd/neotechstd-medium.eot') format('embedded-opentype'),
          url('../fonts/neotechstd/neotechstd-medium.woff') format('woff'),
          url('../fonts/neotechstd/neotechstd-medium.ttf') format('truetype'),
          url('../fonts/neotechstd/neotechstd-medium.svg#NeoTechStdMedium') format('svg');
@@ -245,13 +245,32 @@ header.navbar{
   -moz-box-shadow: 0px 1px 8px rgba(50, 51, 51, 0.15);
   -webkit-box-shadow: 0px 1px 8px rgba(50, 51, 51, 0.15);
   box-shadow: 0px 1px 8px rgba(50, 51, 51, 0.15);
-  min-height: 42px;
+  min-height: 44px;
+}
+.brand{
+  background-repeat: no-repeat;
+  height: 37px;
+  float: left;
+}
+
+.logo-fl-header .brand{
+  background-image: url(../img/FIWARE-lab-2x.png);
+  width: 150px;
+  background-size: 150px 37px;
+}
+
+.logo-f-header .brand {
+  background-image: url(../img/FIWARE-2x.png);
+  width: 123px;
+  background-size: 120px 37px;
 }
 
 header.navbar .container-fluid{
   max-width: 1200px;
 }
-
+.container-fluid .navbar-header{
+  margin: 4px 0 0;
+}
 .navbar-fixed-top{
   background-color: #F1F1F2;
   padding: 0;
@@ -266,7 +285,7 @@ header.navbar .container-fluid{
 }
 .navbar-toggle {
   font-size: 20px;
-  border-color: rgba(0, 0, 0, 0);
+  border-color: rgba(0, 0, 0, 0) !important;
   position: relative;
   float: right;
   padding: 0;
@@ -292,29 +311,20 @@ nav.container-fluid{
 ul.navbar-nav > li:hover {
   background-color: #E8E8E8;
 }
+.logo-fl-header
+.logo-f-header{
+  margin-top: 4px;
+}
 
-.logo-fl-header,
-.logo-f-header{
-  float: left;
+@media (max-width: 480px){
+
+  .brand{
+    width: 37px !important;
+  }
+
 }
-.logo-fl-header{
-  width: 158px;
-}
-.logo-f-header{
-  width: 118px;
-}
-.brand{
-  margin: 0 0 0 -8px !important;
-  padding: 0 !important;
-}
-.brand img.fiware-lab {
-  margin-top: 4px;
-  width: 158px !important;
-}
-.brand img.fiware {
-  margin-top: 4px;
-  width: 118px !important;
-}
+
+
 
 .nav-tabs > .active > a, .nav-tabs > .active > a:hover {
   color: #193B6B;
@@ -330,10 +340,14 @@ ul.navbar-nav > li {
 }
 #profile_editor_switcher {
   margin-top: 9px;
+  font-size: 12px;
 }
 #profile_editor_switcher a img {
   width: 24px;
   margin-top: -1px;
+  -moz-border-radius: (2px);
+  -webkit-border-radius: (2px);
+  border-radius: (2px);
 }
 
 @media (min-width: 768px){
@@ -445,16 +459,15 @@ footer.footer-main {
   height: 50px;
   font-size: 12px;
   border-top: 1px solid rgb(72, 185, 201);
-  padding-top: 1px;
   left: 0;
   right: 0;
 }
 .footer-main .container-fluid{
-  border-top: 1px solid #193B6B;
-}
-.footer-main .footer-content{
   border-top: 1px solid #F2E826;
-}      
+  border-bottom: 1px solid #193B6B;
+  height: 0px;
+}
+     
 .footer-main .cred{
   padding-top: 12px;
   padding-bottom: 15px;

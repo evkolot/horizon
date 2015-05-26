@@ -14,6 +14,7 @@ import logging
 import json
 
 from django import http
+from django.conf import settings
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
@@ -53,14 +54,17 @@ class UpdateAccountView(forms.ModalFormView):
 
     def get_context_data(self, **kwargs):
         context = super(UpdateAccountView, self).get_context_data(**kwargs)
-        context['user'] = api.keystone.user_get(self.request, 
+        context['user'] = fiware_api.keystone.user_get(self.request, 
             self.kwargs['user_id'])
+
+        context['allowed_regions'] = json.dumps(
+            getattr(settings, 'FIWARE_ALLOWED_REGIONS', None))
         return context
 
     def get_initial(self):
         initial = super(UpdateAccountView, self).get_initial()
         user_id = self.kwargs['user_id']
-        user_roles = api.keystone.role_assignments_list(self.request, 
+        user_roles = fiware_api.keystone.role_assignments_list(self.request, 
             user=user_id, domain='default')
         # TODO(garcianavalon) find a better solution to this
         account_roles = [
@@ -76,7 +80,7 @@ class UpdateAccountView(forms.ModalFormView):
 
         initial.update({
             'user_id': user_id,
-            #'region': '',
+            #'regions': '',
             'account_type': current_account,
         })
         return initial
@@ -89,6 +93,14 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
     
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
+        # Check there is a valid keystone token in the header
+        token = request.META.get('HTTP_X_AUTH_TOKEN', None)
+        if not token:
+            return http.HttpResponse('Unauthorized', status=401)
+
+        response = fiware_api.keystone.validate_keystone_token(request, token)
+        if response.status_code != 200:
+            return http.HttpResponse('Unauthorized', status=401)
         return super(UpdateAccountEndpointView, self).dispatch(request, *args, **kwargs)
 
 
@@ -105,15 +117,15 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
                 if not trial_left:
                     return http.HttpResponseNotAllowed()
 
-            region_id = data.get('region_id', None)
+            regions = data.get('regions', None)
 
             if (role_id != fiware_api.keystone.get_basic_role(
                     request).id
-                and not region_id):
+                and not regions):
 
                 return http.HttpResponseBadRequest()
 
-            self.update_account(request, user_id, role_id, region_id)
+            self.update_account(request, user_id, role_id, regions)
 
             return http.HttpResponse()
 

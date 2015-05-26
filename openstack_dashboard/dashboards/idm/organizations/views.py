@@ -16,13 +16,16 @@ import os
 import logging
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
+from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
 
 from horizon import exceptions
 from horizon import forms
 from horizon import tables
 from horizon import tabs
 from horizon import workflows
+from horizon import messages
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
@@ -56,11 +59,38 @@ class CreateOrganizationView(forms.ModalFormView):
     template_name = 'idm/organizations/create.html'
 
 
+class RemoveOrganizationView(forms.ModalFormView):
+    form_class = organization_forms.RemoveOrgForm
+    template_name = 'idm/organizations/detail_remove.html'
+    success_url = reverse_lazy('horizon:user:index')
+
+    def get_context_data(self, **kwargs):
+        context = super(RemoveOrganizationView, self).get_context_data(**kwargs)
+        context['organization_id'] = self.kwargs['organization_id']
+        return context
+
+    def get_initial(self):
+        initial = super(RemoveOrganizationView, self).get_initial()
+        initial['orgID'] = self.kwargs['organization_id']
+        return initial
+
+
 class DetailOrganizationView(tables.MultiTableView):
     template_name = 'idm/organizations/detail.html'
     table_classes = (organization_tables.MembersTable,
                      organization_tables.AuthorizingApplicationsTable)
-    
+
+    def dispatch(self, request, *args, **kwargs):
+        organization = kwargs['organization_id']
+        try:
+            fiware_api.keystone.project_get(request, organization)
+        except Exception:
+            exceptions.handle(
+                self.request,
+                'Organization does not exist',
+                redirect=reverse("horizon:idm:organizations:index"))
+        return super(DetailOrganizationView, self).dispatch(request, *args, **kwargs)
+
     def get_members_data(self):
         users = []
         try:
@@ -68,13 +98,13 @@ class DetailOrganizationView(tables.MultiTableView):
             # filters by default_project_id.
             # We need to get the role_assignments for the user's
             # id's and then filter the user list ourselves
-            all_users = api.keystone.user_list(self.request,
+            all_users = fiware_api.keystone.user_list(self.request,
                 filters={'enabled':True})
             project_users_roles = api.keystone.get_project_users_roles(
                 self.request,
                 project=self.kwargs['organization_id'])
             users = [user for user in all_users if user.id in project_users_roles]
-            users = sorted(users, key=lambda x: x.username.lower())
+            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
             index_mem = self.request.GET.get('index_mem', 0)
             users = idm_utils.paginate(self, users,
                                        index=index_mem, limit=LIMIT_MINI,
@@ -101,9 +131,6 @@ class DetailOrganizationView(tables.MultiTableView):
             applications = idm_utils.paginate(self, applications,
                                               index=index_app, limit=LIMIT_MINI,
                                               table_name='applications')
-            for app in applications:
-                users = idm_utils.get_counter(self, application=app)
-                setattr(app, 'counter', users)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve application list."))
@@ -118,12 +145,20 @@ class DetailOrganizationView(tables.MultiTableView):
         owner_role = fiware_api.keystone.get_owner_role(self.request)
         return owner_role.id in [r.id for r in user_roles]
 
+    def _is_member(self):
+        org_id = self.kwargs['organization_id']
+        user_roles = api.keystone.roles_for_user(
+            self.request, self.request.user.id, project=org_id)
+        member_role = fiware_api.keystone.get_member_role(self.request)
+        return user_roles and member_role.id in [r.id for r in user_roles] 
+
+
     def get_context_data(self, **kwargs):
         context = super(DetailOrganizationView, self).get_context_data(
             **kwargs)
         organization_id = self.kwargs['organization_id']
-        organization = api.keystone.tenant_get(self.request, 
-            organization_id, admin=True)
+        organization = fiware_api.keystone.project_get(self.request, 
+            organization_id)
         context['organization'] = organization
 
         if hasattr(organization, 'img_original'):
@@ -140,11 +175,30 @@ class DetailOrganizationView(tables.MultiTableView):
 
         if self._can_edit():
             context['edit'] = True
+
+        if self._is_member():
+            context['member'] = True
+      
         return context
 
 
 class OrganizationMembersView(workflows.WorkflowView):
     workflow_class = organization_workflows.ManageOrganizationMembers
+
+    def _can_edit(self):
+        # Allowed if he is an owner in the organization
+        # TODO(garcianavalon) move to fiware_api
+        org_id = self.kwargs['organization_id']
+        user_roles = api.keystone.roles_for_user(
+            self.request, self.request.user.id, project=org_id)
+        owner_role = fiware_api.keystone.get_owner_role(self.request)
+        return owner_role.id in [r.id for r in user_roles]
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_edit():
+            return super(OrganizationMembersView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
 
     def get_initial(self):
         initial = super(OrganizationMembersView, self).get_initial()
@@ -160,6 +214,21 @@ class BaseOrganizationsMultiFormView(idm_views.BaseMultiFormView):
         organization_forms.AvatarForm, 
         organization_forms.CancelForm
     ]
+
+    def _can_edit(self):
+        # Allowed if he is an owner in the organization
+        # TODO(garcianavalon) move to fiware_api
+        org_id = self.kwargs['organization_id']
+        user_roles = api.keystone.roles_for_user(
+            self.request, self.request.user.id, project=org_id)
+        owner_role = fiware_api.keystone.get_owner_role(self.request)
+        return owner_role.id in [r.id for r in user_roles]
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._can_edit():
+            return super(BaseOrganizationsMultiFormView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
     
     def get_endpoint(self, form_class):
         """Override to allow runtime endpoint declaration"""
@@ -181,12 +250,13 @@ class BaseOrganizationsMultiFormView(idm_views.BaseMultiFormView):
 
     def get_object(self):
         try:
-            return api.keystone.tenant_get(
+            return fiware_api.keystone.project_get(
                 self.request, self.kwargs['organization_id'])
         except Exception:
-            redirect = reverse("horizon:idm:organizations:index")
-            exceptions.handle(self.request, 
-                    ('Unable to update organization'), redirect=redirect)
+            exceptions.handle(
+                self.request, 
+                'Unable to update organization',
+                redirect=reverse("horizon:idm:organizations:index"))
 
     def get_initial(self, form_class):
         initial = super(BaseOrganizationsMultiFormView, 

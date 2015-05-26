@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<PolicySet xmlns="urn:oasis:names:tc:xacml:2.0:policy:schema:os" PolicySetId="604" Version="1.0" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:permit-overrides">
-    <Description>{{ policy_set_description }}</Description>
-    {% for role in roles %}
-        {% include 'access_control/policy.xacml' %}
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicySetId="{{ app_id }}" Version="1.0"  PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit">
+    <Description>Policy Set for application {{ app_id }}</Description>
+    <Target />
+    {% for role_id, permissions in role_permissions.items %}
+        {% include 'access_control/policy.xacml' with app_id=app_id permissions=permissions %}
     {% endfor %}
 </PolicySet>
