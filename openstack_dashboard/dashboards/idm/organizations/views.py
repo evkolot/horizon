@@ -150,7 +150,9 @@ class DetailOrganizationView(tables.MultiTableView):
         user_roles = api.keystone.roles_for_user(
             self.request, self.request.user.id, project=org_id)
         member_role = fiware_api.keystone.get_member_role(self.request)
-        return user_roles and member_role.id in [r.id for r in user_roles] 
+        owner_role = fiware_api.keystone.get_owner_role(self.request)
+        return user_roles and member_role.id in [r.id for r in user_roles]\
+            and not owner_role.id in [r.id for r in user_roles]
 
 
     def get_context_data(self, **kwargs):
@@ -178,7 +180,7 @@ class DetailOrganizationView(tables.MultiTableView):
 
         if self._is_member():
             context['member'] = True
-      
+            
         return context
 
 
