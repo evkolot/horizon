@@ -43,6 +43,7 @@ import xstatic.pkg.rickshaw
 import xstatic.pkg.spin
 
 from openstack_dashboard import exceptions
+from openstack_dashboard.local import local_settings
 
 warnings.formatwarning = lambda message, category, *args, **kwargs: \
     '%s: %s' % (category.__name__, message)
@@ -64,6 +65,9 @@ LOGOUT_URL = '/auth/logout/'
 # HORIZON_CONFIG.user_home, if user_home is not set.
 # Do not set it to '/home/', as this will cause circular redirect loop
 LOGIN_REDIRECT_URL = '/'
+
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = getattr(local_settings, 'CORS_ORIGIN_WHITELIST', None)
 
 MEDIA_ROOT = os.path.abspath(os.path.join(ROOT_PATH, '..', 'media'))
 MEDIA_URL = '/media/'
@@ -112,6 +116,7 @@ OPENSTACK_IMAGE_BACKEND = {
 }
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -229,7 +234,8 @@ INSTALLED_APPS = [
     'horizon',
     'openstack_auth',
     'captcha',
-    'django_summernote', 
+    'django_summernote',
+    'corsheaders',
 ]
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 AUTHENTICATION_BACKENDS = ('openstack_auth.backend.KeystoneBackend',)
