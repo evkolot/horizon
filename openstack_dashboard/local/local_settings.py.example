@@ -621,7 +621,8 @@ NUM_PAGES = 10
 ACCESS_CONTROL_URL = None
 ACCESS_CONTROL_MAGIC_KEY = None
 
-#CORS configuration
+# CORS configuration
+CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (
     'cloud.lab.fiware.org',
     'store.lab.fiware.org',
