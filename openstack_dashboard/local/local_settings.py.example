@@ -622,4 +622,10 @@ ACCESS_CONTROL_URL = None
 ACCESS_CONTROL_MAGIC_KEY = None
 
 #CORS configuration
-CORS_ORIGIN_WHITELIST = ('')
+CORS_ORIGIN_WHITELIST = (
+    'cloud.lab.fiware.org',
+    'store.lab.fiware.org',
+    'mashup.lab.fiware.org',
+    'data.lab.fiware.org',
+    'help.lab.fiware.org',
+)
