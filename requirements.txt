@@ -59,3 +59,4 @@ XStatic-jsencrypt>=2.0.0.2  # MIT License
 XStatic-qunit>=1.14.0.2  # MIT License
 XStatic-rickshaw>=1.5.0  # BSD License (prior)
 XStatic-spin>=1.2.5.2  # MIT License
+django-cors-headers>=1.0.0
