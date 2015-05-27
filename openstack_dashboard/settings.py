@@ -112,6 +112,7 @@ OPENSTACK_IMAGE_BACKEND = {
 }
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -229,7 +230,8 @@ INSTALLED_APPS = [
     'horizon',
     'openstack_auth',
     'captcha',
-    'django_summernote', 
+    'django_summernote',
+    'corsheaders',
 ]
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 AUTHENTICATION_BACKENDS = ('openstack_auth.backend.KeystoneBackend',)
