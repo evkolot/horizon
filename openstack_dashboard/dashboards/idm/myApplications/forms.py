@@ -217,21 +217,42 @@ class CreatePermissionForm(forms.SelfHandlingForm):
                                      widget=forms.HiddenInput())
     name = forms.CharField(max_length=255, label=("Permission Name"))
     description = forms.CharField(max_length=255, label=("Description"))
-    action = forms.CharField(max_length=255, label=("HTTP action"))
-    resource = forms.CharField(max_length=255, label=("Resource"))
-    xml = forms.CharField(label="Advanced XACML Rule", widget=forms.Textarea())
+    action = forms.CharField(required=False, max_length=255, label=("HTTP action"))
+    resource = forms.CharField(required=False, max_length=255, label=("Resource"))
+    xml = forms.CharField(required=False, label="Advanced XACML Rule", widget=forms.Textarea())
     no_autocomplete = True
+
+    def clean(self):
+        """Check that either action and resource or xml are set but not both."""
+        cleaned_data = super(CreatePermissionForm, self).clean()
+
+        action = cleaned_data.get('action')
+        resource = cleaned_data.get('resource')
+        xml = cleaned_data.get('xml')
+
+        if xml and (action or resource):
+            raise forms.ValidationError(
+                'If you use the advanced rule you cannot set also action and resource',
+                code='invalid')
+
+        if not xml and not (action and resource):
+            raise forms.ValidationError(
+                'You need to define both action and resource.',
+                code='invalid')
+            
+        return cleaned_data
 
     def handle(self, request, data):
         try:
-            LOG.debug('Creating permission with name "%s"' % data['name'])
+            LOG.debug('Creating permission %s', data['name'])
             new_permission = fiware_api.keystone.permission_create(
                 request,
                 name=data['name'],
                 application=data['application_id'],
-                resource=data['resource'],
-                action=data['action'])
-
+                resource=data.get('resource', None),
+                action=data.get('action', None),
+                xml=data.get('xml', None))
+            
             messages.success(request,
                              ('Permission "%s" was successfully created.')
                              % data['name'])

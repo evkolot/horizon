@@ -13,6 +13,10 @@
     </AnyOf>
   </Target>
   {% for permission in permissions %}
-    {% include 'access_control/rule.xacml' with role=role app_id=app_id %}
+    {% if permission.xml %}
+      {{ permission.xml }}
+    {% else %}
+      {% include 'access_control/rule.xacml' with role=role app_id=app_id %}
+    {% endif %}
   {% endfor %}
 </Policy>
