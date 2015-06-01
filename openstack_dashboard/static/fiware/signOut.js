@@ -28,7 +28,7 @@ Fiware.signOut = (function($, undefined) {
       verb:      'GET',
       protocol:  'https',
       subdomain: 'data',
-      path:      '/user/_logout'
+      path:      '/user/logout'
     },
     account: {
       name:      'Account',
