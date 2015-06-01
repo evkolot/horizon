@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import datetime
 import logging
 import json
 
@@ -54,36 +55,58 @@ class UpdateAccountView(forms.ModalFormView):
 
     def get_context_data(self, **kwargs):
         context = super(UpdateAccountView, self).get_context_data(**kwargs)
-        context['user'] = fiware_api.keystone.user_get(self.request, 
+        user = fiware_api.keystone.user_get(self.request,
             self.kwargs['user_id'])
+
+        context['user'] = user
 
         context['allowed_regions'] = json.dumps(
             getattr(settings, 'FIWARE_ALLOWED_REGIONS', None))
+
+        context['default_durations'] = json.dumps(
+            getattr(settings, 'FIWARE_DEFAULT_DURATION', None))
+
+        account_type = self._current_account(user.id)[1]
+        account_info = {
+            'account_type': account_type,
+            'started_at': getattr(user, account_type + '_started_at', None),
+            'duration': getattr(user, account_type + '_duration', None),
+        }
+
+        if account_info['started_at'] and account_info['duration']:
+            start_date = datetime.datetime.strptime(account_info['started_at'], '%Y-%m-%d')
+            end_date = start_date + datetime.timedelta(days=account_info['duration'])
+            account_info['end_date'] = end_date.strftime('%Y-%m-%d')
+
+        context['account_info'] = account_info
         return context
 
     def get_initial(self):
         initial = super(UpdateAccountView, self).get_initial()
         user_id = self.kwargs['user_id']
-        user_roles = fiware_api.keystone.role_assignments_list(self.request, 
-            user=user_id, domain='default')
-        # TODO(garcianavalon) find a better solution to this
-        account_roles = [
-            fiware_api.keystone.get_basic_role(None,
-                use_idm_account=True).id,
-            fiware_api.keystone.get_trial_role(None,
-                use_idm_account=True).id,
-            fiware_api.keystone.get_community_role(None,
-                use_idm_account=True).id,
-        ]
-        current_account = next((a.role['id'] for a in user_roles 
-            if a.role['id'] in account_roles), None)
+        
+        current_account = self._current_account(user_id)
 
         initial.update({
             'user_id': user_id,
             #'regions': '',
-            'account_type': current_account,
+            'account_type': current_account[0],
         })
         return initial
+
+    def _current_account(self, user_id):
+        # TODO(garcianavalon) find a better solution to this
+        user_roles = [
+            a.role['id'] for a 
+            in fiware_api.keystone.role_assignments_list(self.request, 
+                user=user_id, domain='default')
+        ]
+       
+        fiware_roles = user_accounts_forms.get_account_choices()
+
+        return next((role for role in fiware_roles
+            if role[0] in user_roles))
+
 
 
 class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin):
