@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import logging
 import requests
 
@@ -626,6 +627,41 @@ def check_endpoint_group_in_project(request, project, endpoint_group,
 #             request, admin=True).endpoint_groups
 #     return manager.list_endpoint_groups_for_project(
 #         project=project)
+
+# USER CATEGORIES
+def update_to_trial(request, user, duration=None):
+    trial_role = get_trial_role(request, use_idm_account=True)
+    date = str(datetime.date.today())
+    keystone = internal_keystoneclient(request)
+    if not duration:
+        duration = settings.FIWARE_DEFAULT_DURATION[trial_role.name]
+    keystone.users.update(user, trial_started_at=date, trial_duration=duration)
+    add_domain_user_role(
+        request,
+        user=user,
+        role=trial_role.id,
+        domain='default')
+
+def update_to_community(request, user, duration=None):
+    community_role = get_community_role(request, use_idm_account=True)
+    date = str(datetime.date.today())
+    keystone = internal_keystoneclient(request)
+    if not duration:
+        duration = settings.FIWARE_DEFAULT_DURATION[community_role.name]
+    keystone.users.update(user, community_started_at=date, community_duration=duration)
+    add_domain_user_role(
+        request,
+        user=user,
+        role=community_role.id,
+        domain='default')
+
+def update_to_basic(request, user):
+    basic_role = get_basic_role(request, use_idm_account=True)
+    add_domain_user_role(
+        request,
+        user=user,
+        role=basic_role.id,
+        domain='default')
 
 # SPECIAL ROLES
 # TODO(garcianavalon) refactorize for better reuse

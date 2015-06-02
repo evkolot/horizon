@@ -34,17 +34,16 @@ from openstack_dashboard.dashboards.idm \
 LOG = logging.getLogger('idm_logger')
 
 class UserAccountsLogicMixin():
-    use_idm_account = True
 
     def _max_trial_users_reached(self, request):
         trial_users = len(
             fiware_api.keystone.get_trial_role_assignments(request,
-                use_idm_account=self.use_idm_account))
+                use_idm_account=True))
         return trial_users >= getattr(settings, 'MAX_TRIAL_USERS', 0)
 
-    def update_account(self, request, user_id, role_id, regions):
+    def update_account(self, request, user_id, role_id, regions, duration=None):
         activate_cloud = role_id != fiware_api.keystone.get_basic_role(
-            request, use_idm_account=self.use_idm_account).id
+            request, use_idm_account=True).id
         
         user = fiware_api.keystone.user_get(request, user_id)
 
@@ -52,19 +51,21 @@ class UserAccountsLogicMixin():
         self._clean_roles(request, user_id)
         self._clean_endpoint_groups(request, user.cloud_project_id)
 
-        # grant the selected role
-        fiware_api.keystone.add_domain_user_role(request,
-            user=user_id, role=role_id, domain='default')
-        date = str(datetime.date.today())
-        if (role_id == fiware_api.keystone.get_trial_role(request, 
-            use_idm_account=self.use_idm_account).id):
+        # update the account
+        if (role_id == fiware_api.keystone.get_trial_role(request,
+            use_idm_account=True).id):
 
-            fiware_api.keystone.user_update(request, user=user, password='',
-                trial_started_at=date, use_idm_account=self.use_idm_account)
-        elif (role_id == fiware_api.keystone.get_community_role(request, 
-                use_idm_account=self.use_idm_account).id):
-            fiware_api.keystone.user_update(request, user=user, password='',
-                community_started_at=date, use_idm_account=self.use_idm_account)
+            fiware_api.keystone.update_to_trial(request, user=user, duration=duration)
+
+        elif (role_id == fiware_api.keystone.get_community_role(request,
+                use_idm_account=True).id):
+
+            fiware_api.keystone.update_to_community(request, user=user, duration=duration)
+
+        elif (role_id == fiware_api.keystone.get_basic_role(request,
+                use_idm_account=True).id):
+
+            fiware_api.keystone.update_to_basic(request, user=user)
 
         # cloud
         if activate_cloud:
@@ -75,7 +76,7 @@ class UserAccountsLogicMixin():
         # assign endpoint group for the selected regions
         for region in regions:
             endpoint_groups = fiware_api.keystone.endpoint_group_list(
-                request, use_idm_account=self.use_idm_account)
+                request, use_idm_account=True)
             region_group = next(group for group in endpoint_groups
                 if group.filters.get('region_id', None) == region)
 
@@ -89,7 +90,7 @@ class UserAccountsLogicMixin():
                 request,
                 project=user.cloud_project_id,
                 endpoint_group=region_group,
-                use_idm_account=self.use_idm_account)
+                use_idm_account=True)
 
         # done!
 
@@ -115,18 +116,18 @@ class UserAccountsLogicMixin():
         # grant purchaser in cloud app to cloud org
         # and Member to the user
         purchaser = fiware_api.keystone.get_purchaser_role(request,
-            use_idm_account=self.use_idm_account)
+            use_idm_account=True)
         cloud_app = fiware_api.keystone.get_fiware_cloud_app(request,
-            use_idm_account=self.use_idm_account)
+            use_idm_account=True)
         cloud_role = fiware_api.keystone.get_default_cloud_role(request, cloud_app,
-            use_idm_account=self.use_idm_account)
+            use_idm_account=True)
         
         fiware_api.keystone.add_role_to_organization(
             request,
             role=purchaser.id,
             organization=cloud_project_id,
             application=cloud_app.id,
-            use_idm_account=self.use_idm_account)
+            use_idm_account=True)
 
         fiware_api.keystone.add_role_to_user(
             request,
@@ -134,14 +135,14 @@ class UserAccountsLogicMixin():
             user=user_id,
             organization=cloud_project_id,
             application=cloud_app.id,
-            use_idm_account=self.use_idm_account)
+            use_idm_account=True)
 
     def _deactivate_cloud(self, request, user_id, cloud_project_id):
         # remove purchaser from user cloud project
         purchaser = fiware_api.keystone.get_purchaser_role(request,
-            use_idm_account=self.use_idm_account)
+            use_idm_account=True)
         cloud_app = fiware_api.keystone.get_fiware_cloud_app(request,
-            use_idm_account=self.use_idm_account)
+            use_idm_account=True)
 
         fiware_api.keystone.remove_role_from_user(
             request,
@@ -149,7 +150,7 @@ class UserAccountsLogicMixin():
             user=user_id,
             organization=cloud_project_id,
             application=cloud_app.id,
-            use_idm_account=self.use_idm_account)
+            use_idm_account=True)
 
     def _clean_endpoint_groups(self, request, cloud_project_id):
         # remove all region related endpoint groups
@@ -157,7 +158,7 @@ class UserAccountsLogicMixin():
         # an endpoint to get all endpoint groups for a project
         # we check each relationship before for now
         endpoint_groups = fiware_api.keystone.endpoint_group_list(request,
-            use_idm_account=self.use_idm_account)
+            use_idm_account=True)
 
         for endpoint_group in endpoint_groups:
             if (endpoint_group.filters #check for no filter endpoint
@@ -169,7 +170,7 @@ class UserAccountsLogicMixin():
                     request,
                     project=cloud_project_id,
                     endpoint_group=endpoint_group,
-                    use_idm_account=self.use_idm_account)
+                    use_idm_account=True)
             except kc_exceptions.NotFound:
                 continue
             
@@ -177,7 +178,7 @@ class UserAccountsLogicMixin():
                 request,
                 project=cloud_project_id,
                 endpoint_group=endpoint_group,
-                use_idm_account=self.use_idm_account)
+                use_idm_account=True)
 
 
 def get_account_choices():
@@ -218,10 +219,15 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
         label=("Account type"),
         choices=get_account_choices())
 
+    duration = forms.IntegerField(
+        required=False,
+        label='Duration in days. Important: starting a NEW period from TODAY')
+
     regions = forms.MultipleChoiceField(
         required=False,
-        label=("Select new Cloud regions. Important: these regions will overwrite every regions assigned previously."),
+        label=("Select new Cloud regions. Important: these will overwrite previously assigned regions."),
         choices=get_regions())
+
 
     def clean_account_type(self):
         """ Validate that there are trial users accounts left"""
@@ -281,15 +287,15 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
                     code='invalid')
 
         return cleaned_data
-
     
     def handle(self, request, data):
         try:
             user_id = data['user_id']
             role_id = data['account_type']
             regions = data['regions']
+            duration = data.get('duration', None)
 
-            self.update_account(request, user_id, role_id, regions)
+            self.update_account(request, user_id, role_id, regions, duration)
 
             messages.success(request,
                 'User account upgraded succesfully')

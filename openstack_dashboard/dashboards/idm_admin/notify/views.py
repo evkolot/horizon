@@ -13,7 +13,6 @@
 import logging
 
 from django.shortcuts import redirect
-
 from horizon import forms
 
 from openstack_dashboard.dashboards.idm_admin.notify \
@@ -27,6 +26,9 @@ class NotifyEmailView(forms.ModalFormView):
     form_class = notify_forms.EmailForm
     template_name = 'idm_admin/notify/index.html'
 
+    initial = {
+        'body':'<span style="display: block;">Dear FIWARE Lab user,</span><br/>'
+    }
     def dispatch(self, request, *args, **kwargs):
         if idm_admin_utils.is_current_user_administrator(request):
             return super(NotifyEmailView, self).dispatch(request, *args, **kwargs)

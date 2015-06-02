@@ -1,4 +1,3 @@
-Dear FIWARE Lab user,
 
 {{ content.txt }}
 

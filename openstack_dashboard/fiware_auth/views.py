@@ -137,19 +137,11 @@ class RegistrationView(_RequestPassingFormView):
             
             # Grant trial or basic role in the domain
             if cleaned_data['trial']:
-                fiware_user_role = fiware_api.keystone.get_trial_role(
-                    request, use_idm_account=True)
+                fiware_api.keystone.update_to_trial(
+                    request, new_user)
             else:
-                fiware_user_role = fiware_api.keystone.get_basic_role(
-                    request, use_idm_account=True)
-
-            fiware_api.keystone.add_domain_user_role(
-                request,
-                user=new_user.id,
-                role=fiware_user_role.id,
-                domain='default')
-
-            LOG.debug('granted role %s.', fiware_user_role.name)
+                fiware_api.keystone.update_to_basic(
+                    request, new_user)
 
             # Grant purchaser to user's cloud organization in all 
             # default apps. If trial requested, also in Cloud

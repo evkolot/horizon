@@ -18,44 +18,78 @@
 
 <h5>E-mail: <b>{{ user.name }}</b></h5>
 
-<fieldset>
-    {% include "horizon/common/_form_fields.html" %}
-</fieldset>
-  <script type="text/javascript">
-    $(document).ready(function(){
+<h5>Current account type: <b>{{ account_info.account_type }}</b></h5>
+{% if account_info.started_at %}
+  <h5>Started at: <b>{{ account_info.started_at }}</b></h5>
+{% endif %}
+{% if account_info.duration %}
+  <h5>Duration: <b>{{ account_info.duration }} days</b></h5>
+{% endif %}
+{% if account_info.end_date %}
+  <h5>Expires at: <b>{{ account_info.end_date }}</b></h5>
+{% endif %}
+<div class="panel">
+  <div class="panel-headding">  
+    <a data-toggle="collapse" data-parent="#accordion" href="#collapse-update" class="panel-heading collapsed">
+      <h4 class="panel-title panel-close">
+        Update Account Status
+      </h4>
+    </a>
+  </div>
+  <div id="collapse-update" class="panel-collapse collapse">
+    <div class="panel-body">
+      <fieldset>
+        {% include "horizon/common/_form_fields.html" %}
+      </fieldset>
+      <button type="submit" class="btn btn-primary">Update</button>
+    </div>
+  </div>
+</div>
 
-      var allowed_regions = {{ allowed_regions|safe }};
-      function show_regions(){
-        var account_type = $("#id_account_type option:selected").text();
-        if (account_type == 'basic'){
+<script type="text/javascript">
+  $(document).ready(function(){
 
-          $('#id_regions').closest('div.form-group').hide();
-          $('#id_regions').val('')
+    var allowed_regions = {{ allowed_regions|safe }};
+    var default_durations = {{ default_durations|safe }};
 
-        } else if (account_type == 'trial') {
-          $('#id_regions').closest('div.form-group').show();
-          $('#id_regions').children().show()
-          $('#id_regions').children().filter(function(){
-            return $.inArray(this.value, allowed_regions[account_type]) == -1;
-          }).hide();
-          
-        } else if (account_type == 'community') {
-          $('#id_regions').closest('div.form-group').show();
-          $('#id_regions').children().show()
-          $('#id_regions').children().filter(function(){
-            return $.inArray(this.value, allowed_regions[account_type]) == -1;
-          }).hide();
-        }
-      };
-      show_regions();
+    function show_regions(){
+      var account_type = $("#id_account_type option:selected").text();
+      if (account_type == 'basic'){
 
-      $('#id_account_type').on('change', show_regions);
-    });
-  </script>
+        $('#id_regions').closest('div.form-group').hide();
+        $('#id_regions').val('')
+
+        $('#id_duration').closest('div.form-group').hide()
+        $('#id_duration').val('')
+
+      } else if (account_type == 'trial') {
+        $('#id_regions').closest('div.form-group').show();
+        $('#id_regions').children().show()
+        $('#id_regions').children().filter(function(){
+          return $.inArray(this.value, allowed_regions[account_type]) == -1;
+        }).hide();
+
+        $('#id_duration').closest('div.form-group').show();
+        $('#id_duration').val(default_durations[account_type])
+        
+      } else if (account_type == 'community') {
+        $('#id_regions').closest('div.form-group').show();
+        $('#id_regions').children().show()
+        $('#id_regions').children().filter(function(){
+          return $.inArray(this.value, allowed_regions[account_type]) == -1;
+        }).hide();
+
+        $('#id_duration').closest('div.form-group').show();
+        $('#id_duration').val(default_durations[account_type])
+      }
+    };
+    show_regions();
+
+    $('#id_account_type').on('change', show_regions);
+  });
+</script>
 {% endblock %}
 
 {% block modal-footer %}
-
-    <button type="submit" class="btn btn-primary">Update</button>
 
 {% endblock %}
