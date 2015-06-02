@@ -27,6 +27,8 @@ from openstack_auth import views as auth_views
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.fiware_oauth2 import forms
+# from openstack_auth import forms
+from openstack_dashboard.fiware_auth import forms as fiware_auth_forms
 
 from horizon import messages
 
@@ -74,8 +76,11 @@ class AuthorizeView(FormView):
                 'application':self.application,
             }
             LOG.debug('OAUTH2: Login page with consumer details')
+        
+            
             return auth_views.login(request, 
-                                extra_context=context, 
+                                extra_context=context,
+                                form_class=fiware_auth_forms.LoginWithEmailForm, 
                                 **kwargs)
 
     def load_credentials(self, request):
