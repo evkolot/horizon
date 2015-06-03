@@ -134,14 +134,14 @@ class RegistrationView(_RequestPassingFormView):
                 username=cleaned_data['username'])
             LOG.debug('user %s created.', 
                 cleaned_data['username'])
-            
+
             # Grant trial or basic role in the domain
             if cleaned_data['trial']:
                 fiware_api.keystone.update_to_trial(
-                    request, new_user)
+                    request, new_user.id)
             else:
                 fiware_api.keystone.update_to_basic(
-                    request, new_user)
+                    request, new_user.id)
 
             # Grant purchaser to user's cloud organization in all 
             # default apps. If trial requested, also in Cloud
@@ -296,21 +296,32 @@ class RequestPasswordResetView(_RequestPassingFormView):
         LOG.info('Creating reset token for {0}.'.format(email))
         try:
             user = fiware_api.keystone.check_email(request, email)
+
+            if not user.enabled:
+                msg = ('The email address you have specific is registered but not '
+                    'activated. Please check your email for the activation link '
+                    'or request a new one. If your problem '
+                    'persits, please contact: fiware-lab-help@lists.fi-ware.org')
+                raise messages.error(request, msg)
+
             reset_password_token = fiware_api.keystone.get_reset_token(request, user)
             token = reset_password_token.id
             user = reset_password_token.user
             self.send_reset_email(email, token, user)
             messages.success(request, ('Reset email send to %s') % email)
             return True
+
         except ks_exceptions.NotFound:
             LOG.debug('email address %s is not registered', email)
             msg = ('Sorry. You have specified an email address that is not '
                 'registered to any our our user accounts. If your problem '
                 'persits, please contact: fiware-lab-help@lists.fi-ware.org')
             messages.error(request, msg)
+
         except Exception:
             msg = ('An error occurred, try again later.')
             messages.error(request, msg)
+            
         return False
 
     def send_reset_email(self, email, token, user):
