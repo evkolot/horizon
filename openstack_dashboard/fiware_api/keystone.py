@@ -150,10 +150,6 @@ def reset_password(request, user, token, new_password):
     user = keystone.user_registration.users.reset_password(user, token, new_password)
     return user
 
-def project_delete(request, project):
-    keystone = internal_keystoneclient(request)
-    keystone.projects.delete(project)
-
 def user_delete(request, user):
     keystone = internal_keystoneclient(request)
     keystone.users.delete(user)
@@ -551,6 +547,10 @@ def project_update(request, project, name=None, description=None,
     manager = internal_keystoneclient(request).projects
     return manager.update(project, name=name, description=description,
                           enabled=enabled, domain=domain, **kwargs)
+
+def project_delete(request, project):
+    manager = internal_keystoneclient(request).projects
+    return manager.delete(project)
 
 # ROLES
 def add_domain_user_role(request, user, role, domain):

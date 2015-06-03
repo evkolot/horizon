@@ -221,9 +221,9 @@ class CancelForm(forms.SelfHandlingForm):
             os.remove(AVATAR_SMALL + organization.id)
             os.remove(AVATAR_MEDIUM + organization.id)
             os.remove(AVATAR_ORIGINAL + organization.id)
-            LOG.debug('{0} deleted'.format(image))
-        api.keystone.tenant_delete(request, organization)
-        LOG.info('Organization {0} deleted'.format(organization.id))
+            LOG.debug('%s deleted', image)
+        fiware_api.keystone.project_delete(request, organization)
+        LOG.info('Organization %s deleted', organization.id)
         messages.success(request, ("Organization deleted successfully."))
         response = shortcuts.redirect('horizon:idm:organizations:index')
         return response
