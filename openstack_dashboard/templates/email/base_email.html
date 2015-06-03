@@ -18,12 +18,9 @@
                 <td>
                   <!--notification-->
                   <div style="height: auto; padding: 20px 15px 10px; color: #666; background-color: #FFF; font-size: 13px;">
-                    <span style="display: block;">
-                      Dear FIWARE Lab user,
-                    </span>
-                    <p>
-                      {{ content.html | safe }}
-                    </p>
+
+                    {{ content.html | safe }}
+                    
                     {% if massive_footer == True %}
                       <br>
                       <p style="font-size: 12px;">
@@ -44,7 +41,7 @@
               <tr>              
                 <td style="padding:15px 15px 0px; display: block; padding-bottom: 30px; font-size: 11px;">
                     2015 © 
-                    <a style="color: #193B6B; text-decoration: none;" href="http://www.fi-ware.org/" onMouseOver= "this.style.cssText= 'color: #48B9C9; text-decoration: none;'" onMouseOut= "this.style.cssText= 'color: #193B6B; text-decoration: none;'">FIWARE</a>.
+                    <a style="color: #193B6B; text-decoration: none;" href="http://www.fiware.org/" onMouseOver= "this.style.cssText= 'color: #48B9C9; text-decoration: none;'" onMouseOut= "this.style.cssText= 'color: #193B6B; text-decoration: none;'">FIWARE</a>.
                 </td>
               </tr>
             </tfoot>
