@@ -45,8 +45,20 @@ def internal_keystoneclient(request):
     """
     cache_attr = "_internal_keystoneclient"
     keystoneclient = cache.get(cache_attr, None)
+    insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
+    credentials = getattr(settings, 'IDM_USER_CREDENTIALS')
+    domain = 'default'
+    endpoint = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
     if not keystoneclient:
         idm_user_session = _password_session(request)
+        # keystoneclient = client.Client(username=credentials['username'],
+        #                                password=credentials['password'],
+        #                                project_name=credentials['project'],
+        #                                project_domain_id=domain,
+        #                                insecure=insecure,
+        #                                auth_url=endpoint)
+        # keystoneclient = client.Client(token='ADMIN',endpoint='https://localhost:5000/v3',
+        #                                insecure=True)
         keystoneclient = client.Client(session=idm_user_session)
         cache.set(cache_attr, keystoneclient, DEFAULT_OBJECTS_CACHE_TIME)
     return keystoneclient
@@ -55,15 +67,14 @@ def _password_session(request):
     # TODO(garcianavalon) better domain usage
     domain = 'default'
     endpoint = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
-    # insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
-    # cacert = getattr(settings, 'OPENSTACK_SSL_CACERT', None)
+    #insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
+    cacert = getattr(settings, 'OPENSTACK_SSL_CACERT', None)
     credentials = getattr(settings, 'IDM_USER_CREDENTIALS')
 
     LOG.debug(
         ('Creating a new internal keystoneclient '
          'connection to %s.'),
         endpoint)
-    
     auth = v3.Password(
         username=credentials['username'],
         password=credentials['password'],
@@ -75,7 +86,9 @@ def _password_session(request):
         auth_url=endpoint)
         #debug=settings.DEBUG)
 
-    return session.Session(auth=auth)
+    LOG.debug(auth)
+
+    return session.Session(auth=auth, verify=False)
 
 # USER REGISTRATION
 def _find_user(keystone, email=None, username=None):
