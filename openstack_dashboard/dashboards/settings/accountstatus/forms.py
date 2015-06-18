@@ -15,17 +15,42 @@
 import logging
 
 from django import shortcuts
+from django.conf import settings
 
 from horizon import exceptions
 from horizon import forms
 from horizon import messages
+from horizon.utils import functions as utils
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.dashboards.idm_admin.user_accounts \
+    import forms as user_accounts_forms
+
 
 LOG = logging.getLogger('idm_logger')
 
-class UpgradeForm(forms.SelfHandlingForm):
+class UpgradeForm(forms.SelfHandlingForm, user_accounts_forms.UserAccountsLogicMixin):
 
     def handle(self, request, data):
-        pass
+
+        try:
+            user_id = request.user.id
+            role_id = fiware_api.keystone.get_trial_role(request).id
+            regions = ['Spain2']
+            default_durations = getattr(settings, 'FIWARE_DEFAULT_DURATION', None)
+            if default_durations:
+                duration = default_durations['trial']
+            else:
+                duration = 14
+
+            self.update_account(request, user_id, role_id, regions, duration)
+            messages.success(request, 'Updated account to Trial succesfully.')
+
+            return shortcuts.redirect('logout')
+        except Exception:
+            messages.error(request, 'An error ocurred. Please try again later.')
+
+        
+
+        

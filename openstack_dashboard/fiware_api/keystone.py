@@ -344,8 +344,8 @@ def application_create(request, name, redirect_uris, scopes=['all_info'],
                           **kwargs)
 
 def application_list(request, user=None):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).oauth2.consumers
+    # Always use the admin token here
+    manager = internal_keystoneclient(request).oauth2.consumers
     return manager.list(user=user)
 
 def application_get(request, application_id, use_idm_account=False):
@@ -873,8 +873,7 @@ def get_idm_admin_app(request):
     idm_admin = getattr(local_settings, "FIWARE_IDM_ADMIN_APP", None)
     if idm_admin and cache.get('idm_admin') is None:
         try:
-            apps = api.keystone.keystoneclient(request, 
-                admin=True).oauth2.consumers.list()
+            apps = internal_keystoneclient(request).oauth2.consumers.list()
         except Exception:
             apps = []
             exceptions.handle(request)
