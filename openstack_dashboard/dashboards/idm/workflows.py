@@ -139,7 +139,8 @@ class UpdateRelationshipAction(workflows.MembershipAction,
             objects_ids = owners_objects_relationship[owner_id]
             for object_id in objects_ids:
                 field_name = self.get_member_field_name(object_id)
-                self.fields[field_name].initial.append(owner_id)
+                if field_name in self.fields:
+                    self.fields[field_name].initial.append(owner_id)
 
     def _get_superset_id(self):
         return self.initial['superset_id']
