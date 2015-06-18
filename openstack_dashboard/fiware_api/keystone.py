@@ -237,9 +237,13 @@ def add_role_to_organization(request, role, organization,
             request, admin=True).fiware_roles.roles
     return manager.add_to_organization(role, organization, application)
 
-def remove_role_from_organization(request, role, organization, application):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.roles
+def remove_role_from_organization(request, role, organization, application,
+                                  use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient(request).fiware_roles.roles
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).fiware_roles.roles
     return manager.remove_from_organization(role, organization, application)
 
 def organization_role_assignments(request, organization=None,

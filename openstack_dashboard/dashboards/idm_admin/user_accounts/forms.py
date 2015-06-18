@@ -144,10 +144,9 @@ class UserAccountsLogicMixin():
         cloud_app = fiware_api.keystone.get_fiware_cloud_app(request,
             use_idm_account=True)
 
-        fiware_api.keystone.remove_role_from_user(
+        fiware_api.keystone.remove_role_from_organization(
             request,
             role=purchaser.id,
-            user=user_id,
             organization=cloud_project_id,
             application=cloud_app.id,
             use_idm_account=True)
