@@ -925,11 +925,11 @@ def get_fiware_default_app(request, app_name, use_idm_account=False):
                 break
     return cache.get(app_name)
 
-def get_fiware_default_apps(request, use_idm_account=False):
+def get_fiware_default_apps(request):
     default_apps_names = getattr(local_settings, "FIWARE_DEFAULT_APPS", [])
     default_apps = []
     for app_name in default_apps_names:
-        app = get_fiware_default_app(request, app_name, use_idm_account)
+        app = get_fiware_default_app(request, app_name, use_idm_account=True)
         if app:
             default_apps.append(app)
     return default_apps
