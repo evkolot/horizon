@@ -352,7 +352,7 @@ def application_list(request, user=None):
     manager = internal_keystoneclient(request).oauth2.consumers
     return manager.list(user=user)
 
-def application_get(request, application_id, use_idm_account=False):
+def application_get(request, application_id, use_idm_account=True):
     if use_idm_account:
         manager = internal_keystoneclient(request).oauth2.consumers
     else:
