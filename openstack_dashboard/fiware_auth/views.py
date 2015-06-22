@@ -145,8 +145,7 @@ class RegistrationView(_RequestPassingFormView):
 
             # Grant purchaser to user's cloud organization in all 
             # default apps. If trial requested, also in Cloud
-            default_apps = fiware_api.keystone.get_fiware_default_apps(
-                request, use_idm_account=True)
+            default_apps = fiware_api.keystone.get_fiware_default_apps(request)
 
             if cleaned_data['trial']:
                 cloud_app = fiware_api.keystone.get_fiware_cloud_app(
