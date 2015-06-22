@@ -247,7 +247,6 @@ def handle(request, message=None, redirect=None, ignore=False,
     class indicating the type of exception that was encountered will be
     returned.
     """
-    import pdb; pdb.set_trace()
     exc_type, exc_value, exc_traceback = sys.exc_info()
     log_method = getattr(LOG, log_level or "exception")
     force_log = force_log or os.environ.get("HORIZON_TEST_RUN", False)
