@@ -352,7 +352,7 @@ def application_list(request, user=None):
     manager = internal_keystoneclient(request).oauth2.consumers
     return manager.list(user=user)
 
-def application_get(request, application_id, use_idm_account=False):
+def application_get(request, application_id, use_idm_account=True):
     if use_idm_account:
         manager = internal_keystoneclient(request).oauth2.consumers
     else:
@@ -387,8 +387,8 @@ def get_user_access_tokens(request, user):
 
     return manager.list_for_user(user=user)
 
-def request_authorization_for_application(request, application, 
-                                          redirect_uri, scope=['all_info'], state=None):
+def request_authorization_for_application(request, application, redirect_uri,
+                                          response_type, scope=['all_info'], state=None):
     """ Sends the consumer/client credentials to the authorization server to ask
     a resource owner for authorization in a certain scope.
 
@@ -400,6 +400,7 @@ def request_authorization_for_application(request, application,
     manager = api.keystone.keystoneclient(request, admin=True).oauth2.authorization_codes
     response_dict = manager.request_authorization(consumer=application,
                                                   redirect_uri=redirect_uri,
+                                                  response_type=response_type,
                                                   scope=scope,
                                                   state=state)
     return  response_dict

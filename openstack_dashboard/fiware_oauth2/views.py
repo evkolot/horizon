@@ -101,6 +101,7 @@ class AuthorizeView(FormView):
                     request,
                     credentials.get('application_id'),
                     credentials.get('redirect_uri'),
+                    response_type=credentials.get('response_type'),
                     state=credentials.get('state', None))
         except Exception as e:
             LOG.warning(('OAUTH2: exception when requesting '
