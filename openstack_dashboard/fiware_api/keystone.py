@@ -172,17 +172,17 @@ def validate_keystone_token(request, token):
 
 # ROLES
 def role_get(request, role_id):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    manager = internal_keystoneclient(request).fiware_roles.roles
     return manager.get(role_id)
 
 def role_list(request, user=None, organization=None, application=None):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    manager = internal_keystoneclient(request).fiware_roles.roles
     return manager.list(user=user,
                         organization=organization,
                         application_id=application)
 
 def role_create(request, name, is_internal=False, application=None, **kwargs):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    manager = internal_keystoneclient(request).fiware_roles.roles
     return manager.create(name=name,
                           is_internal=is_internal,
                           application=application,
@@ -190,7 +190,7 @@ def role_create(request, name, is_internal=False, application=None, **kwargs):
 
 def role_update(request, role, name=None, is_internal=False, 
                 application=None, **kwargs):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    manager = internal_keystoneclient(request).fiware_roles.roles
     return manager.update(role,
                           name=name,
                           is_internal=is_internal,
@@ -198,7 +198,7 @@ def role_update(request, role, name=None, is_internal=False,
                           **kwargs)
 
 def role_delete(request, role_id):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    manager = internal_keystoneclient(request).fiware_roles.roles
     return manager.delete(role_id)
 
 
@@ -289,18 +289,16 @@ def list_organization_allowed_applications_to_manage_roles(request, organization
 
 # PERMISSIONS
 def permission_get(request, permission_id):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.get(permission_id)
 
 def permission_list(request, role=None, application=None):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.list(role=role,
                         application_id=application)
 
 def permission_create(request, name, is_internal=False, application=None, **kwargs):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.create(name=name,
                           is_internal=is_internal,
                           application=application,
@@ -308,8 +306,7 @@ def permission_create(request, name, is_internal=False, application=None, **kwar
 
 def permission_update(request, permission, name=None, is_internal=False, 
                       application=None, **kwargs):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.update(permission,
                           name=name,
                           is_internal=is_internal,
@@ -317,18 +314,15 @@ def permission_update(request, permission, name=None, is_internal=False,
                           **kwargs)
 
 def permission_delete(request, permission_id):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.delete(permission_id)
 
 def add_permission_to_role(request, permission, role):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.add_to_role(permission=permission, role=role)
 
 def remove_permission_from_role(request, permission, role):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.remove_from_role(permission=permission, role=role)
 
 # APPLICATIONS/CONSUMERS
@@ -349,7 +343,6 @@ def application_create(request, name, redirect_uris, scopes=['all_info'],
                           **kwargs)
 
 def application_list(request, user=None):
-    # Always use the admin token here
     manager = internal_keystoneclient(request).oauth2.consumers
     return manager.list(user=user)
 
@@ -362,7 +355,7 @@ def application_get(request, application_id, use_idm_account=True):
 
 def application_update(request, consumer_id, name=None, description=None, client_type=None, 
                        redirect_uris=None, grant_type=None, scopes=None, **kwargs):
-    manager = api.keystone.keystoneclient(request, admin=True).oauth2.consumers
+    manager = internal_keystoneclient(request).oauth2.consumers
     return manager.update(consumer=consumer_id,
                           name=name,
                           description=description,
@@ -539,6 +532,10 @@ def user_update(request, user, use_idm_account=False, **data):
             "Password changed. Please log in again to continue."
         )
 
+def keystone_role_list(request):
+    manager = internal_keystoneclient(request).roles
+    return manager.list()
+    
 # PROJECTS
 def project_get(request, project_id):
     manager = internal_keystoneclient(request).projects
@@ -691,7 +688,7 @@ class PickleObject():
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
-def get_owner_role(request, use_idm_account=False):
+def get_owner_role(request, use_idm_account=True):
     """Gets the owner role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -716,7 +713,7 @@ def get_owner_role(request, use_idm_account=False):
                 break
     return cache.get('owner_role')
 
-def get_member_role(request, use_idm_account=False):
+def get_member_role(request, use_idm_account=True):
     """Gets the member role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -741,7 +738,7 @@ def get_member_role(request, use_idm_account=False):
                 break
     return cache.get('member_role')
 
-def get_trial_role(request, use_idm_account=False):
+def get_trial_role(request, use_idm_account=True):
     """Gets the trial role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -766,7 +763,7 @@ def get_trial_role(request, use_idm_account=False):
                 break
     return cache.get('trial_role')
 
-def get_basic_role(request, use_idm_account=False):
+def get_basic_role(request, use_idm_account=True):
     """Gets the basic role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -791,7 +788,7 @@ def get_basic_role(request, use_idm_account=False):
                 break
     return cache.get('basic_role')
 
-def get_community_role(request, use_idm_account=False):
+def get_community_role(request, use_idm_account=True):
     """Gets the community role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -816,7 +813,7 @@ def get_community_role(request, use_idm_account=False):
                 break
     return cache.get('community_role')
 
-def get_provider_role(request):
+def get_provider_role(request, use_idm_account=True):
     """Gets the provider role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -825,8 +822,11 @@ def get_provider_role(request):
     provider = getattr(local_settings, "FIWARE_PROVIDER_ROLE", None)
     if provider and cache.get('provider_role') is None:
         try:
-            roles = api.keystone.keystoneclient(request, 
-                admin=True).fiware_roles.roles.list()
+            if use_idm_account:
+                manager = internal_keystoneclient(request)
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.fiware_roles.roles.list()
         except Exception:
             roles = []
             exceptions.handle(request)
@@ -837,7 +837,7 @@ def get_provider_role(request):
                 break
     return cache.get('provider_role')
 
-def get_purchaser_role(request, use_idm_account=False):
+def get_purchaser_role(request, use_idm_account=True):
     """Gets the purchaser role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -861,7 +861,7 @@ def get_purchaser_role(request, use_idm_account=False):
                 break
     return cache.get('purchaser_role')
 
-def get_default_cloud_role(request, cloud_app_id, use_idm_account=False):
+def get_default_cloud_role(request, cloud_app_id, use_idm_account=True):
     """Gets the default_cloud role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -903,7 +903,7 @@ def get_idm_admin_app(request):
                 break
     return cache.get('idm_admin')
 
-def get_fiware_cloud_app(request, use_idm_account=False):
+def get_fiware_cloud_app(request, use_idm_account=True):
     cloud_app = getattr(local_settings, "FIWARE_CLOUD_APP", None)
     if cloud_app and cache.get('cloud_app') is None:
         try:
@@ -922,7 +922,7 @@ def get_fiware_cloud_app(request, use_idm_account=False):
                 break
     return cache.get('cloud_app')
 
-def get_fiware_default_app(request, app_name, use_idm_account=False):
+def get_fiware_default_app(request, app_name, use_idm_account=True):
     if cache.get(app_name) is None:
         try:
             if use_idm_account:
