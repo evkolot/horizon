@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import datetime
+import json
 import logging
 import requests
 
@@ -405,21 +406,7 @@ def request_authorization_for_application(request, application, redirect_uri,
                                                   state=state)
     return  response_dict
 
-def check_authorization_for_application(request, application,
-                                        redirect_uri, scope=['all_info']):
-    """ Checks if the requesting application already got authorized by the user, so we don't
-        need to make all the steps again.
-
-        The logic is that if the application already has a (valid) access token for that
-    user and the scopes and redirect uris are registered then we can issue a new token for
-    it.
-    """
-    LOG.debug('Checking if application {0} was already authorized by user {1}'.format(
-                                                                application, request.user))
-    manager = api.keystone.keystoneclient(request, admin=True).oauth2.access_tokens
-    # FIXME(garcianavalon) the keystoneclient is not ready yet
-
-def authorize_application(request, application, scopes=['all_info'], redirect=False):
+def authorize_application(request, application, scopes=None, redirect=False):
     """ Give authorization from a resource owner to the consumer/client on the
     requested scopes.
 
@@ -431,7 +418,10 @@ def authorize_application(request, application, scopes=['all_info'], redirect=Fa
     :returns: an authorization_code object, following the same pattern as other
         keystoneclient objects
     """
-    LOG.debug('Authorizing application: {0} by user: {1}'.format(application, request.user))
+    if not scopes:
+        scopes = ['all_info']
+
+    LOG.debug('Authorizing application: %s by user: %s', application, request.user)
     manager = api.keystone.keystoneclient(request, admin=True).oauth2.authorization_codes
     authorization_code = manager.authorize(consumer=application,
                                            scopes=scopes,
@@ -473,11 +463,35 @@ def forward_access_token_request(request):
     }
     body = request.body
     keystone_url = getattr(settings, 'OPENSTACK_KEYSTONE_URL') + '/OS-OAUTH2/access_token'
-    LOG.debug('API_KEYSTONE: POST to {0} with body {1} and headers {2}'.format(keystone_url,
-                                                                            body, headers))
+    LOG.debug('API_KEYSTONE: POST to %s with body %s and headers %s', 
+              keystone_url, body, headers)
     response = requests.post(keystone_url, data=body, headers=headers)
     return response
 
+def forward_implicit_grant_authorization_request(request, application_id, scopes=None):
+    """ Forwards the request to the keystone backend. The implict grant authorization
+    returns an access token instead of an authorization code.
+    """
+    # TODO(garcianavalon) figure out if this method belongs to keystone client or if
+    # there is a better way to do it/structure this
+    if not scopes:
+        scopes = ['all_info']
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    body = {
+        'user_auth': {
+            'client_id':application_id,
+            'scopes':scopes,
+            'user_id': request.user.id,
+        }
+    }
+    keystone_url = getattr(settings, 'OPENSTACK_KEYSTONE_URL') + '/OS-OAUTH2/authorize'
+    LOG.debug('API_KEYSTONE: POST to %s with body %s and headers %s', 
+              keystone_url, body, headers)
+
+    response = requests.post(keystone_url, data=json.dumps(body), headers=headers, allow_redirects=False)
+    return response
 
 # FIWARE-IdM API CALLS
 def forward_validate_token_request(request):
