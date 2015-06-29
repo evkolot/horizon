@@ -37,19 +37,20 @@ LOG = logging.getLogger('idm_logger')
 # NOTE(garcianavalon) time in seconds to cache the default roles
 # and other objects
 DEFAULT_OBJECTS_CACHE_TIME = 60 * 15
+INTERNAL_CLIENT_CACHE_TIME = 60 * 60
 
 def internal_keystoneclient(request):
     """Creates a connection with keystone using the IdM account.
 
-    The client is cached so that subsequent API calls during the same
-    request/response cycle don't have to be re-authenticated.
+    The client is cached so that subsequent API calls don't have
+    to be re-authenticated.
     """
     cache_attr = "_internal_keystoneclient"
     keystoneclient = cache.get(cache_attr, None)
     if not keystoneclient:
         idm_user_session = _password_session(request)
         keystoneclient = client.Client(session=idm_user_session)
-        cache.set(cache_attr, keystoneclient, DEFAULT_OBJECTS_CACHE_TIME)
+        cache.set(cache_attr, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
     return keystoneclient
 
 def _password_session(request):
