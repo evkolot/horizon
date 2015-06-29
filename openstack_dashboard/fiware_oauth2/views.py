@@ -101,6 +101,7 @@ class AuthorizeView(FormView):
                     request,
                     credentials.get('application_id'),
                     credentials.get('redirect_uri'),
+                    response_type=credentials.get('response_type'),
                     state=credentials.get('state', None))
         except Exception as e:
             LOG.warning(('OAUTH2: exception when requesting '
@@ -177,15 +178,29 @@ class AuthorizeView(FormView):
 
     def obtain_access_token(self, request):
         try:
-            authorization_code = fiware_api.keystone.authorize_application(
-                request, 
-                application=self.application_credentials['application_id'])
-            LOG.debug('OAUTH2: Authorization Code obtained %s', 
-                authorization_code.code)
-            # redirect resource owner to client with the authorization code
-            LOG.debug('OAUTH2: Redirecting user back to %s', 
-                authorization_code.redirect_uri)
-            return redirect(authorization_code.redirect_uri, permanent=True)
+            if self.application_credentials.get('response_type', None) == 'code':
+
+                authorization_code = fiware_api.keystone.authorize_application(
+                    request,
+                    application=self.application_credentials['application_id'])
+
+                LOG.debug('OAUTH2: Authorization Code obtained %s', 
+                    authorization_code.code)
+                # redirect resource owner to client with the authorization code
+                LOG.debug('OAUTH2: Redirecting user back to %s', 
+                    authorization_code.redirect_uri)
+                return redirect(authorization_code.redirect_uri, permanent=True)
+
+            elif self.application_credentials.get('response_type', None) == 'token':
+                # Implicit grant
+                response = fiware_api.keystone.forward_implicit_grant_authorization_request(
+                    request,
+                    application_id=self.application_credentials['application_id'])
+
+                return http.HttpResponseRedirect(
+                    response.headers['location'],
+                    status=response.status_code, 
+                    reason=response.reason)
 
         except Exception as e:
             LOG.error('OAUTH2: exception when authorizing %s', e)

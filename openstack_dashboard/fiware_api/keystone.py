@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import datetime
+import json
 import logging
 import requests
 
@@ -170,17 +171,17 @@ def validate_keystone_token(request, token):
 
 # ROLES
 def role_get(request, role_id):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    manager = internal_keystoneclient(request).fiware_roles.roles
     return manager.get(role_id)
 
 def role_list(request, user=None, organization=None, application=None):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    manager = internal_keystoneclient(request).fiware_roles.roles
     return manager.list(user=user,
                         organization=organization,
                         application_id=application)
 
 def role_create(request, name, is_internal=False, application=None, **kwargs):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    manager = internal_keystoneclient(request).fiware_roles.roles
     return manager.create(name=name,
                           is_internal=is_internal,
                           application=application,
@@ -188,7 +189,7 @@ def role_create(request, name, is_internal=False, application=None, **kwargs):
 
 def role_update(request, role, name=None, is_internal=False, 
                 application=None, **kwargs):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    manager = internal_keystoneclient(request).fiware_roles.roles
     return manager.update(role,
                           name=name,
                           is_internal=is_internal,
@@ -196,7 +197,7 @@ def role_update(request, role, name=None, is_internal=False,
                           **kwargs)
 
 def role_delete(request, role_id):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.roles
+    manager = internal_keystoneclient(request).fiware_roles.roles
     return manager.delete(role_id)
 
 
@@ -236,9 +237,13 @@ def add_role_to_organization(request, role, organization,
             request, admin=True).fiware_roles.roles
     return manager.add_to_organization(role, organization, application)
 
-def remove_role_from_organization(request, role, organization, application):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.roles
+def remove_role_from_organization(request, role, organization, application,
+                                  use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient(request).fiware_roles.roles
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).fiware_roles.roles
     return manager.remove_from_organization(role, organization, application)
 
 def organization_role_assignments(request, organization=None,
@@ -283,18 +288,16 @@ def list_organization_allowed_applications_to_manage_roles(request, organization
 
 # PERMISSIONS
 def permission_get(request, permission_id):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.get(permission_id)
 
 def permission_list(request, role=None, application=None):
-    manager = api.keystone.keystoneclient(request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.list(role=role,
                         application_id=application)
 
 def permission_create(request, name, is_internal=False, application=None, **kwargs):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.create(name=name,
                           is_internal=is_internal,
                           application=application,
@@ -302,8 +305,7 @@ def permission_create(request, name, is_internal=False, application=None, **kwar
 
 def permission_update(request, permission, name=None, is_internal=False, 
                       application=None, **kwargs):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.update(permission,
                           name=name,
                           is_internal=is_internal,
@@ -311,18 +313,15 @@ def permission_update(request, permission, name=None, is_internal=False,
                           **kwargs)
 
 def permission_delete(request, permission_id):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.delete(permission_id)
 
 def add_permission_to_role(request, permission, role):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.add_to_role(permission=permission, role=role)
 
 def remove_permission_from_role(request, permission, role):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.permissions
+    manager = internal_keystoneclient(request).fiware_roles.permissions
     return manager.remove_from_role(permission=permission, role=role)
 
 # APPLICATIONS/CONSUMERS
@@ -343,11 +342,10 @@ def application_create(request, name, redirect_uris, scopes=['all_info'],
                           **kwargs)
 
 def application_list(request, user=None):
-    manager = api.keystone.keystoneclient(
-        request, admin=True).oauth2.consumers
+    manager = internal_keystoneclient(request).oauth2.consumers
     return manager.list(user=user)
 
-def application_get(request, application_id, use_idm_account=False):
+def application_get(request, application_id, use_idm_account=True):
     if use_idm_account:
         manager = internal_keystoneclient(request).oauth2.consumers
     else:
@@ -356,7 +354,7 @@ def application_get(request, application_id, use_idm_account=False):
 
 def application_update(request, consumer_id, name=None, description=None, client_type=None, 
                        redirect_uris=None, grant_type=None, scopes=None, **kwargs):
-    manager = api.keystone.keystoneclient(request, admin=True).oauth2.consumers
+    manager = internal_keystoneclient(request).oauth2.consumers
     return manager.update(consumer=consumer_id,
                           name=name,
                           description=description,
@@ -382,8 +380,8 @@ def get_user_access_tokens(request, user):
 
     return manager.list_for_user(user=user)
 
-def request_authorization_for_application(request, application, 
-                                          redirect_uri, scope=['all_info'], state=None):
+def request_authorization_for_application(request, application, redirect_uri,
+                                          response_type, scope=['all_info'], state=None):
     """ Sends the consumer/client credentials to the authorization server to ask
     a resource owner for authorization in a certain scope.
 
@@ -395,25 +393,12 @@ def request_authorization_for_application(request, application,
     manager = api.keystone.keystoneclient(request, admin=True).oauth2.authorization_codes
     response_dict = manager.request_authorization(consumer=application,
                                                   redirect_uri=redirect_uri,
+                                                  response_type=response_type,
                                                   scope=scope,
                                                   state=state)
     return  response_dict
 
-def check_authorization_for_application(request, application,
-                                        redirect_uri, scope=['all_info']):
-    """ Checks if the requesting application already got authorized by the user, so we don't
-        need to make all the steps again.
-
-        The logic is that if the application already has a (valid) access token for that
-    user and the scopes and redirect uris are registered then we can issue a new token for
-    it.
-    """
-    LOG.debug('Checking if application {0} was already authorized by user {1}'.format(
-                                                                application, request.user))
-    manager = api.keystone.keystoneclient(request, admin=True).oauth2.access_tokens
-    # FIXME(garcianavalon) the keystoneclient is not ready yet
-
-def authorize_application(request, application, scopes=['all_info'], redirect=False):
+def authorize_application(request, application, scopes=None, redirect=False):
     """ Give authorization from a resource owner to the consumer/client on the
     requested scopes.
 
@@ -425,7 +410,10 @@ def authorize_application(request, application, scopes=['all_info'], redirect=Fa
     :returns: an authorization_code object, following the same pattern as other
         keystoneclient objects
     """
-    LOG.debug('Authorizing application: {0} by user: {1}'.format(application, request.user))
+    if not scopes:
+        scopes = ['all_info']
+
+    LOG.debug('Authorizing application: %s by user: %s', application, request.user)
     manager = api.keystone.keystoneclient(request, admin=True).oauth2.authorization_codes
     authorization_code = manager.authorize(consumer=application,
                                            scopes=scopes,
@@ -467,11 +455,35 @@ def forward_access_token_request(request):
     }
     body = request.body
     keystone_url = getattr(settings, 'OPENSTACK_KEYSTONE_URL') + '/OS-OAUTH2/access_token'
-    LOG.debug('API_KEYSTONE: POST to {0} with body {1} and headers {2}'.format(keystone_url,
-                                                                            body, headers))
+    LOG.debug('API_KEYSTONE: POST to %s with body %s and headers %s', 
+              keystone_url, body, headers)
     response = requests.post(keystone_url, data=body, headers=headers)
     return response
 
+def forward_implicit_grant_authorization_request(request, application_id, scopes=None):
+    """ Forwards the request to the keystone backend. The implict grant authorization
+    returns an access token instead of an authorization code.
+    """
+    # TODO(garcianavalon) figure out if this method belongs to keystone client or if
+    # there is a better way to do it/structure this
+    if not scopes:
+        scopes = ['all_info']
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    body = {
+        'user_auth': {
+            'client_id':application_id,
+            'scopes':scopes,
+            'user_id': request.user.id,
+        }
+    }
+    keystone_url = getattr(settings, 'OPENSTACK_KEYSTONE_URL') + '/OS-OAUTH2/authorize'
+    LOG.debug('API_KEYSTONE: POST to %s with body %s and headers %s', 
+              keystone_url, body, headers)
+
+    response = requests.post(keystone_url, data=json.dumps(body), headers=headers, allow_redirects=False)
+    return response
 
 # FIWARE-IdM API CALLS
 def forward_validate_token_request(request):
@@ -519,6 +531,10 @@ def user_update(request, user, use_idm_account=False, **data):
             "Password changed. Please log in again to continue."
         )
 
+def keystone_role_list(request):
+    manager = internal_keystoneclient(request).roles
+    return manager.list()
+    
 # PROJECTS
 def project_get(request, project_id):
     manager = internal_keystoneclient(request).projects
@@ -671,7 +687,7 @@ class PickleObject():
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
-def get_owner_role(request, use_idm_account=False):
+def get_owner_role(request, use_idm_account=True):
     """Gets the owner role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -696,7 +712,7 @@ def get_owner_role(request, use_idm_account=False):
                 break
     return cache.get('owner_role')
 
-def get_member_role(request, use_idm_account=False):
+def get_member_role(request, use_idm_account=True):
     """Gets the member role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -721,7 +737,7 @@ def get_member_role(request, use_idm_account=False):
                 break
     return cache.get('member_role')
 
-def get_trial_role(request, use_idm_account=False):
+def get_trial_role(request, use_idm_account=True):
     """Gets the trial role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -746,7 +762,7 @@ def get_trial_role(request, use_idm_account=False):
                 break
     return cache.get('trial_role')
 
-def get_basic_role(request, use_idm_account=False):
+def get_basic_role(request, use_idm_account=True):
     """Gets the basic role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -771,7 +787,7 @@ def get_basic_role(request, use_idm_account=False):
                 break
     return cache.get('basic_role')
 
-def get_community_role(request, use_idm_account=False):
+def get_community_role(request, use_idm_account=True):
     """Gets the community role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -796,7 +812,7 @@ def get_community_role(request, use_idm_account=False):
                 break
     return cache.get('community_role')
 
-def get_provider_role(request):
+def get_provider_role(request, use_idm_account=True):
     """Gets the provider role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -805,8 +821,11 @@ def get_provider_role(request):
     provider = getattr(local_settings, "FIWARE_PROVIDER_ROLE", None)
     if provider and cache.get('provider_role') is None:
         try:
-            roles = api.keystone.keystoneclient(request, 
-                admin=True).fiware_roles.roles.list()
+            if use_idm_account:
+                manager = internal_keystoneclient(request)
+            else:
+                manager = api.keystone.keystoneclient(request, admin=True)
+            roles = manager.fiware_roles.roles.list()
         except Exception:
             roles = []
             exceptions.handle(request)
@@ -817,7 +836,7 @@ def get_provider_role(request):
                 break
     return cache.get('provider_role')
 
-def get_purchaser_role(request, use_idm_account=False):
+def get_purchaser_role(request, use_idm_account=True):
     """Gets the purchaser role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -841,7 +860,7 @@ def get_purchaser_role(request, use_idm_account=False):
                 break
     return cache.get('purchaser_role')
 
-def get_default_cloud_role(request, cloud_app_id, use_idm_account=False):
+def get_default_cloud_role(request, cloud_app_id, use_idm_account=True):
     """Gets the default_cloud role object from Keystone and caches it.
 
     Since this is configured in settings and should not change from request
@@ -872,8 +891,7 @@ def get_idm_admin_app(request):
     idm_admin = getattr(local_settings, "FIWARE_IDM_ADMIN_APP", None)
     if idm_admin and cache.get('idm_admin') is None:
         try:
-            apps = api.keystone.keystoneclient(request, 
-                admin=True).oauth2.consumers.list()
+            apps = internal_keystoneclient(request).oauth2.consumers.list()
         except Exception:
             apps = []
             exceptions.handle(request)
@@ -884,7 +902,7 @@ def get_idm_admin_app(request):
                 break
     return cache.get('idm_admin')
 
-def get_fiware_cloud_app(request, use_idm_account=False):
+def get_fiware_cloud_app(request, use_idm_account=True):
     cloud_app = getattr(local_settings, "FIWARE_CLOUD_APP", None)
     if cloud_app and cache.get('cloud_app') is None:
         try:
@@ -903,7 +921,7 @@ def get_fiware_cloud_app(request, use_idm_account=False):
                 break
     return cache.get('cloud_app')
 
-def get_fiware_default_app(request, app_name, use_idm_account=False):
+def get_fiware_default_app(request, app_name, use_idm_account=True):
     if cache.get(app_name) is None:
         try:
             if use_idm_account:
@@ -921,11 +939,11 @@ def get_fiware_default_app(request, app_name, use_idm_account=False):
                 break
     return cache.get(app_name)
 
-def get_fiware_default_apps(request, use_idm_account=False):
+def get_fiware_default_apps(request):
     default_apps_names = getattr(local_settings, "FIWARE_DEFAULT_APPS", [])
     default_apps = []
     for app_name in default_apps_names:
-        app = get_fiware_default_app(request, app_name, use_idm_account)
+        app = get_fiware_default_app(request, app_name, use_idm_account=True)
         if app:
             default_apps.append(app)
     return default_apps
