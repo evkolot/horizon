@@ -153,32 +153,19 @@ class UserAccountsLogicMixin():
 
     def _clean_endpoint_groups(self, request, cloud_project_id):
         # remove all region related endpoint groups
-        # NOTE(garcianavalon) the keystone extension doesnt support yet
-        # an endpoint to get all endpoint groups for a project
-        # we check each relationship before for now
-        endpoint_groups = fiware_api.keystone.endpoint_group_list(request,
-            use_idm_account=True)
+        endpoint_groups = fiware_api.keystone.list_endpoint_groups_for_project(
+            request, cloud_project_id)
 
         for endpoint_group in endpoint_groups:
             if (endpoint_group.filters #check for no filter endpoint
                 and 'region_id' not in endpoint_group.filters):
                 continue
 
-            try:
-                fiware_api.keystone.check_endpoint_group_in_project(
-                    request,
-                    project=cloud_project_id,
-                    endpoint_group=endpoint_group,
-                    use_idm_account=True)
-            except kc_exceptions.NotFound:
-                continue
-            
             fiware_api.keystone.delete_endpoint_group_from_project(
                 request,
                 project=cloud_project_id,
                 endpoint_group=endpoint_group,
                 use_idm_account=True)
-
 
 def get_account_choices():
     """Loads all FIWARE account roles."""

@@ -634,15 +634,14 @@ def check_endpoint_group_in_project(request, project, endpoint_group,
         project=project,
         endpoint_group=endpoint_group)
 
-# NOTE(garcianavalon) this is documented but not suported in keystone...
-# def list_endpoint_groups_for_project(request, project, use_idm_account=False):
-#     if use_idm_account:
-#         manager = internal_keystoneclient(request).endpoint_groups
-#     else:
-#         manager = api.keystone.keystoneclient(
-#             request, admin=True).endpoint_groups
-#     return manager.list_endpoint_groups_for_project(
-#         project=project)
+def list_endpoint_groups_for_project(request, project, use_idm_account=True):
+    if use_idm_account:
+        manager = internal_keystoneclient(request).endpoint_groups
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).endpoint_groups
+    return manager.list_endpoint_groups_for_project(
+        project=project)
 
 # USER CATEGORIES
 def update_to_trial(request, user, duration=None):
