@@ -141,7 +141,7 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
-            user_id = data['user_id']
+            user = fiware_api.keystone.user_get(request, data['user_id'])
             role_id = data['role_id']
 
             if (role_id == fiware_api.keystone.get_trial_role(
@@ -159,7 +159,7 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
 
                 return http.HttpResponseBadRequest()
 
-            self.update_account(request, user_id, role_id, regions)
+            self.update_account(request, user, role_id, regions)
 
             return http.HttpResponse()
 

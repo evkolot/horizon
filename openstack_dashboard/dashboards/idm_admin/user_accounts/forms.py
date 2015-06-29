@@ -13,23 +13,19 @@
 # under the License.
 
 import logging
-import datetime
 
 from django import forms
 from django import shortcuts
 from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 from horizon import exceptions
 from horizon import forms
 from horizon import messages
 
-from keystoneclient import exceptions as kc_exceptions
-
-from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 
-from openstack_dashboard.dashboards.idm \
-    import utils as idm_utils
 
 LOG = logging.getLogger('idm_logger')
 
@@ -41,14 +37,14 @@ class UserAccountsLogicMixin():
                 use_idm_account=True))
         return trial_users >= getattr(settings, 'MAX_TRIAL_USERS', 0)
 
-    def update_account(self, request, user_id, role_id, regions, duration=None):
+    def update_account(self, request, user, role_id, regions, duration=None):
         activate_cloud = role_id != fiware_api.keystone.get_basic_role(
             request, use_idm_account=True).id
         
-        user = fiware_api.keystone.user_get(request, user_id)
+        
 
         # clean previous status
-        self._clean_roles(request, user_id)
+        self._clean_roles(request, user.id)
         self._clean_endpoint_groups(request, user.cloud_project_id)
 
         # update the account
@@ -69,9 +65,9 @@ class UserAccountsLogicMixin():
 
         # cloud
         if activate_cloud:
-            self._activate_cloud(request, user_id, user.cloud_project_id)
+            self._activate_cloud(request, user.id, user.cloud_project_id)
         else:
-            self._deactivate_cloud(request, user_id, user.cloud_project_id)
+            self._deactivate_cloud(request, user.id, user.cloud_project_id)
         
         # assign endpoint group for the selected regions
         for region in regions:
@@ -214,6 +210,10 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
         label=("Select new Cloud regions. Important: these will overwrite previously assigned regions."),
         choices=get_regions())
 
+    notify = forms.BooleanField(
+        required=False,
+        label='Notify user by email')
+
 
     def clean_account_type(self):
         """ Validate that there are trial users accounts left"""
@@ -276,12 +276,26 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
     
     def handle(self, request, data):
         try:
-            user_id = data['user_id']
             role_id = data['account_type']
             regions = data['regions']
             duration = data.get('duration', None)
+            user = fiware_api.keystone.user_get(request, data['user_id'])
 
-            self.update_account(request, user_id, role_id, regions, duration)
+            self.update_account(request, user, role_id, regions, duration)
+
+            if data.get('notify', False):
+                to = user.name
+                subject = '[FIWARE Lab] Changed account status'
+                from_email = 'no-reply@account.lab.fi-ware.org'
+                kwargs = {}
+
+                text_content = render_to_string('TODO', dictionary=kwargs)
+                html_content = render_to_string('TODO', dictionary=kwargs)
+
+                LOG.debug('Sending email to %s with subject %s', to, subject)
+                msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
 
             messages.success(request,
                 'User account upgraded succesfully')
