@@ -25,9 +25,16 @@ from horizon import forms
 from horizon import messages
 
 from openstack_dashboard import fiware_api
+from openstack_dashboard.fiware_auth import views as fiware_auth
 
 
 LOG = logging.getLogger('idm_logger')
+
+EMAIL_HTML_TEMPLATE = 'email/base_email.html'
+EMAIL_TEXT_TEMPLATE = 'email/base_email.txt'
+
+NOTIFY_ACCOUNT_CHANGE_HTML_TEMPLATE = 'email/account_status_change.html'
+NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE = 'email/account_status_change.txt'
 
 class UserAccountsLogicMixin():
 
@@ -192,7 +199,7 @@ def get_regions():
         choices.append((region.id, region.id))
     return choices
 
-class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
+class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin, fiware_auth.TemplatedEmailMixin):
     user_id = forms.CharField(
         widget=forms.HiddenInput(), required=True)
 
@@ -284,18 +291,30 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
             self.update_account(request, user, role_id, regions, duration)
 
             if data.get('notify', False):
-                to = user.name
-                subject = '[FIWARE Lab] Changed account status'
-                from_email = 'no-reply@account.lab.fi-ware.org'
-                kwargs = {}
+                # Reload user data
+                user = fiware_api.keystone.user_get(request, data['user_id'])
 
-                text_content = render_to_string('TODO', dictionary=kwargs)
-                html_content = render_to_string('TODO', dictionary=kwargs)
+                account_type = next(role[1] for role in get_account_choices()
+                                    if role[0] == role_id)
 
-                LOG.debug('Sending email to %s with subject %s', to, subject)
-                msg = EmailMultiAlternatives(subject, text_content, from_email, to)
-                msg.attach_alternative(html_content, "text/html")
-                msg.send()
+                context = {
+                    'regions': regions,
+                    'user_name':user.username,
+                    'account_type': account_type,
+                    'started_at': getattr(user, account_type + '_started_at', None),
+                    'duration': getattr(user, account_type + '_duration', None),
+                }
+
+                text_content = render_to_string(NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE,
+                                                dictionary=context)
+                html_content = render_to_string(NOTIFY_ACCOUNT_CHANGE_HTML_TEMPLATE,
+                                                dictionary=context)
+
+                self.send_html_email(
+                    to=[user.name],
+                    from_email='no-reply@account.lab.fiware.org',
+                    subject='[FIWARE Lab] Changed account status',
+                    content={'text': text_content, 'html': html_content})
 
             messages.success(request,
                 'User account upgraded succesfully')

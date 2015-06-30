@@ -1,0 +1,23 @@
+<p>Hello {{ user_name }}!</p>
+
+<p>Your account status has changed. Your new account status details are:</p>
+
+<p>Current account type: {{ account_type }}</p>
+{% if regions %}
+  <p>Authorized regions: 
+    
+    {% for region in regions%}
+      {{ region }}{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+    
+  </p>
+{% endif %}
+{% if started_at %}
+  <p>Started at: {{ started_at }}</p>
+{% endif %}
+{% if duration %}
+  <p>Duration: {{ duration }} days</p>
+{% endif %}
+{% if end_date %}
+  <p>Expires at: {{ end_date }}</p>
+{% endif %}

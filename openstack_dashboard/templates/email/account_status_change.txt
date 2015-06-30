@@ -1,0 +1,20 @@
+Hello {{ user_name }}!
+
+Your account status has changed. Your new account status details are:
+
+Current account type: {{ account_type }}
+{% if regions %}
+  Authorized regions: 
+    {% for region in regions%}
+      {{ region }}{% if not forloop.last %}, {% endif %}
+    {% endfor %} 
+{% endif %}
+{% if started_at %}
+  Started at: {{ started_at }}
+{% endif %}
+{% if duration %}
+  Duration: {{ duration }} days
+{% endif %}
+{% if end_date %}
+  Expires at: {{ end_date }}
+{% endif %}
