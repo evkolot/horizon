@@ -72,6 +72,7 @@ class UpdateAccountView(forms.ModalFormView):
             'account_type': account_type,
             'started_at': getattr(user, account_type + '_started_at', None),
             'duration': getattr(user, account_type + '_duration', None),
+            'regions': self._current_regions(self.user.cloud_project_id)
         }
 
         if account_info['started_at'] and account_info['duration']:
