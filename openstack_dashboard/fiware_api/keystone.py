@@ -57,8 +57,12 @@ def _password_session(request):
     # TODO(garcianavalon) better domain usage
     domain = 'default'
     endpoint = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
-    #insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
-    #cacert = getattr(settings, 'OPENSTACK_SSL_CACERT', None)
+    insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
+    verify = getattr(settings, 'OPENSTACK_SSL_CACERT', True)
+
+    if insecure:
+        verify = False
+
     credentials = getattr(settings, 'IDM_USER_CREDENTIALS')
 
     LOG.debug(
@@ -71,12 +75,9 @@ def _password_session(request):
         project_name=credentials['project'],
         user_domain_id=domain,
         project_domain_id=domain,
-        #insecure=insecure,
-        #cacert=cacert,
         auth_url=endpoint)
-        #debug=settings.DEBUG)
 
-    return session.Session(auth=auth, verify=False)
+    return session.Session(auth=auth, verify=verify)
 
 # USER REGISTRATION
 def _find_user(keystone, email=None, username=None):
