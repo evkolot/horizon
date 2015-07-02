@@ -21,3 +21,6 @@ You are now able to use the FIWARE Lab Cloud Portal and its infrastructure, unti
 {% else %}
 You are not allowed to use the FIWARE Lab Cloud Portal and its infrastructure anymore. If you want to use it, please request a Community Account here: http://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE_Lab:_Upgrade_to_Community_Account.
 {% endif %}
+
+Keep enjoying FIWARE Lab,
+FIWARE Lab administrators.
