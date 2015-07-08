@@ -18,7 +18,18 @@
 
 <h5>E-mail: <b>{{ user.name }}</b></h5>
 
+<h5>Cloud project ID: <b>{{ user.cloud_project_id }}</b></h5>
+
 <h5>Current account type: <b>{{ account_info.account_type }}</b></h5>
+{% if account_info.regions %}
+  <h5>Authorized regions: 
+    <b>
+    {% for region in account_info.regions%}
+      {{ region }}{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+    </b>
+  </h5>
+{% endif %}
 {% if account_info.started_at %}
   <h5>Started at: <b>{{ account_info.started_at }}</b></h5>
 {% endif %}

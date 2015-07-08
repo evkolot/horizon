@@ -13,25 +13,28 @@
 # under the License.
 
 import logging
-import datetime
 
 from django import forms
 from django import shortcuts
 from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 from horizon import exceptions
 from horizon import forms
 from horizon import messages
 
-from keystoneclient import exceptions as kc_exceptions
-
-from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.fiware_auth import views as fiware_auth
 
-from openstack_dashboard.dashboards.idm \
-    import utils as idm_utils
 
 LOG = logging.getLogger('idm_logger')
+
+EMAIL_HTML_TEMPLATE = 'email/base_email.html'
+EMAIL_TEXT_TEMPLATE = 'email/base_email.txt'
+
+NOTIFY_ACCOUNT_CHANGE_HTML_TEMPLATE = 'email/account_status_change.html'
+NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE = 'email/account_status_change.txt'
 
 class UserAccountsLogicMixin():
 
@@ -41,14 +44,14 @@ class UserAccountsLogicMixin():
                 use_idm_account=True))
         return trial_users >= getattr(settings, 'MAX_TRIAL_USERS', 0)
 
-    def update_account(self, request, user_id, role_id, regions, duration=None):
+    def update_account(self, request, user, role_id, regions, duration=None):
         activate_cloud = role_id != fiware_api.keystone.get_basic_role(
             request, use_idm_account=True).id
         
-        user = fiware_api.keystone.user_get(request, user_id)
+        
 
         # clean previous status
-        self._clean_roles(request, user_id)
+        self._clean_roles(request, user.id)
         self._clean_endpoint_groups(request, user.cloud_project_id)
 
         # update the account
@@ -69,9 +72,9 @@ class UserAccountsLogicMixin():
 
         # cloud
         if activate_cloud:
-            self._activate_cloud(request, user_id, user.cloud_project_id)
+            self._activate_cloud(request, user.id, user.cloud_project_id)
         else:
-            self._deactivate_cloud(request, user_id, user.cloud_project_id)
+            self._deactivate_cloud(request, user.id, user.cloud_project_id)
         
         # assign endpoint group for the selected regions
         for region in regions:
@@ -153,32 +156,19 @@ class UserAccountsLogicMixin():
 
     def _clean_endpoint_groups(self, request, cloud_project_id):
         # remove all region related endpoint groups
-        # NOTE(garcianavalon) the keystone extension doesnt support yet
-        # an endpoint to get all endpoint groups for a project
-        # we check each relationship before for now
-        endpoint_groups = fiware_api.keystone.endpoint_group_list(request,
-            use_idm_account=True)
+        endpoint_groups = fiware_api.keystone.list_endpoint_groups_for_project(
+            request, cloud_project_id)
 
         for endpoint_group in endpoint_groups:
             if (endpoint_group.filters #check for no filter endpoint
                 and 'region_id' not in endpoint_group.filters):
                 continue
 
-            try:
-                fiware_api.keystone.check_endpoint_group_in_project(
-                    request,
-                    project=cloud_project_id,
-                    endpoint_group=endpoint_group,
-                    use_idm_account=True)
-            except kc_exceptions.NotFound:
-                continue
-            
             fiware_api.keystone.delete_endpoint_group_from_project(
                 request,
                 project=cloud_project_id,
                 endpoint_group=endpoint_group,
                 use_idm_account=True)
-
 
 def get_account_choices():
     """Loads all FIWARE account roles."""
@@ -209,7 +199,7 @@ def get_regions():
         choices.append((region.id, region.id))
     return choices
 
-class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
+class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin, fiware_auth.TemplatedEmailMixin):
     user_id = forms.CharField(
         widget=forms.HiddenInput(), required=True)
 
@@ -226,6 +216,10 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
         required=False,
         label=("Select new Cloud regions. Important: these will overwrite previously assigned regions."),
         choices=get_regions())
+
+    notify = forms.BooleanField(
+        required=False,
+        label='Notify user by email')
 
 
     def clean_account_type(self):
@@ -289,12 +283,38 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
     
     def handle(self, request, data):
         try:
-            user_id = data['user_id']
             role_id = data['account_type']
             regions = data['regions']
             duration = data.get('duration', None)
+            user = fiware_api.keystone.user_get(request, data['user_id'])
 
-            self.update_account(request, user_id, role_id, regions, duration)
+            self.update_account(request, user, role_id, regions, duration)
+
+            if data.get('notify', False):
+                # Reload user data
+                user = fiware_api.keystone.user_get(request, data['user_id'])
+
+                account_type = next(role[1] for role in get_account_choices()
+                                    if role[0] == role_id)
+
+                context = {
+                    'regions': regions,
+                    'user_name':user.username,
+                    'account_type': account_type,
+                    'started_at': getattr(user, account_type + '_started_at', None),
+                    'duration': getattr(user, account_type + '_duration', None),
+                }
+
+                text_content = render_to_string(NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE,
+                                                dictionary=context)
+                html_content = render_to_string(NOTIFY_ACCOUNT_CHANGE_HTML_TEMPLATE,
+                                                dictionary=context)
+
+                self.send_html_email(
+                    to=[user.name],
+                    from_email='no-reply@account.lab.fiware.org',
+                    subject='[FIWARE Lab] Changed account status',
+                    content={'text': text_content, 'html': html_content})
 
             messages.success(request,
                 'User account upgraded succesfully')

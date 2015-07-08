@@ -37,46 +37,47 @@ LOG = logging.getLogger('idm_logger')
 # NOTE(garcianavalon) time in seconds to cache the default roles
 # and other objects
 DEFAULT_OBJECTS_CACHE_TIME = 60 * 15
+INTERNAL_CLIENT_CACHE_TIME = 60 * 60
 
 def internal_keystoneclient(request):
     """Creates a connection with keystone using the IdM account.
 
-    The client is cached so that subsequent API calls during the same
-    request/response cycle don't have to be re-authenticated.
+    The client is cached so that subsequent API calls don't have
+    to be re-authenticated.
     """
     cache_attr = "_internal_keystoneclient"
     keystoneclient = cache.get(cache_attr, None)
     if not keystoneclient:
         idm_user_session = _password_session(request)
         keystoneclient = client.Client(session=idm_user_session)
-        cache.set(cache_attr, keystoneclient, DEFAULT_OBJECTS_CACHE_TIME)
+        cache.set(cache_attr, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
     return keystoneclient
 
 def _password_session(request):
     # TODO(garcianavalon) better domain usage
     domain = 'default'
     endpoint = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
-    # insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
-    # cacert = getattr(settings, 'OPENSTACK_SSL_CACERT', None)
+    insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
+    verify = getattr(settings, 'OPENSTACK_SSL_CACERT', True)
+
+    if insecure:
+        verify = False
+
     credentials = getattr(settings, 'IDM_USER_CREDENTIALS')
 
     LOG.debug(
         ('Creating a new internal keystoneclient '
          'connection to %s.'),
         endpoint)
-    
     auth = v3.Password(
         username=credentials['username'],
         password=credentials['password'],
         project_name=credentials['project'],
         user_domain_id=domain,
         project_domain_id=domain,
-        #insecure=insecure,
-        #cacert=cacert,
         auth_url=endpoint)
-        #debug=settings.DEBUG)
 
-    return session.Session(auth=auth)
+    return session.Session(auth=auth, verify=verify)
 
 # USER REGISTRATION
 def _find_user(keystone, email=None, username=None):
@@ -634,15 +635,14 @@ def check_endpoint_group_in_project(request, project, endpoint_group,
         project=project,
         endpoint_group=endpoint_group)
 
-# NOTE(garcianavalon) this is documented but not suported in keystone...
-# def list_endpoint_groups_for_project(request, project, use_idm_account=False):
-#     if use_idm_account:
-#         manager = internal_keystoneclient(request).endpoint_groups
-#     else:
-#         manager = api.keystone.keystoneclient(
-#             request, admin=True).endpoint_groups
-#     return manager.list_endpoint_groups_for_project(
-#         project=project)
+def list_endpoint_groups_for_project(request, project, use_idm_account=True):
+    if use_idm_account:
+        manager = internal_keystoneclient(request).endpoint_groups
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).endpoint_groups
+    return manager.list_endpoint_groups_for_project(
+        project=project)
 
 # USER CATEGORIES
 def update_to_trial(request, user, duration=None):

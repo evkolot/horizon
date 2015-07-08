@@ -49,14 +49,15 @@ class UpdateAccountView(forms.ModalFormView):
 
     def dispatch(self, request, *args, **kwargs):
         if idm_admin_utils.is_current_user_administrator(request):
+            self.user = fiware_api.keystone.user_get(request,
+                kwargs['user_id'])
             return super(UpdateAccountView, self).dispatch(request, *args, **kwargs)
         else:
             return redirect('horizon:user_home')
 
     def get_context_data(self, **kwargs):
         context = super(UpdateAccountView, self).get_context_data(**kwargs)
-        user = fiware_api.keystone.user_get(self.request,
-            self.kwargs['user_id'])
+        user = self.user
 
         context['user'] = user
 
@@ -71,6 +72,7 @@ class UpdateAccountView(forms.ModalFormView):
             'account_type': account_type,
             'started_at': getattr(user, account_type + '_started_at', None),
             'duration': getattr(user, account_type + '_duration', None),
+            'regions': self._current_regions(self.user.cloud_project_id)
         }
 
         if account_info['started_at'] and account_info['duration']:
@@ -83,13 +85,14 @@ class UpdateAccountView(forms.ModalFormView):
 
     def get_initial(self):
         initial = super(UpdateAccountView, self).get_initial()
-        user_id = self.kwargs['user_id']
+        user_id = self.user.id
         
         current_account = self._current_account(user_id)
+        current_regions = self._current_regions(self.user.cloud_project_id)
 
         initial.update({
             'user_id': user_id,
-            #'regions': '',
+            'regions': [(region_id, region_id) for region_id in current_regions],
             'account_type': current_account[0],
         })
         return initial
@@ -106,6 +109,15 @@ class UpdateAccountView(forms.ModalFormView):
 
         return next((role for role in fiware_roles
             if role[0] in user_roles))
+
+    def _current_regions(self, cloud_project_id):
+        endpoint_groups = fiware_api.keystone.list_endpoint_groups_for_project(
+            self.request, cloud_project_id)
+        current_regions = []
+        for endpoint_group in endpoint_groups:
+            if 'region_id' in endpoint_group.filters:
+                current_regions.append(endpoint_group.filters['region_id'])
+        return current_regions
 
 
 
@@ -130,7 +142,7 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
-            user_id = data['user_id']
+            user = fiware_api.keystone.user_get(request, data['user_id'])
             role_id = data['role_id']
 
             if (role_id == fiware_api.keystone.get_trial_role(
@@ -148,7 +160,7 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
 
                 return http.HttpResponseBadRequest()
 
-            self.update_account(request, user_id, role_id, regions)
+            self.update_account(request, user, role_id, regions)
 
             return http.HttpResponse()
 

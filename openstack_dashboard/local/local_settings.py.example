@@ -130,7 +130,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # ]
 
 OPENSTACK_HOST = "$$KEYSTONE_ADDRESS"
-OPENSTACK_KEYSTONE_URL = "http://%s:$$KEYSTONE_PUBLIC_PORT/v3" % OPENSTACK_HOST
+OPENSTACK_KEYSTONE_URL = "https://%s:$$KEYSTONE_PUBLIC_PORT/v3" % OPENSTACK_HOST
 # NOTE(garcianavalon) this role is created whith all the other initial
 # data. Don't confuse it with keystone v2 API default role
 # (member_role_name=_member_)
