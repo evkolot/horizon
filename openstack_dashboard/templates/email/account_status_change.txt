@@ -19,7 +19,7 @@ Current account type: {{ account_type }}
 {% if show_cloud_info %}
 You are now able to use the FIWARE Lab Cloud Portal and its infrastructure, until your account status expires. If you want to authorize other users in your cloud organization, you can find a tutorial here: http://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE_Lab:_Upgrade_to_Community_Account#How_can_authorize_other_users_to_use_my_cloud_resources.3F.
 {% else %}
-You are not allowed to use the FIWARE Lab Cloud Portal and its infrastructure anymore. If you want to use it, please request a Community Account here: http://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE_Lab:_Upgrade_to_Community_Account.
+You are not allowed to use the cloud resources associated with your authorized organization anymore. If you want to continue to use it, please request a Community Account following the steps defined here: http://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/FIWARE_Lab:_Upgrade_to_Community_Account.
 {% endif %}
 
 Keep enjoying FIWARE Lab,

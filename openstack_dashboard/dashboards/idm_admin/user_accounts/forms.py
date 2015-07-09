@@ -296,13 +296,13 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin, fiware_a
 
                 account_type = next(role[1] for role in get_account_choices()
                                     if role[0] == role_id)
-
                 context = {
                     'regions': regions,
                     'user_name':user.username,
                     'account_type': account_type,
                     'started_at': getattr(user, account_type + '_started_at', None),
                     'duration': getattr(user, account_type + '_duration', None),
+                    'show_cloud_info': account_type in ['trial', 'community'],
                 }
 
                 text_content = render_to_string(NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE,
