@@ -21,7 +21,7 @@
   <section class="help-bar">
     <div class="row">
       <div class="help-box">
-        <a href="mailto:fiware-lab-help@lists.fi-ware.org?Subject=FI-LAB Assistance">
+        <a href="" onclick="confirm_help_box()">
           <header>
             <img src="{{ STATIC_URL }}dashboard/img/icons/help.png">
             <h5>Need Help?</h5>
@@ -84,4 +84,13 @@
       showCollectorDialog();
     });
   }};
+</script>
+
+<script>
+  var confirm_help_box = function () {
+    var r = confirm("The communications sent to the FIWARE Lab support list are public and they generate public tickets. Please avoid sending private info unless you are happy to see it publicly available.");
+      if (r == true) {
+          window.location = "mailto:fiware-lab-help@lists.fi-ware.org?Subject=FIWARE Lab Assistance";
+    } 
+  }
 </script>
