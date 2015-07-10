@@ -11,7 +11,7 @@
   clear: none;
   padding: 0;
   @media (max-width: $screen-sm-min){
-    clear: both;  
+    clear: both;
   }
   .help-box{
     margin-top: 20px;
@@ -36,7 +36,7 @@
     }
     footer{
       margin-top: 15px;
-      @media (max-width: 861px){      
+      @media (max-width: 861px){
         a{
           display: block;
           float: none !important;
@@ -53,7 +53,7 @@
       }
     }
   }
-  
+
   .media-app{
     img.media-object{
       float: left;
@@ -106,7 +106,7 @@
     margin-top: -3px;
     margin-right: 4px;
   }
-  h5{ 
+  h5{
     color: #fff;
     line-height: 0;
     display: inline-block;
@@ -114,7 +114,7 @@
   &:hover{
     text-decoration: none;
   }
-} 
+}
 
 .view-more{
   margin-top: 10px;
@@ -140,7 +140,7 @@
   @include border-top-radius (0);
   @include border-bottom-radius (0);
   float: right;
-  @media (min-width: $screen-xs-min){ 
+  @media (min-width: $screen-xs-min){
     margin-right: 0;
   }
   @media (max-width: $screen-xs-min){
@@ -196,7 +196,7 @@
   .modal-footer{
     padding: 0;
     border: none
-  } 
+  }
 }
 
 .control-label{
@@ -213,7 +213,7 @@
     a{
     text-decoration: underline;
   }
-  #inlineCheckbox1{ 
+  #inlineCheckbox1{
     margin-top: 2.2px;
   }
 }
@@ -305,7 +305,7 @@
 }
 
 @media (min-width: 768px){
-  .dl-horizontal{ 
+  .dl-horizontal{
     dt {
       width: 88px;
     }
@@ -316,10 +316,10 @@
 }
 
 @media (max-width: 767px){
-  .dl-horizontal{ 
+  .dl-horizontal{
     dd {
       margin-left: 0px;
-      margin-bottom: 15px; 
+      margin-bottom: 15px;
     }
   }
 }
