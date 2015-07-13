@@ -46,11 +46,14 @@ def internal_keystoneclient(request):
     to be re-authenticated.
     """
     cache_attr = "_internal_keystoneclient"
-    keystoneclient = cache.get(cache_attr, None)
+    #keystoneclient = cache.get(cache_attr, None)
+    keystoneclient = getattr(request, cache_attr, None)
     if not keystoneclient:
         idm_user_session = _password_session(request)
         keystoneclient = client.Client(session=idm_user_session)
-        cache.set(cache_attr, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
+        #cache.set(cache_attr, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
+        if request:
+            setattr(request, cache_attr, keystoneclient)
     return keystoneclient
 
 def _password_session(request):
