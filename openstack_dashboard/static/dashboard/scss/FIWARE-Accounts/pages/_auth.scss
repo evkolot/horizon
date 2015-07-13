@@ -280,16 +280,6 @@
   }
 }
 
-
-
-.glyphicon{
-  @extend .fa;
-}
-.glyphicon-eye-open{
-  @extend .fa-eye;
-}
-
-
 #authorize_application_modal{
   .modal-header{
     border: none;
