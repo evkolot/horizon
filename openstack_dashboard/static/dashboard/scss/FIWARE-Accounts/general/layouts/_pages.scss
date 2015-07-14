@@ -1,4 +1,4 @@
-#frontpage, 
+#frontpage,
 #registration,
 #home{
   .row{
@@ -12,12 +12,12 @@
       .help-box{
         padding: 0 !important;
       }
-    } 
+    }
   }
 }
-#home{ 
+#home{
   .panel.applications,
-  .panel.members{ 
+  .panel.members{
     .panel-footer {
       padding: 4px 15px 6px;
     }
@@ -65,19 +65,19 @@ textarea {
   border-right: rgba(0, 0, 0, 0);
   min-height: 60px;
   a{
-    position: absolute; 
+    position: absolute;
     width: 100%;
   }
   .avatar {
-    float: left; 
+    float: left;
     margin-right: 15px;
     min-width: 36px;
     min-height: 36px;
-    img{   
+    img{
       margin-left: 0 !important;
-      width: 36px;   
+      width: 36px;
       @include border-top-radius (2px);
-      @include border-bottom-radius (2px);   
+      @include border-bottom-radius (2px);
     }
   }
   .name,
@@ -177,11 +177,11 @@ ul#perform_filter_available_update_owners_users{
       color: $brand-danger !important;
     }
   }
-  
+
   a{
     color: $brand-danger !important;
     width: 100%;
-  
+
     h3{
       margin-top: -16px !important;
     }
@@ -205,6 +205,13 @@ ul#perform_filter_available_update_owners_users{
 #modal_wrapper{
   .modal{
     @extend .fix-top;
+  }
+  .loading{
+    .modal-content{
+      padding: 50px;
+      text-align: center;
+      font-size: 1.8em;
+    }
   }
 }
 .cancel_account,
@@ -231,7 +238,7 @@ ul#perform_filter_available_update_owners_users{
       color: $brand-danger !important;
     }
   }
-  .modal-header { 
+  .modal-header {
     h3{
       display: none;
     }
@@ -259,7 +266,7 @@ ul#perform_filter_available_update_owners_users{
   }
 }
 
-.panel-heading{ 
+.panel-heading{
   span{
     float: left;
     padding-top: 6px;
@@ -343,7 +350,7 @@ ul#perform_filter_available_update_owners_users{
 
 
 
-#frontpage, 
+#frontpage,
 #registration,
 #home{
   .row{
@@ -397,17 +404,17 @@ textarea {
   border-right: rgba(0, 0, 0, 0);
   min-height: 60px;
   a{
-    position: absolute; 
+    position: absolute;
     width: 100%;
   }
   .avatar {
-    float: left; 
+    float: left;
     margin-right: 15px;
-    img{   
+    img{
       margin-left: 0 !important;
-      width: 36px;   
+      width: 36px;
       @include border-top-radius (2px);
-      @include border-bottom-radius (2px);   
+      @include border-bottom-radius (2px);
     }
   }
   .name,
@@ -480,11 +487,11 @@ textarea {
       color: $brand-danger !important;
     }
   }
-  
+
   a{
     color: $brand-danger !important;
     width: 100%;
-  
+
     h3{
       margin-top: -16px !important;
     }
@@ -512,7 +519,7 @@ textarea {
 }
 .cancel_account,
 .destroy_organization{
-  border-color: $brand-danger 
+  border-color: $brand-danger
   &:hover{
     h3{
       color: $brand-danger !important;
@@ -534,7 +541,7 @@ textarea {
       color: $brand-danger !important;
     }
   }
-  .modal-header { 
+  .modal-header {
     h3{
       display: none;
     }
@@ -546,7 +553,7 @@ textarea {
       color: #48B9C9;
       display: block !important;
       text-decoration: none;
-    }    
+    }
   }
   .modal-footer{
     border-top: none !important;
@@ -563,7 +570,7 @@ textarea {
   }
 }
 
-.panel-heading{ 
+.panel-heading{
   span{
     float: left;
     padding-top: 6px;
