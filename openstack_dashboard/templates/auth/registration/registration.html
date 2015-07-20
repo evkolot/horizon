@@ -13,5 +13,12 @@
       {% include 'auth/registration/_registration_form.html' %}
     </div>
   </div>
+  
   {% include "horizon/_messages.html" %}
+
+  <script type="text/javascript">
+    $(function () {
+      $('[data-toggle="popover"]').popover({html:true})
+    })
+  </script>
 {% endblock %}

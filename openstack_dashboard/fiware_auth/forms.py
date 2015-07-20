@@ -17,6 +17,8 @@ from captcha.fields import ReCaptchaField
 
 from django import forms
 from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 
 from openstack_auth import forms as openstack_auth_forms
 
@@ -24,6 +26,8 @@ from keystoneclient import exceptions as keystoneclient_exceptions
 
 from openstack_dashboard import fiware_api
 
+
+TRIAL_USER_MESSAGE = 'auth/_trial_users_not_available.html'
 
 class ConfirmPasswordForm(forms.Form):
     """Encapsulates the idea of two password fields and checking they are the same"""
@@ -97,7 +101,8 @@ class RegistrationForm(ConfirmPasswordForm):
                 self.request)) 
             >= getattr(settings, 'MAX_TRIAL_USERS', 0)):
             self.fields['trial'].widget.attrs['disabled'] = 'disabled'
-            self.fields['trial'].label += (' (Not available)')
+            self.fields['trial'].label = mark_safe(
+                self.fields['trial'].label + render_to_string(TRIAL_USER_MESSAGE))
     
     # def clean_username(self):
     #     """ Validate that the username is not already in use."""

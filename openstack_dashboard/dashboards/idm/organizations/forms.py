@@ -216,14 +216,21 @@ class CancelForm(forms.SelfHandlingForm):
     title = 'Cancel'
     
     def handle(self, request, data, organization):
+        if getattr(organization, 'is_cloud_project', False):
+            messages.error(request, ("Your cloud organization can't be deleted."))
+            response = shortcuts.redirect('horizon:idm:organizations:index')
+            return response
+
         image = getattr(organization, 'img_original', '')
         if "OrganizationAvatar" in image:
             os.remove(AVATAR_SMALL + organization.id)
             os.remove(AVATAR_MEDIUM + organization.id)
             os.remove(AVATAR_ORIGINAL + organization.id)
             LOG.debug('%s deleted', image)
+
         fiware_api.keystone.project_delete(request, organization)
         LOG.info('Organization %s deleted', organization.id)
+
         messages.success(request, ("Organization deleted successfully."))
         response = shortcuts.redirect('horizon:idm:organizations:index')
         return response

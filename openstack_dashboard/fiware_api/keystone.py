@@ -46,11 +46,14 @@ def internal_keystoneclient(request):
     to be re-authenticated.
     """
     cache_attr = "_internal_keystoneclient"
-    keystoneclient = cache.get(cache_attr, None)
+    #keystoneclient = cache.get(cache_attr, None)
+    keystoneclient = getattr(request, cache_attr, None)
     if not keystoneclient:
         idm_user_session = _password_session(request)
         keystoneclient = client.Client(session=idm_user_session)
-        cache.set(cache_attr, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
+        #cache.set(cache_attr, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
+        if request:
+            setattr(request, cache_attr, keystoneclient)
     return keystoneclient
 
 def _password_session(request):
@@ -158,17 +161,8 @@ def user_delete(request, user):
 
 # validate token
 def validate_keystone_token(request, token):
-    # TODO(garcianavalon) figure out if this method belongs to keystone client or if
-    # there is a better way to do it/structure this
-    keystone_url = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
-    endpoint = '/auth/tokens'
-    url = keystone_url + endpoint
-    headers = {
-        'X-Auth-Token': token,
-    }
-    LOG.debug('API_KEYSTONE: GET to %s', url)
-    response = requests.get(url, headers=headers)
-    return response
+    keystone = internal_keystoneclient(request)
+    return keystone.tokens.validate(token, include_catalog=False)
 
 
 # ROLES

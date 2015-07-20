@@ -133,11 +133,12 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
         if not token:
             return http.HttpResponse('Unauthorized', status=401)
 
-        response = fiware_api.keystone.validate_keystone_token(request, token)
-        if response.status_code != 200:
+        try:
+            fiware_api.keystone.validate_keystone_token(request, token)
+        except Exception:
             return http.HttpResponse('Unauthorized', status=401)
-        return super(UpdateAccountEndpointView, self).dispatch(request, *args, **kwargs)
 
+        return super(UpdateAccountEndpointView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         try:

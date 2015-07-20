@@ -172,10 +172,11 @@ horizon.forms.add_password_fields_reveal_buttons = function (el) {
       if ($input.attr('type') === 'password') {
         $icon.removeClass('fa-eye');
         $icon.addClass('fa-eye-slash');
+
         $input = _change_input_type($input, 'text');
       } else {
         $icon.removeClass('fa-eye-slash');
-        $icon.addClass('fa-eye-slash');
+        $icon.addClass('fa-eye');
         $input = _change_input_type($input, 'password');
       }
     });
