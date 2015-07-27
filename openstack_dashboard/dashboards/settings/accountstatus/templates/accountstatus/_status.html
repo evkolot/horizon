@@ -1,10 +1,13 @@
 <form accept-charset="UTF-8" action="{{ form.action }}" method="post">{% csrf_token %}
-  Your account is <b>{{ account_type }}</b>
-  {% if started_at %}
-    since {{ started_at }}
+  <h5>Current account type: <b>{{ account_info.account_type }}</b></h5>
+  {% if account_info.started_at %}
+    <h5>Started at: <b>{{ account_info.started_at }}</b></h5>
   {% endif %}
-  {% if end_date %}
-    . It expires at <b>{{ end_date }}</b>
+  {% if account_info.duration %}
+    <h5>Duration: <b>{{ account_info.duration }} days</b></h5>
+  {% endif %}
+  {% if account_info.end_date %}
+    <h5>Expires at: <b>{{ account_info.end_date }}</b></h5>
   {% endif %}
   <fieldset>
     <legend></legend>
