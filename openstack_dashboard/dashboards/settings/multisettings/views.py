@@ -75,10 +75,10 @@ class MultiFormView(views.APIView):
 
         context['account_info'] = account_info
 
-        if context['account_type'] != community_role.name:
+        if account_type != community_role.name:
             context['show_community_request'] = True
 
-        if (context['account_type'] == basic_role.name 
+        if (account_type == basic_role.name 
             and len(fiware_api.keystone.get_trial_role_assignments(self.request)) 
                 < getattr(settings, 'MAX_TRIAL_USERS', 0)):
             context['show_trial_request'] = True
