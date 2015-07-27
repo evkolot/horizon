@@ -13,6 +13,7 @@
 # under the License.
 
 import logging
+import datetime
 
 from django.conf import settings
 
@@ -57,12 +58,20 @@ class MultiFormView(views.APIView):
             trial_role,
             community_role,
         ]
+        context['started_at'] = None
         context['account_type'] = next((r.name for r in account_roles 
             if r.id in user_roles), None)
         if context['account_type'] == trial_role.name:
             context['started_at'] = getattr(user, 'trial_started_at', 'start date not available')
+            duration = getattr(user, 'trial_duration', None)
         elif context['account_type'] == community_role.name:
             context['started_at'] = getattr(user, 'community_started_at', 'start date not available')
+            duration = getattr(user, 'community_duration', None)
+
+        if context['started_at'] and duration:
+            start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
+            end_date = start_date + datetime.timedelta(days=duration)
+            context['end_date'] = end_date.strftime('%Y-%m-%d')
 
         if context['account_type'] != community_role.name:
             context['show_community_request'] = True
