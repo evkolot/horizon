@@ -39,14 +39,14 @@ class UserRoleApi(idm_workflows.RelationshipApiInterface):
             for user in all_users if hasattr(user, 'username')]
 
     def _list_all_objects(self, request, superset_id):
-        return idm_utils.filter_default(api.keystone.role_list(request))
+        return idm_utils.filter_default(fiware_api.keystone.keystone_role_list(request))
 
     def _list_current_assignments(self, request, superset_id):
         return api.keystone.get_project_users_roles(request,
                                         project=superset_id)
 
     def _get_default_object(self, request):
-        default_role = api.keystone.get_default_role(request)
+        default_role = fiware_api.keystone.get_member_role(request)
         # Default role is necessary to add members to a project
         if default_role is None:
             default = getattr(settings,
