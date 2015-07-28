@@ -1,13 +1,13 @@
 <form accept-charset="UTF-8" action="{{ form.action }}" method="post">{% csrf_token %}
-  <h5>Current account type: <b>{{ account_info.account_type }}</b></h5>
+  <div>Current account type: <b>{{ account_info.account_type }}</b></div>
   {% if account_info.started_at %}
-    <h5>Started at: <b>{{ account_info.started_at }}</b></h5>
+    <div>Started at: <b>{{ account_info.started_at }}</b></div>
   {% endif %}
   {% if account_info.duration %}
-    <h5>Duration: <b>{{ account_info.duration }} days</b></h5>
+    <div>Duration: <b>{{ account_info.duration }} days</b></div>
   {% endif %}
   {% if account_info.end_date %}
-    <h5>Expires at: <b>{{ account_info.end_date }}</b></h5>
+    <div>Expires at: <b>{{ account_info.end_date }}</b></div>
   {% endif %}
   <fieldset>
     <legend></legend>
