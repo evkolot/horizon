@@ -1,4 +1,4 @@
-[FIWARE Lab Header & Footer guide] (https://github.com/ging/horizon/blob/design-header/openstack_dashboard/static/library/FIWARE-Lab-header:footer/README.jpg)
+[FIWARE Lab Header & Footer guide] (https://github.com/ging/horizon/blob/master/openstack_dashboard/static/library/FIWARE-Lab-header:footer/README.jpg)
 
 
 FIWARE Lab portals use a header & footer template. It is composed of the necessary elements of the framework Bootstrap3, the Font Awesome library and HTML and CSS.
