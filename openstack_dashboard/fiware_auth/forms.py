@@ -13,7 +13,8 @@
 
 import os
 
-from captcha.fields import ReCaptchaField
+from nocaptcha_recaptcha.fields import NoReCaptchaField
+from nocaptcha_recaptcha.widgets import NoReCaptchaWidget
 
 from django import forms
 from django.conf import settings
@@ -71,9 +72,9 @@ class RegistrationForm(ConfirmPasswordForm):
     registration backend.
 
     """
-    captcha = ReCaptchaField(attrs={
-        'theme' : 'custom',
-        'custom_theme_widget': 'recaptcha_widget'
+    if settings.USE_CAPTCHA:
+        captcha = NoReCaptchaField(label='', 
+            error_messages={'required': 'Captcha validation is required'
         })
     username = forms.RegexField(
         regex=r'^([\w]+[\s\-_]?)+[\w]+$',
@@ -91,10 +92,16 @@ class RegistrationForm(ConfirmPasswordForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(RegistrationForm, self).__init__(*args, **kwargs)
-        self.fields.keyOrder = [
-            'username', 'email', 'password1', 'password2', 
-            'captcha', 'trial', 
-        ]
+        if settings.USE_CAPTCHA:
+            self.fields.keyOrder = [
+                'username', 'email', 'password1', 'password2', 
+                'captcha', 'trial', 
+            ]
+        else:
+            self.fields.keyOrder = [
+                'username', 'email', 'password1', 'password2', 
+                'trial', 
+            ]
         # Get the number of trial users and disable the field
         # if it exceeds the treshold
         if (len(fiware_api.keystone.get_trial_role_assignments(
