@@ -569,7 +569,7 @@ FIWARE_DEFAULT_CLOUD_ROLE = 'Member'
 # noCAPTCHA reCAPTCHA
 # Get your keys at: https://www.google.com/recaptcha/admin#createsite
 # More documentation at: https://github.com/ImaginaryLandscape/django-nocaptcha-recaptcha
-USE_CAPTCHA = True
+USE_CAPTCHA = False
 NORECAPTCHA_SITE_KEY   = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
 NORECAPTCHA_SECRET_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
 
