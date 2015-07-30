@@ -13,6 +13,7 @@
 # under the License.
 
 import logging
+import uuid
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -20,6 +21,7 @@ from django.shortcuts import redirect
 
 from horizon import exceptions
 from horizon import forms
+from horizon import messages
 from horizon import tables
 from horizon import tabs
 from horizon import workflows
@@ -360,6 +362,7 @@ class DetailApplicationView(tables.MultiTableView):
         return organizations
 
     def _can_edit(self):
+        # TODO(garcianavalon) move to fiware api or utils
         # Allowed to edit the application if owns a role with the
         # 'Manage the application' permission.
         user = self.request.user
@@ -450,6 +453,7 @@ class BaseApplicationsMultiFormView(idm_views.BaseMultiFormView):
     ]
 
     def _can_edit(self):
+        # TODO(garcianavalon) move to fiware api or utils
         # Allowed to edit the application if owns a role with the
         # 'Manage the application' permission.
         user = self.request.user
@@ -535,3 +539,72 @@ class CancelFormHandleView(BaseApplicationsMultiFormView):
         """ Wrapper for form.handle for easier overriding."""
         return form.handle(self.request, form.cleaned_data, 
             application=self.object)
+
+
+def _can_edit(request, application_id):
+    # TODO(garcianavalon) move to fiware api or utils
+    # Allowed to edit the application if owns a role with the
+    # 'Manage the application' permission.
+    user = request.user
+    if user.default_project_id == request.organization.id:
+        allowed_applications = \
+            fiware_api.keystone.list_user_allowed_applications_to_manage(
+                request, user=user.id, organization=user.default_project_id)
+    else:
+        allowed_applications = \
+            fiware_api.keystone.list_organization_allowed_applications_to_manage(
+                request, organization=request.organization.id)
+    return application_id in allowed_applications
+
+def register_pep_proxy(request, application_id):
+    if not _can_edit(request, application_id):
+        messages.error(request, 'You are not allowed not register a PEP Proxy for this application')
+        return redirect('horizon:idm:myApplications:detail', application_id)
+
+    # get the application
+    app = fiware_api.keystone.application_get(request, application_id)
+
+    # create a new pep
+    password = uuid.uuid4().hex
+    pep = fiware_api.keystone.register_pep_proxy(request, application_id, password)
+
+    # update application
+    fiware_api.keystone.application_update(request, app.id, pep_proxy_name=pep.name)
+
+    # done!
+    messages.success(request, ("Registered a new PEP Proxy. Password: {0}").format(password))
+    return redirect('horizon:idm:myApplications:detail', application_id)
+
+def reset_password_pep_proxy(request, application_id):
+    if not _can_edit(request, application_id):
+        messages.error(request, 'You are not allowed not register a PEP Proxy for this application')
+        return redirect('horizon:idm:myApplications:detail', application_id)
+
+    # get the application
+    app = fiware_api.keystone.application_get(request, application_id)
+
+    # update pep
+    password = uuid.uuid4().hex
+    pep = fiware_api.keystone.reset_pep_proxy(request, app.pep_proxy_name, password)
+
+    # done!
+    messages.success(request, ("New PEP Proxy password: {0}").format(password))
+    return redirect('horizon:idm:myApplications:detail', application_id)
+
+def delete_pep_proxy(request, application_id):
+    if not _can_edit(request, application_id):
+        messages.error(request, 'You are not allowed not register a PEP Proxy for this application')
+        return redirect('horizon:idm:myApplications:detail', application_id)
+
+    # get the application
+    app = fiware_api.keystone.application_get(request, application_id)
+
+    # delete pep
+    fiware_api.keystone.delete_pep_proxy(request, app.pep_proxy_name)
+
+    # update application
+    fiware_api.keystone.application_update(request, app.id, pep_proxy_name='')
+
+    # done!
+    messages.success(request, 'Removed PEP Proxy')
+    return redirect('horizon:idm:myApplications:detail', application_id)

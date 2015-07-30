@@ -45,23 +45,42 @@
         <p>{{ application.redirect_uris.0 }}</p>
       </div>
       {% if viewCred %}
-      <div class="extra">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" href="#collapse_oauth2_credentials" aria-expanded="true" aria-controls="collapse_oauth2_credentials">
-            OAuth2 Credentials
-          </a>
-        </h4>
-        <div id="collapse_oauth2_credentials" class="form-group collapse" role="tabpanel">
-          <div>
-            <h6 class="panel-heading">Client ID</h6>               
-            <p>{{ application.id }}</p>
-          </div>
-          <div>
-            <h6 class="panel-heading">Client Secret</h6>               
-            <p>{{ application.secret }}</p>
+        <div class="extra">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" href="#collapse_pep_proxy" aria-expanded="true" aria-controls="collapse_pep_proxy">
+              PEP Proxy
+            </a>
+          </h4>
+          <div id="collapse_pep_proxy" class="form-group collapse" role="tabpanel">
+            {% if application.pep_proxy_name %}
+              <div>
+                <h6 class="panel-heading">PEP Proxy username</h6>               
+                <p>{{ application.pep_proxy_name }}</p>
+                <a href="{% url 'horizon:idm:myApplications:reset_password_pep' application.id %}" class="btn btn-default">Reset password</a>
+                <a href="{% url 'horizon:idm:myApplications:delete_pep' application.id %}" class="btn btn-warning">Delete PEP Proxy</a>
+              </div>
+            {% else %}
+              <a href="{% url 'horizon:idm:myApplications:register_pep' application.id %}" class="btn btn-default">Register a new PEP Proxy</a>
+            {% endif %}
           </div>
         </div>
-      </div>
+        <div class="extra">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" href="#collapse_oauth2_credentials" aria-expanded="true" aria-controls="collapse_oauth2_credentials">
+              OAuth2 Credentials
+            </a>
+          </h4>
+          <div id="collapse_oauth2_credentials" class="form-group collapse" role="tabpanel">
+            <div>
+              <h6 class="panel-heading">Client ID</h6>               
+              <p>{{ application.id }}</p>
+            </div>
+            <div>
+              <h6 class="panel-heading">Client Secret</h6>               
+              <p>{{ application.secret }}</p>
+            </div>
+          </div>
+        </div>
       {% endif %}
     </div>
   </div>

@@ -52,4 +52,11 @@ urlpatterns = patterns('',
         views.AuthorizedUsersView.as_view(), name='users'),
     url(r'^(?P<application_id>[^/]+)/edit/organizations/$', 
         views.AuthorizedOrganizationsView.as_view(), name='organizations'),
+
+    url(r'^(?P<application_id>[^/]+)/pep/register/$', 
+        views.register_pep_proxy, name='register_pep'),
+    url(r'^(?P<application_id>[^/]+)/pep/reset_password_pep/$', 
+        views.reset_password_pep_proxy, name='reset_password_pep'),
+    url(r'^(?P<application_id>[^/]+)/pep/delete/$', 
+        views.delete_pep_proxy, name='delete_pep'),
 )

@@ -16,6 +16,7 @@ import datetime
 import json
 import logging
 import requests
+import uuid
 
 from django.conf import settings
 from django.core import exceptions as django_exceptions
@@ -81,6 +82,34 @@ def _password_session(request):
         auth_url=endpoint)
 
     return session.Session(auth=auth, verify=verify)
+
+# PEP PROXY
+def register_pep_proxy(request, application_id, password=None):
+    # create user with random password and unique name
+    username = 'pep_proxy_' + uuid.uuid4().hex
+    if not password:
+        password = uuid.uuid4().hex
+    keystone = internal_keystoneclient(request)
+    # TODO(garcianavalon) better domain usage
+    domain = 'default'
+    pep = keystone.users.create(username, password=password, domain=domain)
+
+    # give it the pep proxy role
+
+    # done!
+    return pep
+
+def reset_pep_proxy(request, pep_proxy_name, password=None):
+    if not password:
+        password = uuid.uuid4().hex
+    keystone = internal_keystoneclient(request)
+    pep = keystone.users.find(name=pep_proxy_name)
+    return keystone.users.update(pep, password=password)
+
+def delete_pep_proxy(request, pep_proxy_name):
+    keystone = internal_keystoneclient(request)
+    pep = keystone.users.find(name=pep_proxy_name)
+    return keystone.users.delete(pep)
 
 # USER REGISTRATION
 def _find_user(keystone, email=None, username=None):
