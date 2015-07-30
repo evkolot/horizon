@@ -61,7 +61,8 @@
     color: $brand-secundary;
   }
   p{
-    margin-bottom: 17px; 
+    margin-bottom: 17px;
+    word-wrap: break-word;
   }
   p.empty{
     margin: 17px 0;
