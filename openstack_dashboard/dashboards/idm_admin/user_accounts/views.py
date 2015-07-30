@@ -153,7 +153,7 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
                 if not trial_left:
                     return http.HttpResponseNotAllowed()
 
-            regions = data.get('regions', None)
+            regions = data.get('regions', [])
 
             if (role_id != fiware_api.keystone.get_basic_role(
                     request).id
