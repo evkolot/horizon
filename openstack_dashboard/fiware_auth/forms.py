@@ -73,8 +73,8 @@ class RegistrationForm(ConfirmPasswordForm):
 
     """
     if settings.USE_CAPTCHA:
-        captcha = NoReCaptchaField(label='', 
-            error_messages={'required': 'Captcha validation is required'},
+        captcha = NoReCaptchaField(label='Captcha', 
+            error_messages={'required': 'Captcha validation is required.'},
             gtag_attrs={'data-size': 'normal'}
         )
     username = forms.RegexField(
