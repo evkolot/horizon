@@ -56,6 +56,9 @@
               <div>
                 <h6 class="panel-heading">PEP Proxy username</h6>               
                 <p>{{ application.pep_proxy_name }}</p>
+                {% if pep_proxy_password %}
+                  <p class="info">Password: {{ pep_proxy_password }}</p>
+                {% endif %}
                 <a href="{% url 'horizon:idm:myApplications:reset_password_pep' application.id %}" class="btn btn-default">Reset password</a>
                 <a href="{% url 'horizon:idm:myApplications:delete_pep' application.id %}" class="btn btn-warning">Delete PEP Proxy</a>
               </div>

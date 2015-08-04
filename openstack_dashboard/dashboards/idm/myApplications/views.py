@@ -408,12 +408,15 @@ class DetailApplicationView(tables.MultiTableView):
         application_id = self.kwargs['application_id']
         application = fiware_api.keystone.application_get(
             self.request, application_id)
+
         context['application'] = application
+
         if hasattr(application, 'img_original'):
             image = getattr(application, 'img_original')
             image = settings.MEDIA_URL + image
         else:
             image = settings.STATIC_URL + 'dashboard/img/logos/original/app.png'
+
         context['image'] = image
         if self._can_edit():
             context['edit'] = True
@@ -421,8 +424,13 @@ class DetailApplicationView(tables.MultiTableView):
             context['manage_roles'] = True
         if self.allowed(self.request, self.request.user, application):
             context['viewCred'] = True
+
         context['index_org'] = self.request.GET.get('index_org', 0)
         context['index_mem'] = self.request.GET.get('index_mem', 0)
+
+        # consume pep_proxy_password if present
+        context['pep_proxy_password'] = self.request.session.pop('pep_proxy_password', None)
+        
         return context
 
 
@@ -571,6 +579,9 @@ def register_pep_proxy(request, application_id):
     # update application
     fiware_api.keystone.application_update(request, app.id, pep_proxy_name=pep.name)
 
+    # save password in session
+    request.session['pep_proxy_password'] = password
+
     # done!
     messages.success(request, ("Registered a new PEP Proxy. Password: {0}").format(password))
     return redirect('horizon:idm:myApplications:detail', application_id)
@@ -586,6 +597,9 @@ def reset_password_pep_proxy(request, application_id):
     # update pep
     password = uuid.uuid4().hex
     pep = fiware_api.keystone.reset_pep_proxy(request, app.pep_proxy_name, password)
+
+    # save password in session
+    request.session['pep_proxy_password'] = password
 
     # done!
     messages.success(request, ("New PEP Proxy password: {0}").format(password))
