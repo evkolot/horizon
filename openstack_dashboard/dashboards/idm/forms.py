@@ -22,11 +22,15 @@ class ImageCropMixin(forms.Form):
     y2 = forms.DecimalField(widget=forms.HiddenInput(), required=False)
 
     def crop(self, image):
-        if(self.cleaned_data['x1']):
+
+        if(self.cleaned_data['x1'] or self.cleaned_data['x2']
+           or self.cleaned_data['y1'] or self.cleaned_data['y2']):
+
             x1 = int(self.cleaned_data['x1'])
             x2 = int(self.cleaned_data['x2'])
             y1 = int(self.cleaned_data['y1'])
             y2 = int(self.cleaned_data['y2'])
+
         else:
             # Set default values to the edges of the image
             x1, x2, y1, y2 = 60, 120, 60, 120
@@ -35,3 +39,4 @@ class ImageCropMixin(forms.Form):
         output_img = img.crop((x1, y1, x2, y2))
 
         return output_img
+        
