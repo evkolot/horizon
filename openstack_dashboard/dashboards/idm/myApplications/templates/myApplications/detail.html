@@ -8,7 +8,7 @@
 <div id="detailApplication">
   <header>
     <h4 class="name">
-      {{ application.name }} 
+      {{ application.name }}
       {% if edit %}
       <a href="{% url 'horizon:idm:myApplications:edit' application.id %}" class="small"><i class="fa fa-edit"></i><span>edit</span></a>
       {% endif %}
@@ -18,9 +18,9 @@
     </h4>
     <div class="logo">
       <img alt="application logo" src="{{ image }}">
-    </div> 
+    </div>
   </header>
-  <div class="panel panel-default">
+  <div class="panel panel-default info">
     <div class="panel-body">
       <div class="description">
         <h5>
@@ -35,13 +35,13 @@
           {% endif %}
         </div>
       </div>
-      
+
       <div class="url">
-        <h5>URL</h5>      
+        <h5>URL</h5>
         <p>{{ application.url }}</p>
       </div>
       <div class="callback_url">
-        <h5>Callback URL</h5>               
+        <h5>Callback URL</h5>
         <p>{{ application.redirect_uris.0 }}</p>
       </div>
       {% if viewCred %}
@@ -54,15 +54,16 @@
           <div id="collapse_pep_proxy" class="form-group collapse" role="tabpanel">
             {% if application.pep_proxy_name %}
               <div>
-                <h6 class="panel-heading">PEP Proxy username</h6>               
+                <h6 class="panel-heading">PEP Proxy username</h6>
                 <p>{{ application.pep_proxy_name }}</p>
                 {% if pep_proxy_password %}
                   <p class="info">Password: {{ pep_proxy_password }}</p>
                 {% endif %}
                 <a href="{% url 'horizon:idm:myApplications:reset_password_pep' application.id %}" class="btn btn-default">Reset password</a>
-                <a href="{% url 'horizon:idm:myApplications:delete_pep' application.id %}" class="btn btn-warning">Delete PEP Proxy</a>
+                <a href="{% url 'horizon:idm:myApplications:delete_pep' application.id %}" class="btn btn-danger">Delete PEP Proxy</a>
               </div>
             {% else %}
+              <h6 class="panel-heading"></h6>
               <a href="{% url 'horizon:idm:myApplications:register_pep' application.id %}" class="btn btn-default">Register a new PEP Proxy</a>
             {% endif %}
           </div>
@@ -75,11 +76,11 @@
           </h4>
           <div id="collapse_oauth2_credentials" class="form-group collapse" role="tabpanel">
             <div>
-              <h6 class="panel-heading">Client ID</h6>               
+              <h6 class="panel-heading">Client ID</h6>
               <p>{{ application.id }}</p>
             </div>
             <div>
-              <h6 class="panel-heading">Client Secret</h6>               
+              <h6 class="panel-heading">Client Secret</h6>
               <p>{{ application.secret }}</p>
             </div>
           </div>
@@ -90,7 +91,7 @@
 
   <div class="panel panel-default members" id="{{auth_users_table.slugify_name}}">
     <div class="panel-heading">
-      <span>{{ auth_users_table }}</span> 
+      <span>{{ auth_users_table }}</span>
       {{ auth_users_table.render_table_actions }}
     </div>
     <div class="panel-body">
@@ -175,4 +176,3 @@
   </div>
 </div>
 {% endblock %}
-

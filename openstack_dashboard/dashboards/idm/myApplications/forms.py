@@ -63,17 +63,22 @@ class CreateApplicationForm(forms.SelfHandlingForm):
                 organization = request.organization
 
                 if request.organization.id == request.user.default_project_id:
-                    fiware_api.keystone.add_role_to_user(request,
-                                                         role=provider,
-                                                         user=user,
-                                                         organization=organization,
-                                                         application=application)
+                    fiware_api.keystone.add_role_to_user(
+                        request,
+                        role=provider,
+                        user=user,
+                        organization=organization,
+                        application=application.id,
+                        use_idm_account=True)
                 else:
-                    fiware_api.keystone.add_role_to_organization(request,
-                                                                 role=provider,
-                                                                 organization=organization,
-                                                                 application=application)
-                LOG.debug('Application {0} created'.format(application.name))
+                    fiware_api.keystone.add_role_to_organization(
+                        request,
+                        role=provider,
+                        organization=organization,
+                        application=application.id,
+                        use_idm_account=False)
+
+                LOG.debug('Application %s created', application.name)
             except Exception:
                 exceptions.handle(
                     request, ('Unable to register the application.'))
@@ -83,7 +88,7 @@ class CreateApplicationForm(forms.SelfHandlingForm):
             return response
         else:
             try:
-                LOG.debug('updating application {0}'.format(data['appID']))
+                LOG.debug('updating application %s', data['appID'])
 
                 redirect_uris = [data['callbackurl'],]
                 fiware_api.keystone.application_update(request, 
