@@ -23,60 +23,16 @@ from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import workflows as idm_workflows
 from openstack_dashboard.dashboards.idm import utils as idm_utils
+from openstack_dashboard.dashboards.idm.organizations import workflows as organization_workflows
 
 LOG = logging.getLogger('idm_logger')
 INDEX_URL = 'horizon:idm:home_orgs:index'
 
 # ORGANIZATION ROLES
-class UserRoleApi(idm_workflows.RelationshipApiInterface):
-    """Holds the api calls for each specific relationship"""
-    
-    def _list_all_owners(self, request, superset_id):
-        all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
-        return [
-            (user.id, idm_utils.get_avatar(user, 'img_small', 
-                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
-            for user in all_users if hasattr(user, 'username')]
-
-    def _list_all_objects(self, request, superset_id):
-        return idm_utils.filter_default(api.keystone.role_list(request))
-
-    def _list_current_assignments(self, request, superset_id):
-        return api.keystone.get_project_users_roles(request,
-                                        project=superset_id)
-
-    def _get_default_object(self, request):
-        default_role = api.keystone.get_default_role(request)
-        # Default role is necessary to add members to a project
-        if default_role is None:
-            default = getattr(settings,
-                              "OPENSTACK_KEYSTONE_DEFAULT_ROLE", None)
-            msg = (('Could not find default role "%s" in Keystone') %
-                   default)
-            raise exceptions.NotFound(msg)
-        return default_role
-
-    def _add_object_to_owner(self, request, superset, owner, obj):
-        api.keystone.add_tenant_user_role(request,
-                            project=superset,
-                            user=owner,
-                            role=obj)
-                    
-
-    def _remove_object_from_owner(self, request, superset, owner, obj):
-        api.keystone.remove_tenant_user_role(request,
-                            project=superset,
-                            user=owner,
-                            role=obj)
-
-    def _get_supersetid_name(self, request, superset_id):
-        organization = fiware_api.keystone.project_get(request, superset_id)
-        return organization.name
-
 
 class UpdateProjectMembersAction(idm_workflows.UpdateRelationshipAction):
     ERROR_MESSAGE = ('Unable to retrieve user list. Please try again later.')
-    RELATIONSHIP_CLASS = UserRoleApi
+    RELATIONSHIP_CLASS = organization_workflows.UserRoleApi
     ERROR_URL = INDEX_URL
     class Meta:
         name = ("Organization Members")
@@ -89,7 +45,7 @@ class UpdateProjectMembers(idm_workflows.UpdateRelationshipStep):
     members_list_title = ("Organization Members")
     no_available_text = ("No users found.")
     no_members_text = ("No users.")
-    RELATIONSHIP_CLASS = UserRoleApi
+    RELATIONSHIP_CLASS = organization_workflows.UserRoleApi
     server_filter_url = urlresolvers.reverse_lazy(
         'fiware_server_filters_users')
 
@@ -102,7 +58,7 @@ class ManageOrganizationMembers(idm_workflows.RelationshipWorkflow):
     failure_message = ('Unable to modify users.')
     success_url = "horizon:idm:home_orgs:index"
     default_steps = (UpdateProjectMembers,)
-    RELATIONSHIP_CLASS = UserRoleApi
+    RELATIONSHIP_CLASS = organization_workflows.UserRoleApi
     member_slug = idm_workflows.RELATIONSHIP_SLUG
     current_user_editable = False
     no_roles_message = 'Some users don\'t have any role assigned. \
