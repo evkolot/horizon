@@ -635,3 +635,6 @@ CORS_ORIGIN_WHITELIST = (
     'data.lab.fiware.org',
     'help.lab.fiware.org',
 )
+
+# PEP PROXIES
+PEP_PROXIES_GROUP = 'pep_proxies'

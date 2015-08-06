@@ -85,6 +85,11 @@ def _password_session(request):
 
 # PEP PROXY
 def register_pep_proxy(request, application_id, password=None):
+    pep_proxies_group = getattr(settings, 'PEP_PROXIES_GROUP', None)
+    if not pep_proxies_group:
+        LOG.error('PEP_PROXIES_GROUP is not set in local_settings.py')
+        return
+
     # create user with random password and unique name
     username = 'pep_proxy_' + uuid.uuid4().hex
     if not password:
@@ -94,7 +99,14 @@ def register_pep_proxy(request, application_id, password=None):
     domain = 'default'
     pep = keystone.users.create(username, password=password, domain=domain)
 
-    # give it the pep proxy role
+    # add it to the pep proxy group
+    try:
+        pep_group = keystone.groups.find(name=pep_proxies_group)
+    except ks_exceptions.NotFound:
+        LOG.debug('Creating PEP Proxies group in Keystone')
+        pep_group = keystone.groups.create(name=pep_proxies_group, domain=domain)
+
+    keystone.users.add_to_group(user=pep, group=pep_group)
 
     # done!
     return pep

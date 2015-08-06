@@ -575,6 +575,10 @@ def register_pep_proxy(request, application_id):
     # create a new pep
     password = uuid.uuid4().hex
     pep = fiware_api.keystone.register_pep_proxy(request, application_id, password)
+    
+    if not pep:
+        messages.error(request, ('Error registering the PEP Proxy. Please contact an administrator'))
+        return redirect('horizon:idm:myApplications:detail', application_id)
 
     # update application
     fiware_api.keystone.application_update(request, app.id, pep_proxy_name=pep.name)
