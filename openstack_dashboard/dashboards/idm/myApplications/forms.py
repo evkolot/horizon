@@ -272,12 +272,14 @@ class CancelForm(forms.SelfHandlingForm):
 
     def handle(self, request, data, application):
         image = getattr(application, 'img_original', '')
+
         LOG.debug(image)
         if "ApplicationAvatar" in image:
             os.remove(AVATAR_SMALL + application.id)
             os.remove(AVATAR_MEDIUM + application.id)
             os.remove(AVATAR_ORIGINAL + application.id)
-            LOG.debug('Avatar deleted from server')    
+            LOG.debug('Avatar deleted from server')
+
         fiware_api.keystone.application_delete(request, application.id)
         LOG.debug('Application %s deleted', application.id)
         messages.success(request, ("Application deleted successfully."))

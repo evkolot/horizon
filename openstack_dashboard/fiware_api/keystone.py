@@ -401,7 +401,7 @@ def application_update(request, consumer_id, name=None, description=None, client
                           scopes=scopes,
                           **kwargs)
 
-def application_delete(request, application_id, use_idm_account=False):
+def application_delete(request, application_id, use_idm_account=True):
     if use_idm_account:
         manager = internal_keystoneclient(request)
     else:
