@@ -349,8 +349,11 @@ class DetailApplicationView(tables.MultiTableView):
                 self.request)
             role_assignments = fiware_api.keystone.organization_role_assignments(
                 self.request, application=self.kwargs['application_id'])
+
+            authorized_organizations = set([a.organization_id for a in role_assignments])
             organizations = [org for org in all_organizations if org.id
-                     in set([a.organization_id for a in role_assignments])]
+                     in authorized_organizations]
+
             organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
             index_org = self.request.GET.get('index_org', 0)
             organizations = idm_utils.paginate(self, organizations,
@@ -359,6 +362,7 @@ class DetailApplicationView(tables.MultiTableView):
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
+
         return organizations
 
     def _can_edit(self):
