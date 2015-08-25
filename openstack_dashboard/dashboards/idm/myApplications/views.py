@@ -591,7 +591,7 @@ def register_pep_proxy(request, application_id):
     request.session['pep_proxy_password'] = password
 
     # done!
-    messages.success(request, ("Registered a new PEP Proxy. Password: {0}").format(password))
+    messages.success(request, 'Registered a new PEP Proxy.')
     return redirect('horizon:idm:myApplications:detail', application_id)
 
 def reset_password_pep_proxy(request, application_id):
@@ -610,7 +610,7 @@ def reset_password_pep_proxy(request, application_id):
     request.session['pep_proxy_password'] = password
 
     # done!
-    messages.success(request, ("New PEP Proxy password: {0}").format(password))
+    messages.success(request, 'Generated new PEP Proxy password.')
     return redirect('horizon:idm:myApplications:detail', application_id)
 
 def delete_pep_proxy(request, application_id):
@@ -628,5 +628,5 @@ def delete_pep_proxy(request, application_id):
     fiware_api.keystone.application_update(request, app.id, pep_proxy_name='')
 
     # done!
-    messages.success(request, 'Removed PEP Proxy')
+    messages.success(request, 'Removed PEP Proxy.')
     return redirect('horizon:idm:myApplications:detail', application_id)

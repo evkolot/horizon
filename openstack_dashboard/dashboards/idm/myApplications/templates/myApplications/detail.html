@@ -51,13 +51,14 @@
               PEP Proxy
             </a>
           </h4>
-          <div id="collapse_pep_proxy" class="form-group collapse" role="tabpanel">
+          <div id="collapse_pep_proxy" class="form-group collapse {% if pep_proxy_password %}in{% endif %}" role="tabpanel">
             {% if application.pep_proxy_name %}
               <div>
-                <h6 class="panel-heading">PEP Proxy username</h6>
+                <h6 class="panel-heading">Username</h6>
                 <p>{{ application.pep_proxy_name }}</p>
                 {% if pep_proxy_password %}
-                  <p class="info">Password: {{ pep_proxy_password }}</p>
+                  <h6 class="panel-heading">Password</h6>
+                  <p class="info">{{ pep_proxy_password }}</p>
                 {% endif %}
                 <a href="{% url 'horizon:idm:myApplications:reset_password_pep' application.id %}" class="btn btn-default">Reset password</a>
                 <a href="{% url 'horizon:idm:myApplications:delete_pep' application.id %}" class="btn btn-danger">Delete PEP Proxy</a>
