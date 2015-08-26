@@ -36,6 +36,9 @@ LOG = logging.getLogger('idm_logger')
 NOTIFY_ACCOUNT_EXPIRE_HTML_TEMPLATE = 'email/account_status_expire.html'
 NOTIFY_ACCOUNT_EXPIRE_TXT_TEMPLATE = 'email/account_status_expire.txt'
 
+NOTIFY_ACCOUNT_CHANGE_HTML_TEMPLATE = 'email/account_status_change.html'
+NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE = 'email/account_status_change.txt'
+
 def _current_account(request, user_id):
     # TODO(garcianavalon) find a better solution to this
     user_roles = [
@@ -125,7 +128,8 @@ class UpdateAccountView(forms.ModalFormView):
         return initial
 
 
-class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin):
+class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin,
+                                fiware_auth.TemplatedEmailMixin):
     """ Upgrade account logic with out the form"""
     http_method_names = ['post']
     use_idm_account = True
@@ -167,6 +171,33 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
 
             self.update_account(request, user, role_id, regions)
 
+            if data.get('notify'):
+
+                account_type = _current_account(self.request, user.id)[1]
+
+                context = {
+                    'regions': _current_regions(self.request, user.cloud_project_id),
+                    'user_name':user.username,
+                    'account_type': account_type,
+                    'started_at': getattr(user, account_type + '_started_at', None),
+                    'duration': getattr(user, account_type + '_duration', None),
+                    'show_cloud_info': account_type in ['trial', 'community'],
+                }
+
+                if context['started_at'] and context['duration']:
+                    start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
+                    end_date = start_date + datetime.timedelta(days=context['duration'])
+                    context['end_date'] = end_date.strftime('%Y-%m-%d')
+
+                text_content = render_to_string(NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE, dictionary=context)
+                html_content = render_to_string(NOTIFY_ACCOUNT_CHANGE_HTML_TEMPLATE, dictionary=context)
+
+                self.send_html_email(
+                    to=[user.name],
+                    from_email='no-reply@account.lab.fiware.org',
+                    subject='[FIWARE Lab] Changed account status',
+                    content={'text': text_content, 'html': html_content})
+
             return http.HttpResponse()
 
         except Exception:
@@ -179,15 +210,15 @@ class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
     
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
-        # # Check there is a valid keystone token in the header
-        # token = request.META.get('HTTP_X_AUTH_TOKEN', None)
-        # if not token:
-        #     return http.HttpResponse('Unauthorized', status=401)
+        # Check there is a valid keystone token in the header
+        token = request.META.get('HTTP_X_AUTH_TOKEN', None)
+        if not token:
+            return http.HttpResponse('Unauthorized', status=401)
 
-        # try:
-        #     fiware_api.keystone.validate_keystone_token(request, token)
-        # except Exception:
-        #     return http.HttpResponse('Unauthorized', status=401)
+        try:
+            fiware_api.keystone.validate_keystone_token(request, token)
+        except Exception:
+            return http.HttpResponse('Unauthorized', status=401)
 
         return super(NotifyUsersEndpointView, self).dispatch(request, *args, **kwargs)
 
@@ -204,7 +235,7 @@ class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
                     'user_name':user.username,
                     'account_type': account_type,
                     'started_at': getattr(user, account_type + '_started_at', None),
-                    'duration': getattr(user, account_type + '_duration', None),
+                    #'duration': getattr(user, account_type + '_duration', None),
                     'show_cloud_info': account_type in ['trial', 'community'],
                 }
 

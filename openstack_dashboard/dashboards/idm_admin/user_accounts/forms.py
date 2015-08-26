@@ -30,9 +30,6 @@ from openstack_dashboard.fiware_auth import views as fiware_auth
 
 LOG = logging.getLogger('idm_logger')
 
-EMAIL_HTML_TEMPLATE = 'email/base_email.html'
-EMAIL_TEXT_TEMPLATE = 'email/base_email.txt'
-
 NOTIFY_ACCOUNT_CHANGE_HTML_TEMPLATE = 'email/account_status_change.html'
 NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE = 'email/account_status_change.txt'
 
