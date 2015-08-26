@@ -17,6 +17,7 @@ import json
 from django import http
 from django.conf import settings
 from django.shortcuts import redirect
+from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 
@@ -28,8 +29,34 @@ from openstack_dashboard.dashboards.idm_admin.user_accounts \
     import forms as user_accounts_forms
 from openstack_dashboard.dashboards.idm_admin \
     import utils as idm_admin_utils
+from openstack_dashboard.fiware_auth import views as fiware_auth
 
 LOG = logging.getLogger('idm_logger')
+
+NOTIFY_ACCOUNT_EXPIRE_HTML_TEMPLATE = 'email/account_status_expire.html'
+NOTIFY_ACCOUNT_EXPIRE_TXT_TEMPLATE = 'email/account_status_expire.txt'
+
+def _current_account(request, user_id):
+    # TODO(garcianavalon) find a better solution to this
+    user_roles = [
+        a.role['id'] for a 
+        in fiware_api.keystone.role_assignments_list(request, 
+            user=user_id, domain='default')
+    ]
+   
+    fiware_roles = user_accounts_forms.get_account_choices()
+
+    return next((role for role in fiware_roles
+        if role[0] in user_roles))
+
+def _current_regions(request, cloud_project_id):
+    endpoint_groups = fiware_api.keystone.list_endpoint_groups_for_project(
+        request, cloud_project_id)
+    current_regions = []
+    for endpoint_group in endpoint_groups:
+        if 'region_id' in endpoint_group.filters:
+            current_regions.append(endpoint_group.filters['region_id'])
+    return current_regions
 
 class FindUserView(forms.ModalFormView):
     form_class = user_accounts_forms.FindUserByEmailForm
@@ -67,12 +94,12 @@ class UpdateAccountView(forms.ModalFormView):
         context['default_durations'] = json.dumps(
             getattr(settings, 'FIWARE_DEFAULT_DURATION', None))
 
-        account_type = self._current_account(user.id)[1]
+        account_type = _current_account(self.request, user.id)[1]
         account_info = {
             'account_type': account_type,
             'started_at': getattr(user, account_type + '_started_at', None),
             'duration': getattr(user, account_type + '_duration', None),
-            'regions': self._current_regions(self.user.cloud_project_id)
+            'regions': _current_regions(self.request, user.cloud_project_id)
         }
 
         if account_info['started_at'] and account_info['duration']:
@@ -87,8 +114,8 @@ class UpdateAccountView(forms.ModalFormView):
         initial = super(UpdateAccountView, self).get_initial()
         user_id = self.user.id
         
-        current_account = self._current_account(user_id)
-        current_regions = self._current_regions(self.user.cloud_project_id)
+        current_account = _current_account(self.request, user_id)
+        current_regions = _current_regions(self.request, self.user.cloud_project_id)
 
         initial.update({
             'user_id': user_id,
@@ -96,29 +123,6 @@ class UpdateAccountView(forms.ModalFormView):
             'account_type': current_account[0],
         })
         return initial
-
-    def _current_account(self, user_id):
-        # TODO(garcianavalon) find a better solution to this
-        user_roles = [
-            a.role['id'] for a 
-            in fiware_api.keystone.role_assignments_list(self.request, 
-                user=user_id, domain='default')
-        ]
-       
-        fiware_roles = user_accounts_forms.get_account_choices()
-
-        return next((role for role in fiware_roles
-            if role[0] in user_roles))
-
-    def _current_regions(self, cloud_project_id):
-        endpoint_groups = fiware_api.keystone.list_endpoint_groups_for_project(
-            self.request, cloud_project_id)
-        current_regions = []
-        for endpoint_group in endpoint_groups:
-            if 'region_id' in endpoint_group.filters:
-                current_regions.append(endpoint_group.filters['region_id'])
-        return current_regions
-
 
 
 class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin):
@@ -162,6 +166,61 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
                 return http.HttpResponseBadRequest()
 
             self.update_account(request, user, role_id, regions)
+
+            return http.HttpResponse()
+
+        except Exception:
+            return http.HttpResponseServerError()
+
+
+class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
+    """Notify a list of users that their resources are about to be deleted."""
+    http_method_names = ['post']
+    
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        # # Check there is a valid keystone token in the header
+        # token = request.META.get('HTTP_X_AUTH_TOKEN', None)
+        # if not token:
+        #     return http.HttpResponse('Unauthorized', status=401)
+
+        # try:
+        #     fiware_api.keystone.validate_keystone_token(request, token)
+        # except Exception:
+        #     return http.HttpResponse('Unauthorized', status=401)
+
+        return super(NotifyUsersEndpointView, self).dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+
+            for user_id in data['users']:
+                user = fiware_api.keystone.user_get(request, user_id)
+                account_type = _current_account(self.request, user.id)[1]
+
+                context = {
+                    'regions': _current_regions(self.request, user.cloud_project_id),
+                    'user_name':user.username,
+                    'account_type': account_type,
+                    'started_at': getattr(user, account_type + '_started_at', None),
+                    'duration': getattr(user, account_type + '_duration', None),
+                    'show_cloud_info': account_type in ['trial', 'community'],
+                }
+
+                if context['started_at'] and context['duration']:
+                    start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
+                    end_date = start_date + datetime.timedelta(days=context['duration'])
+                    context['end_date'] = end_date.strftime('%Y-%m-%d')
+
+                text_content = render_to_string(NOTIFY_ACCOUNT_EXPIRE_TXT_TEMPLATE, dictionary=context)
+                html_content = render_to_string(NOTIFY_ACCOUNT_EXPIRE_HTML_TEMPLATE, dictionary=context)
+
+                self.send_html_email(
+                    to=[user.name],
+                    from_email='no-reply@account.lab.fiware.org',
+                    subject='[FIWARE Lab] Current Acount Status about to expire',
+                    content={'text': text_content, 'html': html_content})
 
             return http.HttpResponse()
 

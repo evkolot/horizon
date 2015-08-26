@@ -12,12 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import datetime
 import logging
 
 from django import forms
 from django import shortcuts
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
 from horizon import exceptions
@@ -304,6 +304,11 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin, fiware_a
                     'duration': getattr(user, account_type + '_duration', None),
                     'show_cloud_info': account_type in ['trial', 'community'],
                 }
+
+                if context['started_at'] and context['duration']:
+                    start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
+                    end_date = start_date + datetime.timedelta(days=context['duration'])
+                    context['end_date'] = end_date.strftime('%Y-%m-%d')
 
                 text_content = render_to_string(NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE,
                                                 dictionary=context)
