@@ -33,14 +33,33 @@ LOG = logging.getLogger('idm_logger')
 # TODO(garcianavalon) all the logout and unauthorized stuff could go
 # into its own middleware
 
+def _is_static_or_media_requests(self, path):
+    # NOTE(garcianavalon) In development (and I'm not sure if
+    # in producction too, I hope Apache is doing it right) django 
+    # executes this middleware on every request, including media
+    # or static elements like images. This makes it sometimes hard
+    # to debug when looking at Keystone logs and slows down the portal
+    if path.startswith('/media') or path.startswith('/static'):
+        LOG.debug(
+            'Skiping %(middleware)s for path %(path)s',
+            {'middleware': self.__class__.__name__, 'path': path})
+        return True
+        
+
 class UserInfoMiddleware(object):
     """Adds more user info to the request object for convenience."""
 
     def process_request(self, request):
-        if (reverse('logout') == request.META['PATH_INFO']
+        path = request.META['PATH_INFO']
+
+        if _is_static_or_media_requests(self, path):
+            return
+
+        if (reverse('logout') == path
             or not hasattr(request, 'user') 
             or not request.user.is_authenticated()):
             return
+
         try:
             user_data = api.keystone.user_get(request, request.user.id)
             # setattr(user_data, 'username', user_data.name)
@@ -58,7 +77,12 @@ class OrganizationInfoMiddleware(object):
     """Adds organization info to the request object for convenience."""
 
     def process_request(self, request):
-        if (reverse('logout') == request.META['PATH_INFO']
+        path = request.META['PATH_INFO']
+
+        if _is_static_or_media_requests(self, path):
+            return
+
+        if (reverse('logout') == path
             or not hasattr(request, 'user') 
             or not request.user.is_authenticated()):
             return
@@ -75,7 +99,12 @@ class SwitchMiddleware(object):
 
     def process_request(self, request):
         # Allowed if he is an admin in the organization
-        if (reverse('logout') == request.META['PATH_INFO']
+        path = request.META['PATH_INFO']
+
+        if _is_static_or_media_requests(self, path):
+            return
+
+        if (reverse('logout') == path
             or not hasattr(request, 'user')
             or not request.user.is_authenticated()
             or not hasattr(request, 'organization')):
