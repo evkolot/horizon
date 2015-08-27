@@ -21,9 +21,6 @@ Current account type: {{ account_type }}
 {% if started_at %}
   Started at: {{ started_at }}
 {% endif %}
-{% if duration %}
-  Duration: {{ duration }} days
-{% endif %}
 {% if end_date %}
   Expires at: {{ end_date }}
 {% endif %}

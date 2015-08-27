@@ -302,7 +302,7 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin, fiware_a
                     'show_cloud_info': account_type in ['trial', 'community'],
                 }
 
-                if context['started_at'] and context['duration']:
+                if context.get('started_at') and context.get('duration'):
                     start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
                     end_date = start_date + datetime.timedelta(days=context['duration'])
                     context['end_date'] = end_date.strftime('%Y-%m-%d')

@@ -50,7 +50,7 @@ def _current_account(request, user_id):
     fiware_roles = user_accounts_forms.get_account_choices()
 
     return next((role for role in fiware_roles
-        if role[0] in user_roles))
+        if role[0] in user_roles), (None, None))
 
 def _current_regions(request, cloud_project_id):
     endpoint_groups = fiware_api.keystone.list_endpoint_groups_for_project(
@@ -184,7 +184,7 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
                     'show_cloud_info': account_type in ['trial', 'community'],
                 }
 
-                if context['started_at'] and context['duration']:
+                if context.get('started_at') and context.get('duration'):
                     start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
                     end_date = start_date + datetime.timedelta(days=context['duration'])
                     context['end_date'] = end_date.strftime('%Y-%m-%d')
@@ -200,8 +200,8 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
 
             return http.HttpResponse()
 
-        except Exception:
-            return http.HttpResponseServerError()
+        except Exception as exception:
+            return http.HttpResponseServerError(str(exception), content_type="text/plain")
 
 
 class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
@@ -223,23 +223,32 @@ class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
         return super(NotifyUsersEndpointView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        try:
-            data = json.loads(request.body)
+        
+        data = json.loads(request.body)
+        errors = []
 
-            for user_id in data['users']:
+        for user_id in data['users']:
+            try:
                 user = fiware_api.keystone.user_get(request, user_id)
                 account_type = _current_account(self.request, user.id)[1]
+
+                if not account_type:
+                    errors.append((user_id, 'Has no basic, trial or community rol assigned.'))
+                    continue
+                elif account_type == 'basic':
+                    errors.append((user_id, 'User is basic.'))
+                    continue
 
                 context = {
                     'regions': _current_regions(self.request, user.cloud_project_id),
                     'user_name':user.username,
                     'account_type': account_type,
                     'started_at': getattr(user, account_type + '_started_at', None),
-                    #'duration': getattr(user, account_type + '_duration', None),
+                    'duration': getattr(user, account_type + '_duration', None),
                     'show_cloud_info': account_type in ['trial', 'community'],
                 }
 
-                if context['started_at'] and context['duration']:
+                if context.get('started_at') and context.get('duration'):
                     start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
                     end_date = start_date + datetime.timedelta(days=context['duration'])
                     context['end_date'] = end_date.strftime('%Y-%m-%d')
@@ -253,7 +262,10 @@ class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
                     subject='[FIWARE Lab] Current Acount Status about to expire',
                     content={'text': text_content, 'html': html_content})
 
-            return http.HttpResponse()
+            except Exception as exception:
+                errors.append((user_id, str(exception)))
+                continue
 
-        except Exception:
-            return http.HttpResponseServerError()
+        return http.HttpResponse(json.dumps({'error_users': errors}),
+                                 content_type="application/json")
+
