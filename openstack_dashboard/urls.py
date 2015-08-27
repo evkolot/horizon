@@ -46,8 +46,12 @@ urlpatterns = patterns(
     url(r'^auth/', include('openstack_auth.urls')),
     url(r'', include(horizon.urls)),
     url(r'^summernote/', include('django_summernote.urls')),
-    url(r'^account_category$', user_accounts_views.UpdateAccountEndpointView.as_view(), 
+    url(r'^account_category$',
+        user_accounts_views.UpdateAccountEndpointView.as_view(), 
         name='update_account'),
+    url(r'^notify_expire_users$',
+        user_accounts_views.NotifyUsersEndpointView.as_view(), 
+        name='notify_expire_account'),
 )
 
 
