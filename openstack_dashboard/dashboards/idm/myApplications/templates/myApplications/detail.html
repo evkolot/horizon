@@ -140,8 +140,24 @@
       // init bootpag
       $('#{{ organizations_table.slugify_name }}_pagination_container').bootpag({
           total: {{ organizations_table.indexes|length }}
-      }).on("page", function(event, num){
-           $("#{{ organizations_table.slugify_name }} > div.panel-body").html("Insert content"); // some ajax content loading...
+      }).on("page", function(event, num){ 
+        horizon.ajax.queue({
+          type: 'GET',
+          url: '{% url 'fiware_complex_server_filters_organizations' %}',
+          data: {
+            page: num,
+          },
+          beforeSend: function () {
+          },
+          complete: function () {
+          },
+          error: function(jqXHR, status, errorThrown) {
+          },
+          success: function (data, textStatus, jqXHR) {
+            console.log(data)
+            $("#{{ organizations_table.slugify_name }} > div.panel-body").html(data);
+          }
+        });
       });
     });
   </script>
