@@ -90,7 +90,7 @@
     </div>
   </div>
 
-  <div class="panel panel-default members" id="{{auth_users_table.slugify_name}}">
+  <div class="panel panel-default members" id="{{ auth_users_table.slugify_name }}">
     <div class="panel-heading">
       <span>{{ auth_users_table }}</span>
       {{ auth_users_table.render_table_actions }}
@@ -102,36 +102,22 @@
       <p class="alert alert-info empty">{{ application.name }} does not have any authorized users.</p>
       {% endif %}
     </div>
-    {% if auth_users_table.indexes|length > 1 and auth_users_table.indexes %}
     <div class="panel-footer">
-      <nav>
-        <ul class="pagination">
-        <li {%if auth_users_table.index_act = auth_users_table.index_first %}class="active"{%endif%}>
-              <a href="?index_mem={{auth_users_table.index_first}}&index_org={{index_org}}#{{auth_users_table.slugify_name}}"><span aria-hidden="true">First</span></a>
-          </li>
-          <!--<li>
-            <a href="#" aria-label="Previous">
-              <span aria-hidden="true">&laquo;</span>
-            </a>
-          </li>-->
-          {% for index, num in auth_users_table.indexes %}
-            <li {%if auth_users_table.index_act = index %}class="active"{%endif%}>
-              <a href="?index_mem={{index}}&index_org={{index_org}}#{{auth_users_table.slugify_name}}">{{ num }}</a>
-            </li>
-          {% endfor %}
-          <li {%if auth_users_table.index_act = auth_users_table.index_last %}class="active"{%endif%}>
-              <a href="?index_mem={{auth_users_table.index_last}}&index_org={{index_org}}#{{auth_users_table.slugify_name}}"><span aria-hidden="true">Last</span></a>
-          </li>
-          <!--<li>
-            <a href="#" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
-            </a>
-          </li>-->
-        </ul>
+      <nav id="{{auth_users_table.slugify_name}}_pagination_container">
       </nav>
     </div>
-    {% endif %}
   </div>
+
+  <script>
+    $(document).ready(function(){
+      // init bootpag
+      $('#{{ auth_users_table.slugify_name }}_pagination_container').bootpag({
+          total: {{ auth_users_table.indexes|length }}
+      }).on("page", function(event, num){
+           $("#{{ auth_users_table.slugify_name }} > div.panel-body").html("Insert content"); // some ajax content loading...
+      });
+    });
+  </script>
 
   <div class="panel panel-default organizations" id="{{organizations_table.slugify_name}}">
     <div class="panel-heading">
