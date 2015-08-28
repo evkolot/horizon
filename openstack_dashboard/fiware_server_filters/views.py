@@ -13,6 +13,7 @@
 # under the License.
 
 import json
+import logging
 
 from django import http
 from django.core.cache import cache
@@ -25,7 +26,11 @@ from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 
+
+LOG = logging.getLogger('idm_logger')
+
 SHORT_CACHE_TIME = 20 # seconds
+
 
 class AjaxKeystoneFilter(generic.View):
     """view to handle ajax filtering in modals. 
@@ -55,9 +60,9 @@ class AjaxKeystoneFilter(generic.View):
                 json.dumps(response_data), 
                 content_type="application/json")
             
-        except Exception:
-            exceptions.handle(self.request,
-                              'Unable to filter.')
+        except Exception as exc:
+            LOG.error(str(exc))
+            exceptions.handle(request, 'Unable to filter.')
     
     def set_filter(self, filter_by):
         if filter_by:
@@ -73,16 +78,6 @@ class AjaxKeystoneFilter(generic.View):
         WARNING: the return object must be json-serializable
         """
         raise NotImplementedError
-
-    def _obj_to_jsonable_dict(self, obj, attrs):
-        """converts a object into a json-serializable dict, geting the
-        specified attributes.
-        """
-        as_dict = {}
-        for attr in attrs:
-            if hasattr(obj, attr):
-                as_dict[attr] = getattr(obj, attr)
-        return as_dict
 
 
 class UsersWorkflowFilter(AjaxKeystoneFilter):
@@ -130,7 +125,7 @@ class UsersWorkflowFilter(AjaxKeystoneFilter):
                 'img_small',
                 'name' # for no-username users
             ]
-            temp_json_users = [self._obj_to_jsonable_dict(u, attrs) 
+            temp_json_users = [idm_utils.obj_to_jsonable_dict(u, attrs) 
                                for u in users]
             # add MEDIA_URL to avatar paths or the default avatar
             json_users = []
@@ -168,8 +163,98 @@ class OrganizationsWorkflowFilter(AjaxKeystoneFilter):
         # add MEDIA_URL to avatar paths or the default avatar
         json_orgs = []
         for org in organizations:
-            json_org = self._obj_to_jsonable_dict(org, attrs) 
+            json_org = idm_utils.obj_to_jsonable_dict(org, attrs) 
             json_org['img_small'] = idm_utils.get_avatar(json_org, 
                 'img_small', idm_utils.DEFAULT_ORG_SMALL_AVATAR)
             json_orgs.append(json_org)
+        return json_orgs
+
+
+class ComplexAjaxFilter(generic.View):
+    """Base view for complex ajax filtering, for example in pagination.
+    Supports multiple filters and pagination markers. Uses API filtering
+    and pagination in Keystone when possible or implements custom filters.
+
+    The filters should be included as query parameters of the URL.
+
+    .. attribute:: custom_filter_keys
+
+        A list of custom filters that should be handled here. The rest 
+        of the filters will be forwarded to the api call. For each custom
+        key a function with name [custom_key_name_filter] should be 
+        implemented. This function gets executed AFTER the api call.
+        Default is an empty list (``[]``).
+    """
+    http_method_names = ['get']
+    custom_filter_keys = []
+
+    def get(self, request, *args, **kwargs):
+        # NOTE(garcianavalon) replace with JsonResponse when 
+        # Horizon uses Django 1.7+
+        filters = request.GET.items()
+        try:
+            response_data = self.load_data(request, filters=filters)
+            return http.HttpResponse(
+                json.dumps(response_data), 
+                content_type="application/json")
+            
+        except Exception as exc:
+            LOG.error(str(exc))
+            exceptions.handle(request, 'Unable to filter.')
+
+    def api_call(self, request, filters):
+        """Override to add the corresponding api call, for example:
+            api.keystone.users_list(request, filters=filters)
+        WARNING: the return object must be json-serializable
+        """
+        raise NotImplementedError
+
+    def _separate_filters(self, filters):
+        """Returns a dictionary with all the custom
+        filters present in the received filters dictionary and
+        a dictionary with all the non-custom filters.
+        """
+        custom_filters = {}
+        api_filters = {}
+        for key, value in filters:
+            if key in self.custom_filter_keys:
+                custom_filters[key] = value
+            else:
+                api_filters[key] = value
+
+        return custom_filters, api_filters
+
+    def load_data(self, request, filters):
+        custom_filters, api_filters = self._separate_filters(filters)
+
+        data = self.api_call(request, filters=api_filters)
+
+        for key, value in custom_filters:
+            data = getattr(self, key + '_filter')(data, value)
+
+        return data
+
+
+class OrganizationsComplexFilter(ComplexAjaxFilter):
+
+    def api_call(self, request, filters):
+        organizations = fiware_api.keystone.project_list(
+            request, 
+            filters=filters)
+        organizations = idm_utils.filter_default(organizations)
+
+        attrs = [
+            'id',
+            'name',
+            'img_small'
+        ]
+
+        # add MEDIA_URL to avatar paths or the default avatar
+        json_orgs = []
+        for org in organizations:
+            json_org = idm_utils.obj_to_jsonable_dict(org, attrs) 
+            json_org['img_small'] = idm_utils.get_avatar(json_org, 
+                'img_small', idm_utils.DEFAULT_ORG_SMALL_AVATAR)
+            json_orgs.append(json_org)
+            
         return json_orgs

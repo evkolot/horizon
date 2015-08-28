@@ -119,7 +119,7 @@
     });
   </script>
 
-  <div class="panel panel-default organizations" id="{{organizations_table.slugify_name}}">
+  <div class="panel panel-default organizations" id="{{ organizations_table.slugify_name }}">
     <div class="panel-heading">
       <span>{{ organizations_table }}</span>
       {{ organizations_table.render_table_actions }}
@@ -131,35 +131,20 @@
       <p class="alert alert-info empty">{{ application.name }} does not have any authorized organizations.</p>
       {% endif %}
     </div>
-  {% if organizations_table.indexes|length > 1 and organizations_table.indexes %}
     <div class="panel-footer">
-      <nav>
-        <ul class="pagination">
-          <li {%if organizations_table.index_act = organizations_table.index_first %}class="active"{%endif%}>
-                <a href="?index_mem={{index_mem}}&index_org={{organizations_table.index_first}}#{{organizations_table.slugify_name}}"><span aria-hidden="true">First</span></a>
-          </li>
-          <!--<li>
-            <a href="#" aria-label="Previous">
-              <span aria-hidden="true">&laquo;</span>
-            </a>
-          </li>-->
-          {% for index, num in organizations_table.indexes %}
-            <li {% if organizations_table.index_act = index%}class="active"{%endif%}>
-              <a href="?index_mem={{index_mem}}&index_org={{index}}#{{organizations_table.slugify_name}}">{{ num }}</a>
-            </li>
-          {% endfor %}
-          <li {%if organizations_table.index_act = organizations_table.index_last %}class="active"{%endif%}>
-              <a href="?index_mem={{index_mem}}&index_org={{organizations_table.index_last}}#{{organizations_table.slugify_name}}"><span aria-hidden="true">Last</span></a>
-          </li>
-          <!--<li>
-            <a href="#" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
-            </a>
-          </li>-->
-        </ul>
+      <nav id="{{organizations_table.slugify_name}}_pagination_container">
       </nav>
     </div>
-  {% endif %}
+    <script>
+    $(document).ready(function(){
+      // init bootpag
+      $('#{{ organizations_table.slugify_name }}_pagination_container').bootpag({
+          total: {{ organizations_table.indexes|length }}
+      }).on("page", function(event, num){
+           $("#{{ organizations_table.slugify_name }} > div.panel-body").html("Insert content"); // some ajax content loading...
+      });
+    });
+  </script>
   </div>
 </div>
 {% endblock %}

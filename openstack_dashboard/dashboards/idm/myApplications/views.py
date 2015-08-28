@@ -342,26 +342,26 @@ class DetailApplicationView(tables.MultiTableView):
 
     def get_organizations_data(self):
         organizations = []
-        # try:
-        #     # NOTE(garcianavalon) Get all the orgs' ids that belong to
-        #     # the application (they have one or more roles)
-        #     all_organizations = fiware_api.keystone.project_list(
-        #         self.request)
-        #     role_assignments = fiware_api.keystone.organization_role_assignments(
-        #         self.request, application=self.kwargs['application_id'])
+        try:
+            # NOTE(garcianavalon) Get all the orgs' ids that belong to
+            # the application (they have one or more roles)
+            all_organizations = fiware_api.keystone.project_list(
+                self.request)
+            role_assignments = fiware_api.keystone.organization_role_assignments(
+                self.request, application=self.kwargs['application_id'])
 
-        #     authorized_organizations = set([a.organization_id for a in role_assignments])
-        #     organizations = [org for org in all_organizations if org.id
-        #              in authorized_organizations]
+            authorized_organizations = set([a.organization_id for a in role_assignments])
+            organizations = [org for org in all_organizations if org.id
+                     in authorized_organizations]
 
-        #     organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
-        #     index_org = self.request.GET.get('index_org', 0)
-        #     organizations = idm_utils.paginate(self, organizations,
-        #                                        index=index_org, limit=LIMIT_MINI,
-        #                                        table_name='organizations')
-        # except Exception:
-        #     exceptions.handle(self.request,
-        #                       ("Unable to retrieve organizations information."))
+            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
+            index_org = self.request.GET.get('index_org', 0)
+            organizations = idm_utils.paginate(self, organizations,
+                                               index=index_org, limit=LIMIT_MINI,
+                                               table_name='organizations')
+        except Exception:
+            exceptions.handle(self.request,
+                              ("Unable to retrieve organizations information."))
 
         return organizations
 

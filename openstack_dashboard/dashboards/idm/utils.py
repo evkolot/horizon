@@ -25,13 +25,17 @@ from openstack_dashboard.local import local_settings
 
 
 LOG = logging.getLogger('idm_logger')
+
 DEFAULT_ORG_MEDIUM_AVATAR = 'dashboard/img/logos/medium/group.png'
 DEFAULT_APP_MEDIUM_AVATAR = 'dashboard/img/logos/medium/app.png'
 DEFAULT_USER_MEDIUM_AVATAR = 'dashboard/img/logos/medium/user.png'
+
 DEFAULT_ORG_SMALL_AVATAR = 'dashboard/img/logos/small/group.png'
 DEFAULT_APP_SMALL_AVATAR = 'dashboard/img/logos/small/app.png'
 DEFAULT_USER_SMALL_AVATAR = 'dashboard/img/logos/small/user.png'
+
 NUM_PAGES = getattr(local_settings, 'NUM_PAGES', 10)
+
 
 def filter_default(items):
     """Remove from a list the automated created project for a user. This project
@@ -46,12 +50,14 @@ def filter_default(items):
     filtered = [i for i in items if not getattr(i, 'is_default', False)]
     return filtered
 
+
 def check_elements(elements, valid_elements):
     """Checks a list of elements are present in an allowed elements list"""
     invalid_elements = [k for k in elements if k not in valid_elements]
     if invalid_elements:
         raise TypeError('The elements {0} are not defined \
             in {1}'.format(invalid_elements, valid_elements))
+
 
 def swap_dict(old_dict):
     """Returns a new dictionary in wich the keys are all the values of the old
@@ -89,7 +95,7 @@ def get_switch_url(organization, check_switchable=True):
 
 
 def return_pagination(self, index, indexes, numbers):
-    if len(indexes)>NUM_PAGES:
+    if len(indexes) > NUM_PAGES:
         ind = int(indexes.index(index))
         if (ind - NUM_PAGES + 1) < 0:
             indexes = indexes[0:NUM_PAGES]
@@ -103,6 +109,7 @@ def return_pagination(self, index, indexes, numbers):
             indexes = indexes[ind-div_1:ind+div_2]
             numbers = numbers[ind-div_1:ind+div_2]
     return indexes, numbers
+
 
 def paginate(self, list_pag, index, limit, table_name):
     try:
@@ -142,9 +149,21 @@ def paginate(self, list_pag, index, limit, table_name):
 
     return final_list
 
+
 class PickleObject():
     """Extremely simple class that holds the very little information we need
     to cache. Keystoneclient resource objects are not pickable.
     """
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
+
+
+def obj_to_jsonable_dict(obj, attrs):
+    """converts a object into a json-serializable dict, geting the
+    specified attributes.
+    """
+    as_dict = {}
+    for attr in attrs:
+        if hasattr(obj, attr):
+            as_dict[attr] = getattr(obj, attr)
+    return as_dict
