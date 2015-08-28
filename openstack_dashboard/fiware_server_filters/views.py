@@ -14,6 +14,7 @@
 
 import json
 import logging
+import six
 
 from django import http
 from django.core.cache import cache
@@ -229,24 +230,35 @@ class ComplexAjaxFilter(generic.View):
 
         data = self.api_call(request, filters=api_filters)
 
-        for key, value in custom_filters:
-            data = getattr(self, key + '_filter')(data, value)
+        for key, value in six.iteritems(custom_filters):
+            data = getattr(self, key + '_filter')(request, data, value)
+
 
         return data
 
 
 class OrganizationsComplexFilter(ComplexAjaxFilter):
+    custom_filter_keys = [
+        'page',
+    ]
+
+    def page_filter(self, request, json_orgs, page_number):
+        page_size = 5 # TODO(garcianavalon) setting
+        return idm_utils.paginate_list(json_orgs, int(page_number), page_size)
 
     def api_call(self, request, filters):
         organizations = fiware_api.keystone.project_list(
             request, 
             filters=filters)
-        organizations = idm_utils.filter_default(organizations)
+
+        organizations = idm_utils.filter_default(
+            sorted(organizations, key=lambda x: x.name.lower()))
 
         attrs = [
             'id',
             'name',
-            'img_small'
+            'img_small',
+            'description',
         ]
 
         # add MEDIA_URL to avatar paths or the default avatar

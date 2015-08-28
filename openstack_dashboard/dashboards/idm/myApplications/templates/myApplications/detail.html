@@ -154,8 +154,23 @@
           error: function(jqXHR, status, errorThrown) {
           },
           success: function (data, textStatus, jqXHR) {
-            console.log(data)
-            $("#{{ organizations_table.slugify_name }} > div.panel-body").html(data);
+            var list_group = $("#{{ organizations_table.slugify_name }}").find('div.list-group');
+            list_group.empty();
+            for (var i in data) {
+              var display_name = data[i]['username'];
+              if (display_name === undefined) {
+                display_name = data[i]['name'];
+              }
+              var avatar = data[i]['img_small'];
+              var data_id = data[i]['id'];
+              var description = data[i]['description'];
+
+              list_group.append('<div class="list-group-item">' +
+                '<a class="item" href="/idm/organizations/'+ data_id + '/">' +
+                '<div class="avatar filter_field"><img src="'+ avatar + '"></div>'+
+                '<div class="name filter_field">'+ display_name +'</div>' + 
+                '<div class="description filter_field">'+ description +'</div></a></div>');
+            }
           }
         });
       });
