@@ -149,6 +149,9 @@
             application_id: '{{ application.id }}',
           },
           beforeSend: function () {
+            // add a spinner to show progress
+            var list_group = $("#{{ organizations_table.slugify_name }}").find('div.list-group');
+            list_group.html('<i class="fa fa-gear fa-spin"></i>');
           },
           complete: function () {
           },
