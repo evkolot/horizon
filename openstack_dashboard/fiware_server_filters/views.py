@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import collections
 import json
 import logging
 import six
@@ -180,14 +181,15 @@ class ComplexAjaxFilter(generic.View):
 
     .. attribute:: custom_filter_keys
 
-        A list of custom filters that should be handled here. The rest 
+        A dictionary with custom filters that should be handled here and a
+        weight to set order of filtering (lower numbers go first). The rest 
         of the filters will be forwarded to the api call. For each custom
         key a function with name [custom_key_name_filter] should be 
         implemented. This function gets executed AFTER the api call.
-        Default is an empty list (``[]``).
+        Default is an empty dict (``{}``).
     """
     http_method_names = ['get']
-    custom_filter_keys = []
+    custom_filter_keys = {}
 
     def get(self, request, *args, **kwargs):
         # NOTE(garcianavalon) replace with JsonResponse when 
@@ -218,12 +220,15 @@ class ComplexAjaxFilter(generic.View):
         custom_filters = {}
         api_filters = {}
         for key, value in filters:
-            if key in self.custom_filter_keys:
+            if key in self.custom_filter_keys.keys():
                 custom_filters[key] = value
             else:
                 api_filters[key] = value
 
-        return custom_filters, api_filters
+        ordered_custom_filters = collections.OrderedDict(
+            sorted(custom_filters.items(), key=lambda t: self.custom_filter_keys[t[0]]))
+
+        return ordered_custom_filters, api_filters
 
     def load_data(self, request, filters):
         custom_filters, api_filters = self._separate_filters(filters)
@@ -238,13 +243,27 @@ class ComplexAjaxFilter(generic.View):
 
 
 class OrganizationsComplexFilter(ComplexAjaxFilter):
-    custom_filter_keys = [
-        'page',
-    ]
+    custom_filter_keys = {
+        'page': 99, # it should always go last!
+        'application_id': 5,
+    }
+
 
     def page_filter(self, request, json_orgs, page_number):
-        page_size = 5 # TODO(garcianavalon) setting
+        page_size = 4 # TODO(garcianavalon) setting
         return idm_utils.paginate_list(json_orgs, int(page_number), page_size)
+
+    def application_id_filter(self, request, json_orgs, application_id):
+        role_assignments = fiware_api.keystone.organization_role_assignments(
+            request, application=application_id)
+
+        authorized_organizations = set([a.organization_id for a in role_assignments])
+        organizations = [org for org in json_orgs if org['id']
+                 in authorized_organizations]
+
+        organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x['name'].lower()))
+        
+        return organizations
 
     def api_call(self, request, filters):
         organizations = fiware_api.keystone.project_list(

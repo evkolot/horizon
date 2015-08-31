@@ -146,6 +146,7 @@
           url: '{% url 'fiware_complex_server_filters_organizations' %}',
           data: {
             page: num,
+            application_id: '{{ application.id }}',
           },
           beforeSend: function () {
           },
