@@ -100,6 +100,8 @@ def page_numbers(elements, page_size):
 
 
 def total_pages(elements, page_size):
+    if not elements:
+        return 0
     return page_numbers(elements, page_size)[-1]
 
 

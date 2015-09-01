@@ -361,3 +361,46 @@ class UsersComplexFilter(ComplexAjaxFilter):
             cache.set('json_users', json_users, SHORT_CACHE_TIME)
 
         return json_users
+
+
+class ApplicationsComplexFilter(ComplexAjaxFilter):
+    custom_filter_keys = {
+        'page': 99, # it should always go last!
+        'organization_id': 5,
+    }
+
+    def page_filter(self, request, json_orgs, page_number):
+        page_size = 4 # TODO(garcianavalon) setting
+        return idm_utils.paginate_list(json_orgs, int(page_number), page_size)
+
+    def organization_id_filter(self, request, json_apps, organization_id):
+        role_assignments = fiware_api.keystone.organization_role_assignments(
+            request, organization=organization_id)
+        apps_with_roles = [a.application_id for a in role_assignments]
+
+        applications = [app for app in json_apps if app['id'] in apps_with_roles]
+
+        return applications
+
+    def api_call(self, request, filters):
+        applications = fiware_api.keystone.application_list(request)
+            # request, filters=filters) TODO(garcianavalon) filter support!
+        applications = idm_utils.filter_default(
+            sorted(applications, key=lambda x: x.name.lower()))
+
+        attrs = [
+            'id',
+            'name',
+            'img_small',
+            'url',
+        ]
+
+        # add MEDIA_URL to avatar paths or the default avatar
+        json_apps = []
+        for app in applications:
+            json_app = idm_utils.obj_to_jsonable_dict(app, attrs)
+            json_app['img_small'] = idm_utils.get_avatar(
+                json_app, 'img_small', idm_utils.DEFAULT_ORG_SMALL_AVATAR)
+            json_apps.append(json_app)
+
+        return json_apps

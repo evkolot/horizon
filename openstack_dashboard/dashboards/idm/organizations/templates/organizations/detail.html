@@ -69,7 +69,7 @@
     </div>
   </div>
 
-  <div class="panel panel-default applications" id="{{applications_table.slugify_name}}"  data-pagination-url="{% url 'fiware_complex_server_filters_users' %}" data-organization-id="{{ organization.id }}" data-pagination-pages="{{ applications_table.pages }}">
+  <div class="panel panel-default applications" id="{{applications_table.slugify_name}}"  data-pagination-url="{% url 'fiware_complex_server_filters_applications' %}" data-organization-id="{{ organization.id }}" data-pagination-pages="{{ applications_table.pages }}">
     <div class="panel-heading">
       <span>
         {{ applications_table }}
