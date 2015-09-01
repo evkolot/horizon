@@ -296,11 +296,20 @@ class UsersComplexFilter(ComplexAjaxFilter):
     custom_filter_keys = {
         'page': 99, # it should always go last!
         'application_id': 5,
+        'organization_id':6,
     }
 
     def page_filter(self, request, json_users, page_number):
         page_size = 4 # TODO(garcianavalon) setting
         return idm_utils.paginate_list(json_users, int(page_number), page_size)
+
+    def organization_id_filter(self, request, json_users, organization_id):
+        project_users_roles = api.keystone.get_project_users_roles(
+            request, project=organization_id)
+
+        users = [user for user in json_users if user['id'] in project_users_roles]
+
+        return users
 
     def application_id_filter(self, request, json_users, application_id):
         role_assignments = fiware_api.keystone.user_role_assignments(

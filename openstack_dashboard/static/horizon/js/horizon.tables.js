@@ -39,7 +39,6 @@ horizon.datatables.remove_no_results_row = function (table) {
 
 horizon.datatables.init_pagination = function (table) {
   var table_selector = table.attr('id');
-  console.log(table_selector)
   // init bootpag
   $('#'+table_selector+'_pagination_container').bootpag({
       total: table.attr('data-pagination-pages')
@@ -50,6 +49,7 @@ horizon.datatables.init_pagination = function (table) {
       data: {
         page: num,
         application_id: table.attr('data-application-id'),
+        organization_id: table.attr('data-organization-id'),
       },
       beforeSend: function () {
         // add a spinner to show progress
