@@ -89,6 +89,7 @@ class AuthUsersTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
     username = tables.Column('username')
+    empty_message = 'This application does not have any authorized users.'
     
     class Meta:
         name = "auth_users"
@@ -130,6 +131,7 @@ class AuthorizedOrganizationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Applications'))
     description = tables.Column(lambda obj: getattr(obj, 'description', ''))
+    empty_message = 'This application does not have any authorized organizations.'
 
     class Meta:
         name = "organizations"

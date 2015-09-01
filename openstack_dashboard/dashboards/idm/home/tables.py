@@ -16,35 +16,17 @@ from horizon import tables
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import tables as idm_tables
 
-# class GoToOrganizationTable(tables.LinkAction):
-#     name = "organizations"
-#     verbose_name = ("View All")
-#     url = "horizon:idm:organizations"
 
-#     def get_link_url(self):
-#         base_url = '/idm/organizations/'
-#         return base_url
+class CreateOrganization(tables.LinkAction):
+    name = "create_organization"
+    verbose_name = "Create"
+    url = "horizon:idm:organizations:create"
 
 
-# class GoToApplicationsTable(tables.LinkAction):
-#     name = "applications"
-#     verbose_name = ("View All")
-#     url = "horizon:idm:myApplications"
-
-#     def get_link_url(self):
-#         base_url = '/idm/myApplications/'
-#         return base_url
-
-
-# class CreateOrganization(tables.LinkAction):
-#     name = "create_organization"
-#     verbose_name = ("Create")
-#     url = "horizon:idm:organizations:create"
-
-#     def get_link_url(self):
-#         base_url = '/idm/organizations/create'
-#         return base_url
-
+class RegisterApplication(tables.LinkAction):
+    name = "register_application"
+    verbose_name = "Register"
+    url = "horizon:idm:myApplications:create"
 
 
 class OrganizationsTable(tables.DataTable):
@@ -53,13 +35,15 @@ class OrganizationsTable(tables.DataTable):
     name = tables.Column('name', verbose_name=('Name'))
     description = tables.Column(lambda obj: getattr(obj, 'description', ''))
     switch = tables.Column(lambda obj: idm_utils.get_switch_url(obj))
+    view_all_url = 'horizon:idm:organizations:index'
 
     class Meta:
         name = "organizations"
-        verbose_name = ("Organizations")
-        # table_actions = (CreateOrganization, GoToOrganizationTable,)
+        verbose_name = 'Organizations'
+        table_actions = (CreateOrganization,)
         multi_select = False
         row_class = idm_tables.OrganizationClickableRow
+        template = 'idm/home/_data_table.html'
 
 
 class ApplicationsTable(tables.DataTable):
@@ -67,11 +51,13 @@ class ApplicationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
-  
+    view_all_url = 'horizon:idm:myApplications:index'
+
     class Meta:
         name = "applications"
         verbose_name = ("Applications")
-        # table_actions = (GoToApplicationsTable,)
+        table_actions = (RegisterApplication,)
         multi_select = False
         row_class = idm_tables.ApplicationClickableRow
-        
+        template = 'idm/home/_data_table.html'
+

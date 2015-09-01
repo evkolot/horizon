@@ -1,46 +1,29 @@
 {% load i18n %}
 
-{% with table.needs_form_wrapper as needs_form_wrapper %}
-  {% with columns=table.get_columns rows=table.get_rows %}  
-    <div class="list-group" id="{{ table.slugify_name }}">
-      {% for row in rows %}
-        {{ row.render }}
-      {% endfor %}
-    </div>
-  
-  {% if table.indexes|length > 1 and table.indexes and table.name != 'organizations' and table.name != 'applications' and table.name != 'members' and table.name != 'auth_users'  %}
-    <div class="panel-footer">
-      <nav>
-      <ul class="pagination">
-        <!--<li>
-            <a href="#" aria-label="Previous">
-              <span aria-hidden="true">&laquo;</span>
-            </a>
-          </li>-->
-          <li {%if table.index_act = table.index_first %}class="active"{%endif%}>
-              <a href="?index={{table.index_first}}#{{ table.slugify_name }}"><span aria-hidden="true">First</span></a>
-          </li>
-          {% for index,num in table.indexes %}
-           
-              <li {%if table.index_act = index %}class="active"{%endif%}>
-                <a href="?index={{index}}#{{ table.slugify_name }}">{{ num }}</a>
-              </li>
 
-            
-      
+<div class="panel panel-default members" id="{{ table.slugify_name }}" data-pagination-url="{% url 'fiware_complex_server_filters_users' %}" data-application-id="{{ application.id }}" data-pagination-pages="{{ table.pages }}">
+  <div class="panel-heading">
+    {% block table_heading %}
+      <span>{{ table }}</span>
+      {{ table.render_table_actions }}
+    {% endblock %}
+  </div>
+  <div class="panel-body">
+    {% block table_body %}
+      {% if table.get_rows %}
+        <div class="list-group" id="{{ table.slugify_name }}">
+          {% for row in table.get_rows %}
+            {{ row.render }}
           {% endfor %}
-          <li {%if table.index_act = table.index_last %}class="active"{%endif%}>
-              <a href="?index={{table.index_last}}#{{ table.slugify_name }}"><span aria-hidden="true">Last</span></a>
-          </li>
-          <!--<li>
-            <a href="#" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
-            </a>
-          </li>-->
-        </ul>
-      </nav>
-    </div>
-  {% endif %}
-  
-  {% endwith %}
-{% endwith %}
+        </div>
+      {% else %}
+        <p class="alert alert-info empty">{{ table.empty_message }}</p>
+      {% endif %}
+    {% endblock %}
+  </div>
+  <div class="panel-footer">
+    {% block table_footer %}
+      <nav id="{{table.slugify_name}}_pagination_container">
+    {% endblock %}
+  </div>
+</div>

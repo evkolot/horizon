@@ -98,7 +98,7 @@ class MembersTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
     username = tables.Column('username', verbose_name=('Members'))
-    
+    empty_message = 'This organization does not have any members.'
 
     class Meta:
         name = "members"
@@ -113,6 +113,7 @@ class AuthorizingApplicationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Applications'))
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
+    empty_message = 'This organization does not have any authorizing applications'
 
     class Meta:
         name = "applications"
