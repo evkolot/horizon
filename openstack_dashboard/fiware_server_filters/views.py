@@ -261,7 +261,8 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
         organizations = [org for org in json_orgs if org['id']
                  in authorized_organizations]
 
-        organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x['name'].lower()))
+        # organizations = idm_utils.filter_default(
+        #    sorted(organizations, key=lambda x: x['name'].lower()))
         
         return organizations
 
@@ -289,3 +290,65 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
             json_orgs.append(json_org)
             
         return json_orgs
+
+
+class UsersComplexFilter(ComplexAjaxFilter):
+    custom_filter_keys = {
+        'page': 99, # it should always go last!
+        'application_id': 5,
+    }
+
+    def page_filter(self, request, json_users, page_number):
+        page_size = 4 # TODO(garcianavalon) setting
+        return idm_utils.paginate_list(json_users, int(page_number), page_size)
+
+    def application_id_filter(self, request, json_users, application_id):
+        role_assignments = fiware_api.keystone.user_role_assignments(
+            request, application=application_id)
+        
+        authorized_users = []
+        added_users = []
+        for assignment in role_assignments:
+            if assignment.user_id in added_users:
+                # NOTE(garcianavalon) we can't use a set because
+                # user is a dictionary for json-paring later
+                continue
+            user = next((user for user in json_users
+                        if user['id'] == assignment.user_id), None)
+            if user and user['default_project_id'] == assignment.organization_id:
+                authorized_users.append(user)
+
+        return authorized_users
+
+    def api_call(self, request, filters):
+        # NOTE(garcianavalon) because we chose to store the display
+        # name in extra to use the email as name for login, we can't
+        # use keystone filters, we need to filter locally.
+        # We cache the query to save some petitions here
+        json_users = cache.get('json_users')
+
+        if json_users is None:
+            filters.update({'enabled':True})
+            users = fiware_api.keystone.user_list(request, filters=filters)
+
+            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
+
+            attrs = [
+                'id',
+                'username',
+                'default_project_id',
+                'img_small',
+                'name' # for no-username users
+            ]
+
+            # add MEDIA_URL to avatar paths or the default avatar
+            json_users = []
+            for user in users:
+                json_user = idm_utils.obj_to_jsonable_dict(user, attrs) 
+                json_user['img_small'] = idm_utils.get_avatar(user, 
+                    'img_small', idm_utils.DEFAULT_USER_SMALL_AVATAR)
+                json_users.append(json_user)
+
+            cache.set('json_users', json_users, SHORT_CACHE_TIME)
+
+        return json_users

@@ -90,7 +90,7 @@
     </div>
   </div>
 
-  <div class="panel panel-default members" id="{{ auth_users_table.slugify_name }}">
+  <div class="panel panel-default members" id="{{ auth_users_table.slugify_name }}" data-pagination-url="{% url 'fiware_complex_server_filters_users' %}" data-application-id="{{ application.id }}" data-pagination-pages="{{ auth_users_table.pages }}">
     <div class="panel-heading">
       <span>{{ auth_users_table }}</span>
       {{ auth_users_table.render_table_actions }}
