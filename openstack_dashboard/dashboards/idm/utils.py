@@ -99,6 +99,10 @@ def page_numbers(elements, page_size):
     return range(1, int(math.ceil(float(len(elements))/page_size)) + 1)
 
 
+def total_pages(elements, page_size):
+    return page_numbers(elements, page_size)[-1]
+
+
 def paginate_list(elements, page_number, page_size):
     index = (page_number - 1) * page_size
     return elements[index:index + page_size]

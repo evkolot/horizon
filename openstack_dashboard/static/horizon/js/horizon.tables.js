@@ -3,7 +3,7 @@ horizon.datatables = {
 
 };
 
-horizon.datatables.update_footer_count = function (el, modifier) {
+/*horizon.datatables.update_footer_count = function (el, modifier) {
   var $el = $(el),
     $browser, $footer, row_count, footer_text_template, footer_text;
   if (!modifier) {
@@ -22,7 +22,7 @@ horizon.datatables.update_footer_count = function (el, modifier) {
   footer_text = interpolate(footer_text_template, [row_count]);
   $footer.text(footer_text);
   return row_count;
-};
+};*/
 
 horizon.datatables.add_no_results_row = function (table) {
   // Add a "no results" row if there are no results.
@@ -37,7 +37,51 @@ horizon.datatables.remove_no_results_row = function (table) {
   table.find("p.empty").remove();
 };
 
+horizon.datatables.init_pagination = function (table) {
+  var table_selector = table.attr('id');
+  console.log(table_selector)
+  // init bootpag
+  $('#'+table_selector+'_pagination_container').bootpag({
+      total: table.attr('data-pagination-pages')
+  }).on("page", function(event, num){ 
+    horizon.ajax.queue({
+      type: 'GET',
+      url: table.attr('data-pagination-url'),
+      data: {
+        page: num,
+        application_id: table.attr('data-application-id'),
+      },
+      beforeSend: function () {
+        // add a spinner to show progress
+        var list_group = $('#'+table_selector).find('div.list-group');
+        list_group.html('<i class="fa fa-gear fa-spin"></i>');
+      },
+      complete: function () {
+      },
+      error: function(jqXHR, status, errorThrown) {
+      },
+      success: function (data, textStatus, jqXHR) {
+        var list_group = $('#'+table_selector).find('div.list-group');
+        list_group.empty();
+        for (var i in data) {
+          var display_name = data[i]['username'];
+          if (display_name === undefined) {
+            display_name = data[i]['name'];
+          }
+          var avatar = data[i]['img_small'];
+          var data_id = data[i]['id'];
+          var description = data[i]['description'];
 
+          list_group.append('<div class="list-group-item">' +
+            '<a class="item" href="/idm/organizations/'+ data_id + '/">' +
+            '<div class="avatar filter_field"><img src="'+ avatar + '"></div>'+
+            '<div class="name filter_field">'+ display_name +'</div>' + 
+            '<div class="description filter_field">'+ description +'</div></a></div>');
+        }
+      }
+    });
+  });
+};
 
 horizon.datatables.set_table_query_filter = function (parent) {
   horizon.datatables.qs = {};
@@ -61,6 +105,7 @@ horizon.datatables.set_table_query_filter = function (parent) {
 
       // Enable the client-side searching.
       table_selector = '#' + $(elm).find('div.list-group').attr('id');
+
       var qs = input.quicksearch(table_selector + ' div.list-group-item', {
         'delay': 300,
         'loader': 'span.loading',
@@ -93,7 +138,11 @@ horizon.datatables.set_table_query_filter = function (parent) {
 horizon.addInitFunction(function() {
   //horizon.datatables.validate_button();
   $('table.datatable').each(function (idx, el) {
-    horizon.datatables.update_footer_count($(el), 0);
+    //horizon.datatables.update_footer_count($(el), 0);
+  });
+
+  $('div.panel').each(function (idx, el) {
+    horizon.datatables.init_pagination($(el));
   });
 
   // Trigger run-once setup scripts for tables.

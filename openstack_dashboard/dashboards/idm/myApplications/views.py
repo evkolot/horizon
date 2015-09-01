@@ -330,11 +330,13 @@ class DetailApplicationView(tables.MultiTableView):
                             None)
                 if user and user.default_project_id == assignment.organization_id:
                     authorized_users.add(user)
+
             authorized_users = sorted(authorized_users, key=lambda x: x.username.lower())
-            index_mem = self.request.GET.get('index_mem', 0)
-            authorized_users = idm_utils.paginate(self, authorized_users,
-                                                  index=index_mem, limit=LIMIT_MINI,
-                                                  table_name='auth_users')
+
+            self._tables['auth_users'].pages = idm_utils.total_pages(
+                authorized_users, LIMIT_MINI)
+
+            authorized_users = idm_utils.paginate_list(authorized_users, 1, LIMIT_MINI)
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
@@ -354,11 +356,17 @@ class DetailApplicationView(tables.MultiTableView):
             organizations = [org for org in all_organizations if org.id
                      in authorized_organizations]
 
-            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
-            index_org = self.request.GET.get('index_org', 0)
-            organizations = idm_utils.paginate(self, organizations,
-                                               index=index_org, limit=LIMIT_MINI,
-                                               table_name='organizations')
+            # sort
+            organizations = idm_utils.filter_default(
+                sorted(organizations, key=lambda x: x.name.lower()))
+
+            # save total pages
+            self._tables['organizations'].pages = idm_utils.total_pages(
+                organizations, LIMIT_MINI)
+
+            # render first page
+            organizations = idm_utils.paginate_list(organizations, 1, LIMIT_MINI)
+
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve organizations information."))
@@ -428,9 +436,6 @@ class DetailApplicationView(tables.MultiTableView):
             context['manage_roles'] = True
         if self.allowed(self.request, self.request.user, application):
             context['viewCred'] = True
-
-        context['index_org'] = self.request.GET.get('index_org', 0)
-        context['index_mem'] = self.request.GET.get('index_mem', 0)
 
         # consume pep_proxy_password if present
         context['pep_proxy_password'] = self.request.session.pop('pep_proxy_password', None)

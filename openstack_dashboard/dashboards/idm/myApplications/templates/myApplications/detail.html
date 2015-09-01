@@ -108,18 +108,7 @@
     </div>
   </div>
 
-  <script>
-    $(document).ready(function(){
-      // init bootpag
-      $('#{{ auth_users_table.slugify_name }}_pagination_container').bootpag({
-          total: {{ auth_users_table.indexes|length }}
-      }).on("page", function(event, num){
-           $("#{{ auth_users_table.slugify_name }} > div.panel-body").html("Insert content"); // some ajax content loading...
-      });
-    });
-  </script>
-
-  <div class="panel panel-default organizations" id="{{ organizations_table.slugify_name }}">
+  <div class="panel panel-default organizations" id="{{ organizations_table.slugify_name }}" data-pagination-url="{% url 'fiware_complex_server_filters_organizations' %}" data-application-id="{{ application.id }}" data-pagination-pages="{{ organizations_table.pages }}">
     <div class="panel-heading">
       <span>{{ organizations_table }}</span>
       {{ organizations_table.render_table_actions }}
@@ -135,51 +124,6 @@
       <nav id="{{organizations_table.slugify_name}}_pagination_container">
       </nav>
     </div>
-    <script>
-    $(document).ready(function(){
-      // init bootpag
-      $('#{{ organizations_table.slugify_name }}_pagination_container').bootpag({
-          total: {{ organizations_table.indexes|length }}
-      }).on("page", function(event, num){ 
-        horizon.ajax.queue({
-          type: 'GET',
-          url: '{% url 'fiware_complex_server_filters_organizations' %}',
-          data: {
-            page: num,
-            application_id: '{{ application.id }}',
-          },
-          beforeSend: function () {
-            // add a spinner to show progress
-            var list_group = $("#{{ organizations_table.slugify_name }}").find('div.list-group');
-            list_group.html('<i class="fa fa-gear fa-spin"></i>');
-          },
-          complete: function () {
-          },
-          error: function(jqXHR, status, errorThrown) {
-          },
-          success: function (data, textStatus, jqXHR) {
-            var list_group = $("#{{ organizations_table.slugify_name }}").find('div.list-group');
-            list_group.empty();
-            for (var i in data) {
-              var display_name = data[i]['username'];
-              if (display_name === undefined) {
-                display_name = data[i]['name'];
-              }
-              var avatar = data[i]['img_small'];
-              var data_id = data[i]['id'];
-              var description = data[i]['description'];
-
-              list_group.append('<div class="list-group-item">' +
-                '<a class="item" href="/idm/organizations/'+ data_id + '/">' +
-                '<div class="avatar filter_field"><img src="'+ avatar + '"></div>'+
-                '<div class="name filter_field">'+ display_name +'</div>' + 
-                '<div class="description filter_field">'+ description +'</div></a></div>');
-            }
-          }
-        });
-      });
-    });
-  </script>
   </div>
 </div>
 {% endblock %}
