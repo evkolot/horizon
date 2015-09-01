@@ -27,7 +27,6 @@ from horizon import tabs
 from horizon import workflows
 from horizon.utils import memoized
 
-from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import views as idm_views

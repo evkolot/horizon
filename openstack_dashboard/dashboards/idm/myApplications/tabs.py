@@ -35,7 +35,6 @@ class ProvidingTab(tabs.TableTab):
 
     def get_providing_table_data(self):
         applications = []
-        index = self.request.GET.get('index', 0)
 
         try:
             # TODO(garcianavalon) extract to fiware_api
@@ -55,9 +54,10 @@ class ProvidingTab(tabs.TableTab):
                             if app.id in apps_with_roles]
 
             applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
-            applications = idm_utils.paginate(self, applications,
-                                              index=index, limit=LIMIT,
-                                              table_name='providing_table')
+            
+            self._tables['providing_table'].pages = idm_utils.total_pages(applications, LIMIT)
+
+            applications = idm_utils.paginate_list(applications, 1, LIMIT)
 
         except Exception:
             exceptions.handle(self.request,
@@ -74,7 +74,6 @@ class PurchasedTab(tabs.TableTab):
 
     def get_purchased_table_data(self):
         applications = []
-        index = self.request.GET.get('index', 0)
         try:
             # TODO(garcianavalon) extract to fiware_api
             purchaser_role = fiware_api.keystone.get_purchaser_role(self.request)
@@ -96,9 +95,9 @@ class PurchasedTab(tabs.TableTab):
 
             applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
         
-            applications = idm_utils.paginate(self, applications,
-                                              index=index, limit=LIMIT,
-                                              table_name='purchased_table')
+            self._tables['purchased_table'].pages = idm_utils.total_pages(applications, LIMIT)
+
+            applications = idm_utils.paginate_list(applications, 1, LIMIT)
             
         except Exception:
             exceptions.handle(self.request,
@@ -115,7 +114,6 @@ class AuthorizedTab(tabs.TableTab):
 
     def get_authorized_table_data(self):
         applications = []
-        index = self.request.GET.get('index', 0)
 
         try:
             # TODO(garcianavalon) extract to fiware_api
@@ -138,9 +136,10 @@ class AuthorizedTab(tabs.TableTab):
                             if app.id in apps_with_roles]
 
             applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
-            applications = idm_utils.paginate(self, applications,
-                                              index=index, limit=LIMIT,
-                                              table_name='authorized_table')
+            
+            self._tables['authorized_table'].pages = idm_utils.total_pages(applications, LIMIT)
+
+            applications = idm_utils.paginate_list(applications, 1, LIMIT)
             
         except Exception:
             exceptions.handle(self.request,
