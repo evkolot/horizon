@@ -41,7 +41,12 @@ horizon.datatables.init_pagination = function (table) {
   var table_selector = table.attr('id');
   // init bootpag
   $('#'+table_selector+'_pagination_container').bootpag({
-      total: table.attr('data-pagination-pages')
+      total: table.attr('data-pagination-pages'),
+      first: 'First',
+      last:'Last',
+      maxVisible: 10,
+      wrapClass: 'pagination',
+      firstLastUse: true
   }).on("page", function(event, num){ 
     horizon.ajax.queue({
       type: 'GET',
