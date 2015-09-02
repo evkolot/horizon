@@ -37,25 +37,25 @@ class OtherOrganizationsTab(tabs.TableTab):
 
     def get_other_organizations_data(self):
         organizations = []
-        try:
-            all_organizations = fiware_api.keystone.project_list(
-                self.request)
-            my_organizations = fiware_api.keystone.project_list(
-                self.request, user=self.request.user.id)
+        # try:
+        #     all_organizations = fiware_api.keystone.project_list(
+        #         self.request)
+        #     my_organizations = fiware_api.keystone.project_list(
+        #         self.request, user=self.request.user.id)
 
-            organizations = idm_utils.filter_default(
-                [t for t in all_organizations if not t in my_organizations])
-            organizations = sorted(organizations, key=lambda x: x.name.lower())
+        #     organizations = idm_utils.filter_default(
+        #         [t for t in all_organizations if not t in my_organizations])
+        #     organizations = sorted(organizations, key=lambda x: x.name.lower())
         
-            self._tables['other_organizations'].pages = idm_utils.total_pages(
-                organizations, LIMIT)
+        #     self._tables['other_organizations'].pages = idm_utils.total_pages(
+        #         organizations, LIMIT)
 
-            organizations = idm_utils.paginate_list(organizations, 1, LIMIT)
+        #     organizations = idm_utils.paginate_list(organizations, 1, LIMIT)
 
-        except Exception as e:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve organization list. \
-                                    Error message: {0}".format(e)))
+        # except Exception as e:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve organization list. \
+        #                             Error message: {0}".format(e)))
         return organizations
 
 
@@ -68,21 +68,21 @@ class OwnedOrganizationsTab(tabs.TableTab):
 
     def get_owned_organizations_data(self):
         organizations = []
-        try:
-            # NOTE(garcianavalon) the organizations the user is owner(admin)
-            # are already in the request object by the middleware
-            organizations = self.request.organizations
-            organizations = idm_utils.filter_default(
-                sorted(organizations, key=lambda x: x.name.lower()))
+        # try:
+        #     # NOTE(garcianavalon) the organizations the user is owner(admin)
+        #     # are already in the request object by the middleware
+        #     organizations = self.request.organizations
+        #     organizations = idm_utils.filter_default(
+        #         sorted(organizations, key=lambda x: x.name.lower()))
 
-            self._tables['owned_organizations'].pages = idm_utils.total_pages(
-                organizations, LIMIT)
+        #     self._tables['owned_organizations'].pages = idm_utils.total_pages(
+        #         organizations, LIMIT)
 
-            organizations = idm_utils.paginate_list(organizations, 1, LIMIT)
+        #     organizations = idm_utils.paginate_list(organizations, 1, LIMIT)
 
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve organization information."))
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve organization information."))
         return organizations
 
 
@@ -95,23 +95,23 @@ class MemberOrganizationsTab(tabs.TableTab):
 
     def get_member_organizations_data(self):
         organizations = []
-        try:
-            my_organizations = fiware_api.keystone.project_list(
-                self.request, user=self.request.user.id)
-            owner_organizations = [org.id for org in self.request.organizations]
-            organizations = [o for o in my_organizations 
-                             if not o.id in owner_organizations]
+        # try:
+        #     my_organizations = fiware_api.keystone.project_list(
+        #         self.request, user=self.request.user.id)
+        #     owner_organizations = [org.id for org in self.request.organizations]
+        #     organizations = [o for o in my_organizations 
+        #                      if not o.id in owner_organizations]
 
-            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
+        #     organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
 
-            self._tables['member_organizations'].pages = idm_utils.total_pages(
-                organizations, LIMIT)
+        #     self._tables['member_organizations'].pages = idm_utils.total_pages(
+        #         organizations, LIMIT)
 
-            organizations = idm_utils.paginate_list(organizations, 1, LIMIT)
+        #     organizations = idm_utils.paginate_list(organizations, 1, LIMIT)
 
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve organization information."))
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve organization information."))
         return organizations
 
 

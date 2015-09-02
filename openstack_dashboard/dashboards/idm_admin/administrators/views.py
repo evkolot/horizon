@@ -43,27 +43,27 @@ class DetailApplicationView(tables.MultiTableView):
 
     def get_members_data(self):
         users = []
-        try:
-            # NOTE(garcianavalon) Get all the users' ids that belong to
-            # the application (they have one or more roles)
-            all_users = fiware_api.keystone.user_list(self.request,
-                                               filters={'enabled':True})
-            role_assignments = fiware_api.keystone.user_role_assignments(
-                self.request,
-                application=fiware_api.keystone.get_idm_admin_app(
-                    self.request).id)
-            users = [user for user in all_users if user.id
-                     in set([a.user_id for a in role_assignments])]
+        # try:
+        #     # NOTE(garcianavalon) Get all the users' ids that belong to
+        #     # the application (they have one or more roles)
+        #     all_users = fiware_api.keystone.user_list(self.request,
+        #                                        filters={'enabled':True})
+        #     role_assignments = fiware_api.keystone.user_role_assignments(
+        #         self.request,
+        #         application=fiware_api.keystone.get_idm_admin_app(
+        #             self.request).id)
+        #     users = [user for user in all_users if user.id
+        #              in set([a.user_id for a in role_assignments])]
             
-            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
+        #     users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
 
-            self._tables['members'].pages = idm_utils.total_pages(users, LIMIT)
+        #     self._tables['members'].pages = idm_utils.total_pages(users, LIMIT)
 
-            users = idm_utils.paginate_list(users, 1, LIMIT)
+        #     users = idm_utils.paginate_list(users, 1, LIMIT)
         
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve member information."))
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve member information."))
         return users
 
     def get_context_data(self, **kwargs):

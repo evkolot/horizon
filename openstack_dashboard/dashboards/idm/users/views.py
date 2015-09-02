@@ -55,52 +55,52 @@ class DetailUserView(tables.MultiTableView):
     
     def get_organizations_data(self):
         organizations = []
-        index_org = self.request.GET.get('index_org', 0)
-        LOG.debug(self.request.path)
-        path = self.request.path
-        user_id = path.split('/')[3]
+        # index_org = self.request.GET.get('index_org', 0)
+        # LOG.debug(self.request.path)
+        # path = self.request.path
+        # user_id = path.split('/')[3]
 
-        #domain_context = self.request.session.get('domain_context', None)
-        try:
-            organizations = fiware_api.keystone.project_list(
-                self.request,
-                user=user_id)
+        # #domain_context = self.request.session.get('domain_context', None)
+        # try:
+        #     organizations = fiware_api.keystone.project_list(
+        #         self.request,
+        #         user=user_id)
 
-            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
-            organizations = idm_utils.paginate(self, organizations,
-                                               index=index_org, limit=LIMIT_MINI,
-                                               table_name='organizations')
+        #     organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
+        #     organizations = idm_utils.paginate(self, organizations,
+        #                                        index=index_org, limit=LIMIT_MINI,
+        #                                        table_name='organizations')
 
-        except Exception:
-            self._more = False
-            exceptions.handle(self.request,
-                              ("Unable to retrieve organization information."))
+        # except Exception:
+        #     self._more = False
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve organization information."))
         return organizations
 
     def get_applications_data(self):
         applications = []
-        index_app = self.request.GET.get('index_app', 0)
-        path = self.request.path
-        user_id = path.split('/')[3]
+        # index_app = self.request.GET.get('index_app', 0)
+        # path = self.request.path
+        # user_id = path.split('/')[3]
 
-        try:
-            # TODO(garcianavalon) extract to fiware_api
-            all_apps = fiware_api.keystone.application_list(self.request)
-            apps_with_roles = [a.application_id for a 
-                               in fiware_api.keystone.user_role_assignments(
-                               self.request, user=user_id)]
-            applications = [app for app in all_apps 
-                            if app.id in apps_with_roles]
-            applications = idm_utils.filter_default(
-                            sorted(applications, key=lambda x: x.name.lower()))
+        # try:
+        #     # TODO(garcianavalon) extract to fiware_api
+        #     all_apps = fiware_api.keystone.application_list(self.request)
+        #     apps_with_roles = [a.application_id for a 
+        #                        in fiware_api.keystone.user_role_assignments(
+        #                        self.request, user=user_id)]
+        #     applications = [app for app in all_apps 
+        #                     if app.id in apps_with_roles]
+        #     applications = idm_utils.filter_default(
+        #                     sorted(applications, key=lambda x: x.name.lower()))
 
-            applications = idm_utils.paginate(self, applications,
-                                              index=index_app, limit=LIMIT_MINI,
-                                              table_name='applications')
+        #     applications = idm_utils.paginate(self, applications,
+        #                                       index=index_app, limit=LIMIT_MINI,
+        #                                       table_name='applications')
 
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve application list."))
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve application list."))
         return applications
 
     def _can_edit(self):

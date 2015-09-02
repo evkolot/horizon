@@ -337,33 +337,24 @@ class UsersComplexFilter(ComplexAjaxFilter):
         return authorized_users
 
     def api_call(self, request, filters):
-        # NOTE(garcianavalon) because we chose to store the display
-        # name in extra to use the email as name for login, we can't
-        # use keystone filters, we need to filter locally.
-        # We cache the query to save some petitions here
-        json_users = cache.get('json_users')
+        filters.update({'enabled':True})
+        users = fiware_api.keystone.user_list(request, filters=filters)
 
-        if json_users is None:
-            filters.update({'enabled':True})
-            users = fiware_api.keystone.user_list(request, filters=filters)
+        attrs = [
+            'id',
+            'username',
+            'default_project_id',
+            'img_small',
+            'name' # for no-username users
+        ]
 
-            attrs = [
-                'id',
-                'username',
-                'default_project_id',
-                'img_small',
-                'name' # for no-username users
-            ]
-
-            # add MEDIA_URL to avatar paths or the default avatar
-            json_users = []
-            for user in users:
-                json_user = idm_utils.obj_to_jsonable_dict(user, attrs) 
-                json_user['img_small'] = idm_utils.get_avatar(user, 
-                    'img_small', idm_utils.DEFAULT_USER_SMALL_AVATAR)
-                json_users.append(json_user)
-
-            cache.set('json_users', json_users, SHORT_CACHE_TIME)
+        # add MEDIA_URL to avatar paths or the default avatar
+        json_users = []
+        for user in users:
+            json_user = idm_utils.obj_to_jsonable_dict(user, attrs) 
+            json_user['img_small'] = idm_utils.get_avatar(user, 
+                'img_small', idm_utils.DEFAULT_USER_SMALL_AVATAR)
+            json_users.append(json_user)
 
         return json_users
 
