@@ -71,6 +71,10 @@ horizon.datatables.ajax_paginate = function(table, table_selector, page_num) {
   });
 }
 horizon.datatables.init_pagination = function (table, table_selector, total_pages) {
+  if (total_pages <= 0) {
+    // to force pagination clearing, we set page to 1
+    total_pages = 1;
+  }
   // init bootpag
   $('#'+table_selector+'_pagination_container').bootpag({
       total: total_pages,
