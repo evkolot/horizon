@@ -250,6 +250,7 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
 
 
     def page_filter(self, request, json_orgs, page_number):
+        json_orgs = sorted(json_orgs, key=lambda x: x['name'].lower())
         page_size = 4 # TODO(garcianavalon) setting
         return idm_utils.paginate_list(json_orgs, int(page_number), page_size)
 
@@ -267,12 +268,8 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
         return organizations
 
     def api_call(self, request, filters):
-        organizations = fiware_api.keystone.project_list(
-            request, 
-            filters=filters)
-
         organizations = idm_utils.filter_default(
-            sorted(organizations, key=lambda x: x.name.lower()))
+            fiware_api.keystone.project_list(request, filters=filters))
 
         attrs = [
             'id',
@@ -300,6 +297,7 @@ class UsersComplexFilter(ComplexAjaxFilter):
     }
 
     def page_filter(self, request, json_users, page_number):
+        json_users = sorted(json_users, key=lambda x: x.get('username', x['name']).lower())
         page_size = 4 # TODO(garcianavalon) setting
         return idm_utils.paginate_list(json_users, int(page_number), page_size)
 
@@ -340,8 +338,6 @@ class UsersComplexFilter(ComplexAjaxFilter):
             filters.update({'enabled':True})
             users = fiware_api.keystone.user_list(request, filters=filters)
 
-            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
-
             attrs = [
                 'id',
                 'username',
@@ -369,9 +365,10 @@ class ApplicationsComplexFilter(ComplexAjaxFilter):
         'organization_id': 5,
     }
 
-    def page_filter(self, request, json_orgs, page_number):
+    def page_filter(self, request, json_apps, page_number):
+        json_apps = sorted(json_apps, key=lambda x: x['name'].lower())
         page_size = 4 # TODO(garcianavalon) setting
-        return idm_utils.paginate_list(json_orgs, int(page_number), page_size)
+        return idm_utils.paginate_list(json_apps, int(page_number), page_size)
 
     def organization_id_filter(self, request, json_apps, organization_id):
         role_assignments = fiware_api.keystone.organization_role_assignments(
@@ -383,10 +380,8 @@ class ApplicationsComplexFilter(ComplexAjaxFilter):
         return applications
 
     def api_call(self, request, filters):
-        applications = fiware_api.keystone.application_list(request)
-            # request, filters=filters) TODO(garcianavalon) filter support!
-        applications = idm_utils.filter_default(
-            sorted(applications, key=lambda x: x.name.lower()))
+        applications = idm_utils.filter_default(fiware_api.keystone.application_list(request))
+            # request, filters=filters)) TODO(garcianavalon) filter support!
 
         attrs = [
             'id',
