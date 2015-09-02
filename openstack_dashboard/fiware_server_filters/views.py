@@ -246,12 +246,19 @@ class ComplexAjaxFilter(generic.View):
         if self.paginate:
             # it should always go last!
             data = self.pagination(data, page_number)
+        else:
+            data = {
+                'items':data,
+            }
 
         return data
 
     def pagination(self, data, page_number):
         data = self._sorting_method(data)
-        return idm_utils.paginate_list(data, int(page_number), self.page_size)
+        return {
+            'items':idm_utils.paginate_list(data, int(page_number), self.page_size),
+            'pages':idm_utils.total_pages(data, self.page_size),
+        }
 
     def _sorting_method(self, data):
         return sorted(data, key=lambda x: x['name'].lower())

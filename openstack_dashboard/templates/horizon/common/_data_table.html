@@ -16,17 +16,12 @@
   <div class="panel-body">
 {% endif %}
     {% block table_body %}
-      {% if table.get_rows %}
-        <div class="list-group" id="{{ table.slugify_name }}">
-          {% for row in table.get_rows %}
-            {{ row.render }}
-          {% endfor %}
-        </div>
-      {% else %}
-        {% if table.empty_message %}
-          <p class="alert alert-info empty">{{ table.empty_message }}</p>
-        {% endif %}
-      {% endif %}
+      <div class="list-group" id="{{ table.slugify_name }}_content">
+        {% for row in table.get_rows %}
+          {{ row.render }}
+        {% endfor %}
+      </div>
+      <p class="alert alert-info empty">{{ table.empty_message }}</p>
     {% endblock %}
 {% if not table.hide_panel %}
   </div>

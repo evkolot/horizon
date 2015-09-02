@@ -316,26 +316,27 @@ class DetailApplicationView(tables.MultiTableView):
     def get_auth_users_data(self):
         authorized_users = set()
         try:
-            # NOTE(garcianavalon) Get all the users' ids that belong to
-            # the application (they have one or more roles in their default
-            # organization)
-            all_users = fiware_api.keystone.user_list(self.request,
-                filters={'enabled':True})
-            role_assignments = fiware_api.keystone.user_role_assignments(
-                self.request, application=self.kwargs['application_id'])
+            # # NOTE(garcianavalon) Get all the users' ids that belong to
+            # # the application (they have one or more roles in their default
+            # # organization)
+            # all_users = fiware_api.keystone.user_list(self.request,
+            #     filters={'enabled':True})
+            # role_assignments = fiware_api.keystone.user_role_assignments(
+            #     self.request, application=self.kwargs['application_id'])
             
-            for assignment in role_assignments:
-                user = next((user for user in all_users if user.id == assignment.user_id), 
-                            None)
-                if user and user.default_project_id == assignment.organization_id:
-                    authorized_users.add(user)
+            # for assignment in role_assignments:
+            #     user = next((user for user in all_users if user.id == assignment.user_id), 
+            #                 None)
+            #     if user and user.default_project_id == assignment.organization_id:
+            #         authorized_users.add(user)
 
-            authorized_users = sorted(authorized_users, key=lambda x: x.username.lower())
+            # authorized_users = sorted(authorized_users, key=lambda x: x.username.lower())
 
-            self._tables['auth_users'].pages = idm_utils.total_pages(
-                authorized_users, LIMIT_MINI)
+            # self._tables['auth_users'].pages = idm_utils.total_pages(
+            #     authorized_users, LIMIT_MINI)
 
-            authorized_users = idm_utils.paginate_list(authorized_users, 1, LIMIT_MINI)
+            # authorized_users = idm_utils.paginate_list(authorized_users, 1, LIMIT_MINI)
+            pass
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve member information."))
@@ -344,28 +345,28 @@ class DetailApplicationView(tables.MultiTableView):
     def get_organizations_data(self):
         organizations = []
         try:
-            # NOTE(garcianavalon) Get all the orgs' ids that belong to
-            # the application (they have one or more roles)
-            all_organizations = fiware_api.keystone.project_list(
-                self.request)
-            role_assignments = fiware_api.keystone.organization_role_assignments(
-                self.request, application=self.kwargs['application_id'])
+            # # NOTE(garcianavalon) Get all the orgs' ids that belong to
+            # # the application (they have one or more roles)
+            # all_organizations = fiware_api.keystone.project_list(
+            #     self.request)
+            # role_assignments = fiware_api.keystone.organization_role_assignments(
+            #     self.request, application=self.kwargs['application_id'])
 
-            authorized_organizations = set([a.organization_id for a in role_assignments])
-            organizations = [org for org in all_organizations if org.id
-                     in authorized_organizations]
+            # authorized_organizations = set([a.organization_id for a in role_assignments])
+            # organizations = [org for org in all_organizations if org.id
+            #          in authorized_organizations]
 
-            # sort
-            organizations = idm_utils.filter_default(
-                sorted(organizations, key=lambda x: x.name.lower()))
+            # # sort
+            # organizations = idm_utils.filter_default(
+            #     sorted(organizations, key=lambda x: x.name.lower()))
 
-            # save total pages
-            self._tables['organizations'].pages = idm_utils.total_pages(
-                organizations, LIMIT_MINI)
+            # # save total pages
+            # self._tables['organizations'].pages = idm_utils.total_pages(
+            #     organizations, LIMIT_MINI)
 
-            # render first page
-            organizations = idm_utils.paginate_list(organizations, 1, LIMIT_MINI)
-
+            # # render first page
+            # organizations = idm_utils.paginate_list(organizations, 1, LIMIT_MINI)
+            pass
         except Exception:
             exceptions.handle(self.request,
                               ("Unable to retrieve organizations information."))
