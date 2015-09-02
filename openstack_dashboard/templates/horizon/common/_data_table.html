@@ -1,7 +1,12 @@
-{% load i18n %}
-
-
-<div class="panel panel-default members" id="{{ table.slugify_name }}" data-pagination-url="{% url 'fiware_complex_server_filters_users' %}" data-application-id="{{ application.id }}" data-pagination-pages="{{ table.pages }}">
+<div class="{% if not table.hide_panel %}panel panel-default{% endif %} datatable" id="{{ table.slugify_name }}" 
+{% if table.pagination_url %}
+  data-pagination-url="{% url table.pagination_url %}"
+  {% for key, value in table.kwargs.items %}
+    data-{{ key }}="{{ value }}"
+  {% endfor %}
+  data-pagination-pages="{{ table.pages }}"
+{% endif %}>
+{% if not table.hide_panel %}
   <div class="panel-heading">
     {% block table_heading %}
       <span>{{ table }}</span>
@@ -9,6 +14,7 @@
     {% endblock %}
   </div>
   <div class="panel-body">
+{% endif %}
     {% block table_body %}
       {% if table.get_rows %}
         <div class="list-group" id="{{ table.slugify_name }}">
@@ -17,13 +23,18 @@
           {% endfor %}
         </div>
       {% else %}
-        <p class="alert alert-info empty">{{ table.empty_message }}</p>
+        {% if table.empty_message %}
+          <p class="alert alert-info empty">{{ table.empty_message }}</p>
+        {% endif %}
       {% endif %}
     {% endblock %}
+{% if not table.hide_panel %}
   </div>
+{% endif %}
   <div class="panel-footer">
     {% block table_footer %}
-      <nav id="{{table.slugify_name}}_pagination_container">
+      <nav id="{{table.slugify_name}}_pagination_container"></nav>
     {% endblock %}
   </div>
 </div>
+

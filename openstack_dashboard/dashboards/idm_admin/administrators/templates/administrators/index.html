@@ -8,35 +8,7 @@
 
 {% block main %}
 <div id="administrators-page">
-  <div class="panel panel-default members">
-    <div class="panel-heading"> 
-      {{ members_table.render_table_actions }}
-    </div>
-    <div class="panel-body">
-      {{ members_table.render}}
-    </div>
-    {% if members_table.indexes|length > 1 and members_table.indexes  %}
-      <div class="panel-footer">
-        <nav>
-          <ul class="pagination">
-            <li {%if members_table.index_act = members_table.index_first %}class="active"{%endif%}>
-              <a href="?index={{members_table.index_first}}"><span aria-hidden="true">First</span></a>
-          	</li>
-            {% for index, num in members_table.indexes %}
-              <li {% if members_table.index_act == index %}class="active"{%endif%} >
-                <a href="?index={{index}}">{{ num }}</a>
-              </li>
-            {% endfor %}
-         		<li {%if members_table.index_act = members_table.index_last %}class="active"{%endif%}>
-              <a href="?index={{members_table.index_last}}">
-              	<span aria-hidden="true">Last</span>
-              </a>
-          	</li>
-          </ul>
-        </nav>
-      </div>
-    {% endif %}
-  </div>
+  {{ members_table.render}}   
 </div>
 {% endblock %}
 

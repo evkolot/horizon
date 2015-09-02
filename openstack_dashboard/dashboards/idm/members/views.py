@@ -47,7 +47,6 @@ class IndexView(tables.MultiTableView):
     def get_members_data(self):        
         users = []
         try:
-            index = self.request.GET.get('index', 0)
             # NOTE(garcianavalon) Filtering by project in user_list
             # filters by default_project_id.
             # We need to get the role_assignments for the user's
@@ -60,9 +59,9 @@ class IndexView(tables.MultiTableView):
             users = [user for user in all_users if user.id in project_users_roles]
             users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
         
-            users = idm_utils.paginate(self, users,
-                                       index=index, limit=LIMIT,
-                                       table_name='members')
+            self._tables['members'].pages = idm_utils.total_pages(users, LIMIT)
+
+            users = idm_utils.paginate_list(users, 1, LIMIT)
 
         except Exception:
             exceptions.handle(self.request,

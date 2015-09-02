@@ -12,15 +12,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from django.conf import settings
 from django.shortcuts import redirect
 
 from horizon import exceptions
 from horizon import tables
 from horizon import workflows
 
-from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.dashboards.idm \
+    import utils as idm_utils
 from openstack_dashboard.dashboards.idm_admin.administrators \
     import tables as administrators_tables
 from openstack_dashboard.dashboards.idm_admin \
@@ -57,10 +57,9 @@ class DetailApplicationView(tables.MultiTableView):
             
             users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
 
-            index = self.request.GET.get('index', 0)
-            users = idm_admin_utils.paginate(self, users,
-                                             index=index, limit=LIMIT,
-                                             table_name='members')
+            self._tables['members'].pages = idm_utils.total_pages(users, LIMIT)
+
+            users = idm_utils.paginate_list(users, 1, LIMIT)
         
         except Exception:
             exceptions.handle(self.request,

@@ -36,7 +36,7 @@ class OrganizationsTable(tables.DataTable):
     description = tables.Column(lambda obj: getattr(obj, 'description', ''))
     switch = tables.Column(lambda obj: idm_utils.get_switch_url(obj))
     view_all_url = 'horizon:idm:organizations:index'
-
+    
     class Meta:
         name = "organizations"
         verbose_name = 'Organizations'

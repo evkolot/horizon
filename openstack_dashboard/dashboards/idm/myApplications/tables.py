@@ -24,6 +24,8 @@ class ProvidingApplicationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
+    hide_panel = True
+    pagination_url = 'fiware_complex_server_filters_applications'
     
     class Meta:
         name = "providing_table"
@@ -36,7 +38,9 @@ class PurchasedApplicationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
-    url = tables.Column(lambda obj: getattr(obj, 'url', ''))  
+    url = tables.Column(lambda obj: getattr(obj, 'url', ''))
+    hide_panel = True
+    pagination_url = 'fiware_complex_server_filters_applications'
 
     class Meta:
         name = "purchased_table"
@@ -49,7 +53,9 @@ class AuthorizedApplicationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
-    url = tables.Column(lambda obj: getattr(obj, 'url', ''))  
+    url = tables.Column(lambda obj: getattr(obj, 'url', ''))
+    hide_panel = True
+    pagination_url = 'fiware_complex_server_filters_applications'
 
     class Meta:
         name = "authorized_table"
@@ -90,6 +96,7 @@ class AuthUsersTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
     username = tables.Column('username')
     empty_message = 'This application does not have any authorized users.'
+    pagination_url = 'fiware_complex_server_filters_users'
     
     class Meta:
         name = "auth_users"
@@ -132,6 +139,7 @@ class AuthorizedOrganizationsTable(tables.DataTable):
     name = tables.Column('name', verbose_name=('Applications'))
     description = tables.Column(lambda obj: getattr(obj, 'description', ''))
     empty_message = 'This application does not have any authorized organizations.'
+    pagination_url = 'fiware_complex_server_filters_organizations'
 
     class Meta:
         name = "organizations"
