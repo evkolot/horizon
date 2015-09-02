@@ -190,6 +190,8 @@ class ComplexAjaxFilter(generic.View):
     """
     http_method_names = ['get']
     custom_filter_keys = {}
+    page_size = 4 # TODO(garcianavalon) setting
+    paginate = True
 
     def get(self, request, *args, **kwargs):
         # NOTE(garcianavalon) replace with JsonResponse when 
@@ -233,26 +235,32 @@ class ComplexAjaxFilter(generic.View):
     def load_data(self, request, filters):
         custom_filters, api_filters = self._separate_filters(filters)
 
+        # NOTE(garcianavalon) until we can use API pagination
+        page_number = api_filters.pop('page')
+
         data = self.api_call(request, filters=api_filters)
 
         for key, value in six.iteritems(custom_filters):
             data = getattr(self, key + '_filter')(request, data, value)
 
+        if self.paginate:
+            # it should always go last!
+            data = self.pagination(data, page_number)
 
         return data
+
+    def pagination(self, data, page_number):
+        data = self._sorting_method(data)
+        return idm_utils.paginate_list(data, int(page_number), self.page_size)
+
+    def _sorting_method(self, data):
+        return sorted(data, key=lambda x: x['name'].lower())
 
 
 class OrganizationsComplexFilter(ComplexAjaxFilter):
     custom_filter_keys = {
-        'page': 99, # it should always go last!
         'application_id': 5,
     }
-
-
-    def page_filter(self, request, json_orgs, page_number):
-        json_orgs = sorted(json_orgs, key=lambda x: x['name'].lower())
-        page_size = 4 # TODO(garcianavalon) setting
-        return idm_utils.paginate_list(json_orgs, int(page_number), page_size)
 
     def application_id_filter(self, request, json_orgs, application_id):
         role_assignments = fiware_api.keystone.organization_role_assignments(
@@ -262,9 +270,6 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
         organizations = [org for org in json_orgs if org['id']
                  in authorized_organizations]
 
-        # organizations = idm_utils.filter_default(
-        #    sorted(organizations, key=lambda x: x['name'].lower()))
-        
         return organizations
 
     def api_call(self, request, filters):
@@ -291,15 +296,12 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
 
 class UsersComplexFilter(ComplexAjaxFilter):
     custom_filter_keys = {
-        'page': 99, # it should always go last!
         'application_id': 5,
         'organization_id':6,
     }
 
-    def page_filter(self, request, json_users, page_number):
-        json_users = sorted(json_users, key=lambda x: x.get('username', x['name']).lower())
-        page_size = 4 # TODO(garcianavalon) setting
-        return idm_utils.paginate_list(json_users, int(page_number), page_size)
+    def _sorting_method(self, data):
+        return sorted(data, key=lambda x: x.get('username', x['name']).lower())
 
     def organization_id_filter(self, request, json_users, organization_id):
         project_users_roles = api.keystone.get_project_users_roles(
@@ -361,14 +363,8 @@ class UsersComplexFilter(ComplexAjaxFilter):
 
 class ApplicationsComplexFilter(ComplexAjaxFilter):
     custom_filter_keys = {
-        'page': 99, # it should always go last!
         'organization_id': 5,
     }
-
-    def page_filter(self, request, json_apps, page_number):
-        json_apps = sorted(json_apps, key=lambda x: x['name'].lower())
-        page_size = 4 # TODO(garcianavalon) setting
-        return idm_utils.paginate_list(json_apps, int(page_number), page_size)
 
     def organization_id_filter(self, request, json_apps, organization_id):
         role_assignments = fiware_api.keystone.organization_role_assignments(
