@@ -48,21 +48,9 @@ horizon.datatables.ajax_paginate = function(table, table_selector, page_num) {
       } else {
         horizon.datatables.add_no_results_row(table);
       }
-
+      var template = horizon.templates.compiled_templates["#table_row_template"];
       for (var i in items) {
-        var display_name = items[i]['username'];
-        if (display_name === undefined) {
-          display_name = items[i]['name'];
-        }
-        var avatar = items[i]['img_small'];
-        var data_id = items[i]['id'];
-        var description = items[i]['description'];
-
-        list_group.append('<div class="list-group-item">' +
-          '<a class="item" href="/idm/organizations/'+ data_id + '/">' +
-          '<div class="avatar filter_field"><img src="'+ avatar + '"></div>'+
-          '<div class="name filter_field">'+ display_name +'</div>' + 
-          '<div class="description filter_field">'+ description +'</div></a></div>');
+        list_group.append(template.render(items[i]));
       }
 
       // reinitialize pagination

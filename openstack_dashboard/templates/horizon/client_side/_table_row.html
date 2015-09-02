@@ -1,8 +1,19 @@
 {% extends "horizon/client_side/template.html" %}
 {% load horizon %}
 
-{% block id %}empty_row_template{% endblock %}
+{% block id %}table_row_template{% endblock %}
 
 {% block template %}{% spaceless %}{% jstemplate %}
-<p class="alert alert-info empty">No results.</p>
+<div class="list-group-item">
+  <a class="item" href="/idm/organizations/[[id]]">
+    <div class="avatar filter_field"><img src="[[img_small]]"></div>
+    <div class="name filter_field">[[name]]</div>
+    [[#description]] 
+      <div class="description filter_field">[[description]]</div>
+    [[/description]]
+    [[#url]] 
+      <div class="url filter_field">[[url]]</div>
+    [[/url]]
+  </a>
+</div>
 {% endjstemplate %}{% endspaceless %}{% endblock %}

@@ -389,7 +389,7 @@ class ApplicationsComplexFilter(ComplexAjaxFilter):
         for app in applications:
             json_app = idm_utils.obj_to_jsonable_dict(app, attrs)
             json_app['img_small'] = idm_utils.get_avatar(
-                json_app, 'img_small', idm_utils.DEFAULT_ORG_SMALL_AVATAR)
+                json_app, 'img_small', idm_utils.DEFAULT_APP_SMALL_AVATAR)
             json_apps.append(json_app)
 
         return json_apps
