@@ -564,7 +564,7 @@ FIWARE_DEFAULT_APPS = [
 ]
 # Cloud App
 FIWARE_CLOUD_APP = 'Cloud'
-FIWARE_DEFAULT_CLOUD_ROLE = 'Member'
+FIWARE_DEFAULT_CLOUD_ROLE_ID = '8605715701e44bf5be1e2fbe49cab080'
 
 # reCAPTCHA
 # Get your keys at: https://www.google.com/recaptcha/admin#createsite
@@ -614,8 +614,8 @@ FIWARE_DEFAULT_DURATION = {
 MAX_TRIAL_USERS = 100
 
 # Default FIWARE roles
-FIWARE_PURCHASER_ROLE = 'purchaser'
-FIWARE_PROVIDER_ROLE = 'provider'
+FIWARE_PURCHASER_ROLE_ID = '191'
+FIWARE_PROVIDER_ROLE_ID = '106'
 
 # Table Pagination
 PAGE_LIMIT = 8

@@ -759,12 +759,12 @@ def get_community_role(request, use_idm_account=True):
         request, community, lambda req, n: internal_keystoneclient(req).roles.find(name=n))
 
 def get_provider_role(request, use_idm_account=True):
-    provider = getattr(local_settings, "FIWARE_PROVIDER_ROLE")
+    provider = getattr(local_settings, "FIWARE_PROVIDER_ROLE_ID")
     return _get_element_and_cache(
         request, provider, lambda req, role_id: internal_keystoneclient(req).fiware_roles.roles.get(role_id))
 
 def get_purchaser_role(request, use_idm_account=True):
-    purchaser = getattr(local_settings, "FIWARE_PURCHASER_ROLE")
+    purchaser = getattr(local_settings, "FIWARE_PURCHASER_ROLE_ID")
     return _get_element_and_cache(
         request, purchaser, lambda req, role_id: internal_keystoneclient(req).fiware_roles.roles.get(role_id))
 
@@ -775,7 +775,7 @@ def get_default_cloud_role(request, cloud_app_id, use_idm_account=True):
     Since this is configured in settings and should not change from request
     to request. Supports lookup by name or id.
     """
-    default_cloud = getattr(local_settings, "FIWARE_DEFAULT_CLOUD_ROLE")
+    default_cloud = getattr(local_settings, "FIWARE_DEFAULT_CLOUD_ROLE_ID")
     return _get_element_and_cache(
         request, default_cloud, lambda req, role_id: internal_keystoneclient(req).fiware_roles.roles.get(role_id))
 
@@ -840,3 +840,4 @@ def get_fiware_default_apps(request):
         if app:
             default_apps.append(app)
     return default_apps
+
