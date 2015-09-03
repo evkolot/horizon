@@ -374,6 +374,7 @@ class UsersComplexFilter(ComplexAjaxFilter):
 class ApplicationsComplexFilter(ComplexAjaxFilter):
     custom_filter_keys = {
         'organization_id': 5,
+        'application_role': 6,
     }
     item_detail_url = 'horizon:idm:myApplications:detail'
     url_id_key = 'application_id'
@@ -386,6 +387,9 @@ class ApplicationsComplexFilter(ComplexAjaxFilter):
         applications = [app for app in json_apps if app['id'] in apps_with_roles]
 
         return applications
+
+    def application_role_filter(self, request, json_apps, role):
+        return json_apps
 
     def api_call(self, request, filters):
         applications = idm_utils.filter_default(fiware_api.keystone.application_list(request))

@@ -26,6 +26,10 @@ class ProvidingApplicationsTable(tables.DataTable):
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_applications'
+    filter_data = {
+        'application_role': 'provider',
+    }
+
     
     class Meta:
         name = "providing_table"
@@ -41,6 +45,9 @@ class PurchasedApplicationsTable(tables.DataTable):
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_applications'
+    filter_data = {
+        'application_role': 'purchaser',
+    }
 
     class Meta:
         name = "purchased_table"
@@ -56,6 +63,9 @@ class AuthorizedApplicationsTable(tables.DataTable):
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_applications'
+    filter_data = {
+        'application_role': 'other',
+    }
 
     class Meta:
         name = "authorized_table"
@@ -97,6 +107,13 @@ class AuthUsersTable(tables.DataTable):
     username = tables.Column('username')
     empty_message = 'This application does not have any authorized users.'
     pagination_url = 'fiware_complex_server_filters_users'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(AuthUsersTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'application_id': self.kwargs['application_id']})
+            
     
     class Meta:
         name = "auth_users"
@@ -140,6 +157,12 @@ class AuthorizedOrganizationsTable(tables.DataTable):
     description = tables.Column(lambda obj: getattr(obj, 'description', ''))
     empty_message = 'This application does not have any authorized organizations.'
     pagination_url = 'fiware_complex_server_filters_organizations'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(AuthorizedOrganizationsTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'application_id': self.kwargs['application_id']})
 
     class Meta:
         name = "organizations"

@@ -1,7 +1,7 @@
 <div class="{% if not table.hide_panel %}panel panel-default{% endif %} datatable" id="{{ table.slugify_name }}" 
 {% if table.pagination_url %}
   data-pagination-url="{% url table.pagination_url %}"
-  {% for key, value in table.kwargs.items %}
+  {% for key, value in table.filter_data.items %}
     data-{{ key }}="{{ value }}"
   {% endfor %}
   data-pagination-pages="{{ table.pages }}"

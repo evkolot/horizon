@@ -47,6 +47,12 @@ class MembersTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
     username = tables.Column('username', verbose_name=('Members'))
     pagination_url = 'fiware_complex_server_filters_users'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(MembersTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'organization_id': self.request.organization.id})
 
     class Meta:
         name = "members"
