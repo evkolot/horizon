@@ -19,6 +19,7 @@ import six
 
 from django import http
 from django.core.cache import cache
+from django.core.urlresolvers import reverse
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 
@@ -192,6 +193,8 @@ class ComplexAjaxFilter(generic.View):
     custom_filter_keys = {}
     page_size = 4 # TODO(garcianavalon) setting
     paginate = True
+    item_detail_url = None
+    url_id_key = None
 
     def get(self, request, *args, **kwargs):
         # NOTE(garcianavalon) replace with JsonResponse when 
@@ -240,11 +243,16 @@ class ComplexAjaxFilter(generic.View):
 
         data = self.api_call(request, filters=api_filters)
 
+        if self.item_detail_url and self.url_id_key:
+            for item in data:
+                item['detail_url'] = reverse(
+                    self.item_detail_url, kwargs={self.url_id_key:item['id']})
+
         for key, value in six.iteritems(custom_filters):
             data = getattr(self, key + '_filter')(request, data, value)
 
         if self.paginate:
-            # it should always go last!
+            # Always after all the filters are done
             data = self.pagination(data, page_number)
         else:
             data = {
@@ -268,6 +276,8 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
     custom_filter_keys = {
         'application_id': 5,
     }
+    item_detail_url = 'horizon:idm:organizations:detail'
+    url_id_key = 'organization_id'
 
     def application_id_filter(self, request, json_orgs, application_id):
         role_assignments = fiware_api.keystone.organization_role_assignments(
@@ -306,6 +316,8 @@ class UsersComplexFilter(ComplexAjaxFilter):
         'application_id': 5,
         'organization_id':6,
     }
+    item_detail_url = 'horizon:idm:users:detail'
+    url_id_key = 'user_id'
 
     def _sorting_method(self, data):
         return sorted(data, key=lambda x: x.get('username', x['name']).lower())
@@ -363,6 +375,8 @@ class ApplicationsComplexFilter(ComplexAjaxFilter):
     custom_filter_keys = {
         'organization_id': 5,
     }
+    item_detail_url = 'horizon:idm:myApplications:detail'
+    url_id_key = 'application_id'
 
     def organization_id_filter(self, request, json_apps, organization_id):
         role_assignments = fiware_api.keystone.organization_role_assignments(

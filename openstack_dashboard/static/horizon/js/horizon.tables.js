@@ -19,6 +19,11 @@ horizon.datatables.remove_no_results_row = function (table) {
 };
 
 horizon.datatables.ajax_paginate = function(table, table_selector, page_num) {
+  if (!table.attr('data-pagination-url')) {
+    horizon.datatables.remove_no_results_row(table);
+    return;
+  }
+
   horizon.ajax.queue({
     type: 'GET',
     url: table.attr('data-pagination-url'),
