@@ -15,6 +15,7 @@ from django.core import urlresolvers
 from horizon import tables
 
 from openstack_dashboard import fiware_api
+from openstack_dashboard.local import local_settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import tables as idm_tables
 
@@ -27,7 +28,7 @@ class ProvidingApplicationsTable(tables.DataTable):
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_applications'
     filter_data = {
-        'application_role': 'provider',
+        'application_role': getattr(local_settings, "FIWARE_PROVIDER_ROLE_ID"),
     }
 
     
@@ -46,7 +47,7 @@ class PurchasedApplicationsTable(tables.DataTable):
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_applications'
     filter_data = {
-        'application_role': 'purchaser',
+        'application_role': getattr(local_settings, "FIWARE_PURCHASER_ROLE_ID"),
     }
 
     class Meta:
@@ -64,7 +65,7 @@ class AuthorizedApplicationsTable(tables.DataTable):
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_applications'
     filter_data = {
-        'application_role': 'other',
+        'application_role': 'OTHER',
     }
 
     class Meta:

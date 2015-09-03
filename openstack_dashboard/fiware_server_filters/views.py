@@ -27,12 +27,15 @@ from horizon import exceptions
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.local import local_settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 
 
 LOG = logging.getLogger('idm_logger')
 
 SHORT_CACHE_TIME = 20 # seconds
+FIWARE_PURCHASER_ROLE_ID = getattr(local_settings, "FIWARE_PURCHASER_ROLE_ID")
+FIWARE_PROVIDER_ROLE_ID = getattr(local_settings, "FIWARE_PROVIDER_ROLE_ID")
 
 
 class AjaxKeystoneFilter(generic.View):
@@ -388,7 +391,25 @@ class ApplicationsComplexFilter(ComplexAjaxFilter):
 
         return applications
 
-    def application_role_filter(self, request, json_apps, role):
+    def application_role_filter(self, request, json_apps, role_id):
+        if self.request.organization.id == self.request.user.default_project_id:
+            role_assignments = fiware_api.keystone.user_role_assignments(
+                               self.request, user=self.request.user.id)
+        else:
+            role_assignments = fiware_api.keystone.organization_role_assignments(
+                               self.request, organization=self.request.organization.id)
+
+        if role_id == 'OTHER':
+            # Special case, not provider or purchaser.
+            not_roles = [FIWARE_PURCHASER_ROLE_ID, FIWARE_PROVIDER_ROLE_ID]
+            apps_with_roles = [a.application_id for a in role_assignments
+                               if a.role_id not in not_roles] 
+        else:
+            apps_with_roles = [a.application_id for a in role_assignments
+                               if a.role_id == role_id]       
+        
+        json_apps = [app for app in json_apps if app['id'] in apps_with_roles]
+
         return json_apps
 
     def api_call(self, request, filters):
