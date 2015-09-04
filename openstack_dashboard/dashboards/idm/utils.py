@@ -91,8 +91,14 @@ def get_avatar(obj, avatar_type, default_avatar):
 def get_switch_url(organization, check_switchable=True):
     if check_switchable and not getattr(organization, 'switchable', False):
         return False
+
+    if type(organization) == dict:
+        organization_id = organization['id']
+    else:
+        organization_id = organization.id
+        
     return urlresolvers.reverse('switch_tenants',
-                                kwargs={'tenant_id': organization.id})
+                                kwargs={'tenant_id': organization_id})
 
 
 def page_numbers(elements, page_size):

@@ -339,6 +339,16 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
             
         return json_orgs
 
+    def load_data(self, request, filters):
+        data = super(OrganizationsComplexFilter, self).load_data(request, filters)
+
+        owner_organizations = [org.id for org in request.organizations]
+        for org in data['items']:
+            if org['id'] not in owner_organizations:
+                continue
+            org['switch'] = idm_utils.get_switch_url(org, check_switchable=False)
+
+        return data 
 
 class UsersComplexFilter(ComplexAjaxFilter):
     custom_filter_keys = {
