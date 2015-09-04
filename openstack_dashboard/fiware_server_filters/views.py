@@ -296,8 +296,9 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
         return organizations
 
     def organization_role_filter(self, request, json_orgs, role_name):
-        my_organizations = [org.id for org in fiware_api.keystone.project_list(
-            request, user=request.user.id)]
+        my_organizations = fiware_api.keystone.project_list(
+            request, user=request.user.id)
+        my_organizations = [org.id for org in my_organizations]
         # NOTE(garcianavalon) the organizations the user is owner(admin)
         # are already in the request object by the middleware
         owner_organizations = [org.id for org in request.organizations]
@@ -347,7 +348,7 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
             if org['id'] not in owner_organizations:
                 continue
             org['switch'] = idm_utils.get_switch_url(org, check_switchable=False)
-
+        
         return data 
 
 class UsersComplexFilter(ComplexAjaxFilter):
