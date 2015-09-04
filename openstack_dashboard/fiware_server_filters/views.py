@@ -37,6 +37,8 @@ SHORT_CACHE_TIME = 20 # seconds
 FIWARE_PURCHASER_ROLE_ID = getattr(local_settings, "FIWARE_PURCHASER_ROLE_ID")
 FIWARE_PROVIDER_ROLE_ID = getattr(local_settings, "FIWARE_PROVIDER_ROLE_ID")
 
+KEYSTONE_OWNER_ROLE = getattr(local_settings, "KEYSTONE_OWNER_ROLE")
+KEYSTONE_MEMBER_ROLE = getattr(local_settings, "OPENSTACK_KEYSTONE_DEFAULT_ROLE")
 
 class AjaxKeystoneFilter(generic.View):
     """view to handle ajax filtering in modals. 
@@ -278,6 +280,7 @@ class ComplexAjaxFilter(generic.View):
 class OrganizationsComplexFilter(ComplexAjaxFilter):
     custom_filter_keys = {
         'application_id': 5,
+        'organization_role':6,
     }
     item_detail_url = 'horizon:idm:organizations:detail'
     url_id_key = 'organization_id'
@@ -291,6 +294,29 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
                  in authorized_organizations]
 
         return organizations
+
+    def organization_role_filter(self, request, json_orgs, role_name):
+        my_organizations = [org.id for org in fiware_api.keystone.project_list(
+            request, user=request.user.id)]
+        # NOTE(garcianavalon) the organizations the user is owner(admin)
+        # are already in the request object by the middleware
+        owner_organizations = [org.id for org in request.organizations]
+
+        if role_name == 'OTHER':
+            json_orgs = [org for org in json_orgs if not org['id'] in my_organizations]
+
+        elif role_name == KEYSTONE_MEMBER_ROLE:
+            json_orgs = [org for org in json_orgs if org['id'] in my_organizations
+                         and not org['id'] in owner_organizations]
+
+        elif role_name == KEYSTONE_OWNER_ROLE:
+            json_orgs = [org for org in json_orgs if org['id'] in owner_organizations]
+
+        else:
+            # TODO(garcianavalon) support for generic roles if needed
+            pass
+
+        return json_orgs
 
     def api_call(self, request, filters):
         organizations = idm_utils.filter_default(
@@ -392,12 +418,12 @@ class ApplicationsComplexFilter(ComplexAjaxFilter):
         return applications
 
     def application_role_filter(self, request, json_apps, role_id):
-        if self.request.organization.id == self.request.user.default_project_id:
+        if request.organization.id == request.user.default_project_id:
             role_assignments = fiware_api.keystone.user_role_assignments(
-                               self.request, user=self.request.user.id)
+                               request, user=request.user.id)
         else:
             role_assignments = fiware_api.keystone.organization_role_assignments(
-                               self.request, organization=self.request.organization.id)
+                               request, organization=request.organization.id)
 
         if role_id == 'OTHER':
             # Special case, not provider or purchaser.

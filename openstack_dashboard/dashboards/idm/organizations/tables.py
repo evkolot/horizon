@@ -20,6 +20,7 @@ from horizon import tables
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.local import local_settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import tables as idm_tables
 
@@ -34,6 +35,9 @@ class OtherOrganizationsTable(tables.DataTable):
     description = tables.Column(lambda obj: getattr(obj, 'description', ''))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_organizations'
+    filter_data = {
+        'organization_role': 'OTHER',
+    }
 
     class Meta:
         name = "other_organizations"
@@ -50,6 +54,9 @@ class OwnedOrganizationsTable(tables.DataTable):
         obj, check_switchable=False))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_organizations'
+    filter_data = {
+        'organization_role': getattr(local_settings, "KEYSTONE_OWNER_ROLE"),
+    }
 
     class Meta:
         name = "owned_organizations"
@@ -64,6 +71,9 @@ class MemberOrganizationsTable(tables.DataTable):
     description = tables.Column(lambda obj: getattr(obj, 'description', None))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_organizations'
+    filter_data = {
+        'organization_role': getattr(local_settings, "OPENSTACK_KEYSTONE_DEFAULT_ROLE"),
+    }
 
     class Meta:
         name = "member_organizations"
@@ -98,6 +108,12 @@ class MembersTable(tables.DataTable):
     username = tables.Column('username', verbose_name=('Members'))
     empty_message = 'This organization does not have any members.'
     pagination_url = 'fiware_complex_server_filters_users'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(MembersTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'application_id': self.kwargs['application_id']})
 
     class Meta:
         name = "members"
@@ -114,6 +130,12 @@ class AuthorizingApplicationsTable(tables.DataTable):
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
     empty_message = 'This organization does not have any authorizing applications'
     pagination_url = 'fiware_complex_server_filters_applications'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(AuthorizingApplicationsTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'application_id': self.kwargs['application_id']})
 
     class Meta:
         name = "applications"
