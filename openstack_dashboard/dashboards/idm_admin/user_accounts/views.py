@@ -39,6 +39,11 @@ NOTIFY_ACCOUNT_EXPIRE_TXT_TEMPLATE = 'email/account_status_expire.txt'
 NOTIFY_ACCOUNT_CHANGE_HTML_TEMPLATE = 'email/account_status_change.html'
 NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE = 'email/account_status_change.txt'
 
+FIWARE_DEFAULT_DURATION = getattr(settings, 'FIWARE_DEFAULT_DURATION')
+KEYSTONE_TRIAL_ROLE = getattr(settings, 'KEYSTONE_TRIAL_ROLE')
+KEYSTONE_BASIC_ROLE = getattr(settings, 'KEYSTONE_BASIC_ROLE')
+KEYSTONE_COMMUNITY_ROLE = getattr(settings, 'KEYSTONE_COMMUNITY_ROLE')
+
 def _current_account(request, user_id):
     # TODO(garcianavalon) find a better solution to this
     user_roles = [
@@ -94,14 +99,14 @@ class UpdateAccountView(forms.ModalFormView):
         context['allowed_regions'] = json.dumps(
             getattr(settings, 'FIWARE_ALLOWED_REGIONS', None))
 
-        context['default_durations'] = json.dumps(
-            getattr(settings, 'FIWARE_DEFAULT_DURATION', None))
+        context['default_durations'] = json.dumps(FIWARE_DEFAULT_DURATION)
 
         account_type = _current_account(self.request, user.id)[1]
         account_info = {
             'account_type': account_type,
             'started_at': getattr(user, account_type + '_started_at', None),
-            'duration': getattr(user, account_type + '_duration', None),
+            'duration': getattr(user, account_type + '_duration',
+                                FIWARE_DEFAULT_DURATION.get(account_type)),
             'regions': _current_regions(self.request, user.cloud_project_id)
         }
 
@@ -180,11 +185,12 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
                     'user_name':user.username,
                     'account_type': account_type,
                     'started_at': getattr(user, account_type + '_started_at', None),
-                    'duration': getattr(user, account_type + '_duration', None),
+                    'duration': getattr(user, account_type + '_duration',
+                                        FIWARE_DEFAULT_DURATION.get(account_type)),
                     'show_cloud_info': account_type in ['trial', 'community'],
                 }
 
-                if context.get('started_at') and context.get('duration'):
+                if context['started_at'] and context['duration']:
                     start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
                     end_date = start_date + datetime.timedelta(days=context['duration'])
                     context['end_date'] = end_date.strftime('%Y-%m-%d')
@@ -243,15 +249,16 @@ class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
                     'regions': _current_regions(self.request, user.cloud_project_id),
                     'user_name':user.username,
                     'account_type': account_type,
-                    'started_at': getattr(user, account_type + '_started_at', None),
-                    'duration': getattr(user, account_type + '_duration', None),
+                    'started_at': getattr(user, account_type + '_started_at'),
+                    'duration': getattr(user, account_type + '_duration',
+                                        FIWARE_DEFAULT_DURATION.get(account_type)),
                     'show_cloud_info': account_type in ['trial', 'community'],
                 }
-
-                if context.get('started_at') and context.get('duration'):
-                    start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
-                    end_date = start_date + datetime.timedelta(days=context['duration'])
-                    context['end_date'] = end_date.strftime('%Y-%m-%d')
+                # NOTE(garcianavalon) there should always be an end date in this email
+                # if context.get('started_at') and context.get('duration'):
+                start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
+                end_date = start_date + datetime.timedelta(days=context['duration'])
+                context['end_date'] = end_date.strftime('%Y-%m-%d')
 
                 text_content = render_to_string(NOTIFY_ACCOUNT_EXPIRE_TXT_TEMPLATE, dictionary=context)
                 html_content = render_to_string(NOTIFY_ACCOUNT_EXPIRE_HTML_TEMPLATE, dictionary=context)
