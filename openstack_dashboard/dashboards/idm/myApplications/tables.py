@@ -27,6 +27,7 @@ class ProvidingApplicationsTable(tables.DataTable):
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_applications'
+    empty_message = 'You are not provider of any application.'
     filter_data = {
         'application_role': getattr(local_settings, "FIWARE_PROVIDER_ROLE_ID"),
     }
@@ -46,6 +47,7 @@ class PurchasedApplicationsTable(tables.DataTable):
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_applications'
+    empty_message = 'You are not purchaser of any application.'
     filter_data = {
         'application_role': getattr(local_settings, "FIWARE_PURCHASER_ROLE_ID"),
     }
@@ -64,6 +66,7 @@ class AuthorizedApplicationsTable(tables.DataTable):
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_applications'
+    empty_message = 'You are not authorized in any application.'
     filter_data = {
         'application_role': 'OTHER',
     }

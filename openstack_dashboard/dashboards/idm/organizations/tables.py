@@ -35,6 +35,7 @@ class OtherOrganizationsTable(tables.DataTable):
     description = tables.Column(lambda obj: getattr(obj, 'description', ''))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_organizations'
+    empty_message = 'There are no other organizations.'
     filter_data = {
         'organization_role': 'OTHER',
     }
@@ -54,6 +55,7 @@ class OwnedOrganizationsTable(tables.DataTable):
         obj, check_switchable=False))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_organizations'
+    empty_message = 'You are not owner of any organization.'
     filter_data = {
         'organization_role': getattr(local_settings, "KEYSTONE_OWNER_ROLE"),
     }
@@ -71,6 +73,7 @@ class MemberOrganizationsTable(tables.DataTable):
     description = tables.Column(lambda obj: getattr(obj, 'description', None))
     hide_panel = True
     pagination_url = 'fiware_complex_server_filters_organizations'
+    empty_message = 'You are not member of any organization.'
     filter_data = {
         'organization_role': getattr(local_settings, "OPENSTACK_KEYSTONE_DEFAULT_ROLE"),
     }

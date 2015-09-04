@@ -18,12 +18,14 @@ horizon.datatables.remove_no_results_row = function (table) {
   table.find("p.empty").hide();
 };
 
-horizon.datatables.ajax_paginate = function(table, table_selector, page_num) {
+horizon.datatables.ajax_paginate = function(table, page_num) {
+  page_num = page_num || 1;
+
   if (!table.attr('data-pagination-url')) {
     horizon.datatables.remove_no_results_row(table);
     return;
   }
-
+  var table_selector = table.attr('id');
   horizon.ajax.queue({
     type: 'GET',
     url: table.attr('data-pagination-url'),
@@ -39,6 +41,7 @@ horizon.datatables.ajax_paginate = function(table, table_selector, page_num) {
       // add a spinner to show progress
       var list_group = $('#'+table_selector).find('div.list-group');
       list_group.html('<i class="fa fa-gear fa-spin"></i>');
+      horizon.datatables.remove_no_results_row(table);
     },
     complete: function () {
     },
@@ -61,17 +64,17 @@ horizon.datatables.ajax_paginate = function(table, table_selector, page_num) {
       }
 
       // reinitialize pagination
-      horizon.datatables.init_pagination(table, table_selector, data['pages']);
+      horizon.datatables.init_pagination(table, data['pages']);
     }
   });
 }
-horizon.datatables.init_pagination = function (table, table_selector, total_pages) {
+horizon.datatables.init_pagination = function (table, total_pages) {
   if (total_pages <= 0) {
     // to force pagination clearing, we set page to 1
     total_pages = 1;
   }
   // init bootpag
-  $('#'+table_selector+'_pagination_container').bootpag({
+  $('#'+table.attr('id')+'_pagination_container').bootpag({
       total: total_pages,
       first: 'First',
       last:'Last',
@@ -79,11 +82,11 @@ horizon.datatables.init_pagination = function (table, table_selector, total_page
       wrapClass: 'pagination',
       firstLastUse: true
   }).on("page", function(event, page_num){ 
-    horizon.datatables.ajax_paginate(table, table_selector, page_num);
+    horizon.datatables.ajax_paginate(table, page_num);
   });
 };
 
-horizon.datatables.set_pagination_filter = function(table, table_selector) {
+horizon.datatables.set_pagination_filter = function(table) {
   var MIN_TIME_BETWEEN_QUERIES = 600; // ms
   var MIN_LETTERS_TO_QUERY = -1;
 
@@ -106,7 +109,7 @@ horizon.datatables.set_pagination_filter = function(table, table_selector) {
     horizon.datatables.timestamp_query = performance.now();
 
     horizon.datatables.pending_request = window.setTimeout(function() {
-        horizon.datatables.ajax_paginate(table, table_selector, 1);
+        horizon.datatables.ajax_paginate(table, 1);
       }, MIN_TIME_BETWEEN_QUERIES);
   });
 
@@ -164,13 +167,12 @@ horizon.datatables.set_table_query_filter = function (parent) {
 
 horizon.addInitFunction(function() {
   $('div.datatable').each(function (idx, el) {
-    var table_selector = $(el).attr('id');
-
+    
     // load intial elements
-    horizon.datatables.ajax_paginate($(el), table_selector, 1);
+    horizon.datatables.ajax_paginate($(el), 1);
 
     // set up filter
-    horizon.datatables.set_pagination_filter($(el), table_selector)
+    horizon.datatables.set_pagination_filter($(el))
   });
 
   // Trigger run-once setup scripts for tables.
@@ -180,6 +182,7 @@ horizon.addInitFunction(function() {
   horizon.modals.addModalInitFunction(horizon.datatables.set_table_query_filter);
 
   // Also apply on tables in tabs views for lazy-loaded data.
-  horizon.tabs.addTabLoadFunction(horizon.datatables.set_table_query_filter);
+  horizon.tabs.addTabLoadFunction(horizon.datatables.ajax_paginate);
+  horizon.tabs.addTabLoadFunction(horizon.datatables.set_pagination_filter);
 
 });
