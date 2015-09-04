@@ -33,8 +33,15 @@ from openstack_dashboard import fiware_api
 LOG = logging.getLogger('idm_logger')
 NOTIFICATION_CHOICES = [
     ('all_users', 'Notify all users'),
-    ('organization', 'Notify an organization')
+    ('organization', 'Notify an organization'),
+    ('role', 'Notify users by role')
 ]
+ROLE_CHOICES = [ 
+    ('trial', 'Trial'),
+    ('basic', 'Basic'),
+    ('community', 'Community'),
+]
+
 class EmailForm(forms.SelfHandlingForm):
     notify = forms.ChoiceField(
         required=True,
@@ -42,6 +49,11 @@ class EmailForm(forms.SelfHandlingForm):
     organization = forms.CharField(
         label='Organization ID',
         required=False)
+    role = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        label='Role',
+        required=False,
+        choices=ROLE_CHOICES)
     subject = forms.CharField(
         max_length=50,
         label=("Subject"),
@@ -60,25 +72,28 @@ class EmailForm(forms.SelfHandlingForm):
         cleaned_data = super(EmailForm, self).clean()
 
         organization_id = cleaned_data.get('organization', None)
+        selected_role = cleaned_data.get('role', None)
         notify = cleaned_data.get('notify')
+
         if notify != 'organization':
             return cleaned_data
 
-        if not organization_id:
-            raise forms.ValidationError(
-                'You must specify an organization ID',
-                code='invalid')
-        else:
-            try:
-                organization = fiware_api.keystone.project_get(
-                    self.request, 
-                    organization_id)
-                return cleaned_data
-
-            except keystoneclient_exceptions.NotFound:
+        elif notify == 'organization':
+            if not organization_id:
                 raise forms.ValidationError(
-                    'There is no organization with the specified ID',
+                    'You must specify an organization ID',
                     code='invalid')
+            else:
+                try:
+                    organization = fiware_api.keystone.project_get(
+                        self.request, 
+                        organization_id)
+                    return cleaned_data
+
+                except keystoneclient_exceptions.NotFound:
+                    raise forms.ValidationError(
+                        'There is no organization with the specified ID',
+                        code='invalid')
 
         return cleaned_data
 
@@ -103,6 +118,25 @@ class EmailForm(forms.SelfHandlingForm):
                     owner = fiware_api.keystone.user_get(request, owner_id)
                     if '@' in owner.name:
                         recipients.append(owner.name)
+
+            elif data['notify'] == 'role':
+                if data['role'] == 'trial':
+                    role = fiware_api.keystone.get_trial_role(self.request).id
+                elif data['role'] == 'basic':
+                    role = fiware_api.keystone.get_basic_role(self.request).id
+                elif data['role'] == 'community':
+                    role = fiware_api.keystone.get_community_role(self.request).id
+
+                users = [a.user['id'] for a
+                    in api.keystone.role_assignments_list(
+                        request,
+                        role=role) 
+                ]
+
+                for user_id in users:
+                    user = fiware_api.keystone.user_get(request, user_id)
+                    if '@' in user.name and user.name not in recipients:
+                        recipients.append(user.name)
 
             if not recipients:
                 msg = ('The recipients list is empty, no email will be sent.')

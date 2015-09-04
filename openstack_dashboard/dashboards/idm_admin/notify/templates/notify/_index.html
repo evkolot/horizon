@@ -23,11 +23,19 @@
       // hide the organization id field by default
       $('#id_organization').closest('div.form-group').hide();
 
+      // hide the roles radio buttons by default
+      $('.radio').closest('div.form-group').hide();
+
       $('#id_notify').on('change', function() {
         if (this.value == 'organization'){
           $('#id_organization').closest('div.form-group').show();
+          $('.radio').closest('div.form-group').hide();
+        } else if (this.value == 'role'){
+          $('#id_organization').closest('div.form-group').hide();
+          $('.radio').closest('div.form-group').show();
         } else if (this.value == 'all_users') {
           $('#id_organization').closest('div.form-group').hide();
+          $('.radio').closest('div.form-group').hide();
         }
       });
     });
