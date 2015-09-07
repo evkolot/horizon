@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import csv
 import logging
 
 from django import forms
@@ -33,7 +34,8 @@ from openstack_dashboard import fiware_api
 LOG = logging.getLogger('idm_logger')
 NOTIFICATION_CHOICES = [
     ('all_users', 'Notify all users'),
-    ('organization', 'Notify an organization')
+    ('organization', 'Notify an organization'),
+    ('users_by_id', 'Notify users by user ID'),
 ]
 class EmailForm(forms.SelfHandlingForm):
     notify = forms.ChoiceField(
@@ -41,6 +43,10 @@ class EmailForm(forms.SelfHandlingForm):
         choices=NOTIFICATION_CHOICES)
     organization = forms.CharField(
         label='Organization ID',
+        required=False)
+    user_ids = forms.CharField(
+        max_length=50000,
+        label="User IDs in CSV format",
         required=False)
     subject = forms.CharField(
         max_length=50,
@@ -51,36 +57,54 @@ class EmailForm(forms.SelfHandlingForm):
         label=("Body"),
         required=True)
     
-
     # TODO(garcianavalon) as settings
     EMAIL_HTML_TEMPLATE = 'email/base_email.html'
     EMAIL_TEXT_TEMPLATE = 'email/base_email.txt'
 
-    def clean(self):
-        cleaned_data = super(EmailForm, self).clean()
-
+    def _clean_organization(self, cleaned_data):
         organization_id = cleaned_data.get('organization', None)
-        notify = cleaned_data.get('notify')
-        if notify != 'organization':
-            return cleaned_data
-
         if not organization_id:
             raise forms.ValidationError(
                 'You must specify an organization ID',
                 code='invalid')
-        else:
-            try:
-                organization = fiware_api.keystone.project_get(
-                    self.request, 
-                    organization_id)
-                return cleaned_data
+        try:
+            organization = fiware_api.keystone.project_get(
+                self.request, 
+                organization_id)
+            return cleaned_data
 
-            except keystoneclient_exceptions.NotFound:
-                raise forms.ValidationError(
-                    'There is no organization with the specified ID',
-                    code='invalid')
+        except keystoneclient_exceptions.NotFound:
+            raise forms.ValidationError(
+                'There is no organization with the specified ID',
+                code='invalid')
 
         return cleaned_data
+
+    def _clean_users_id(self, cleaned_data):
+        # check we can parse
+        try:
+            cleaned_data['user_ids'] = cleaned_data['user_ids'].replace(" ", "").replace("'", "").split(",")
+        except Exception as e:
+            raise forms.ValidationError(
+                'Error parsing the user IDs',
+                code='invalid')
+
+        return cleaned_data
+
+    def clean(self):
+        cleaned_data = super(EmailForm, self).clean()
+        
+        notify = cleaned_data.get('notify')
+        if notify == 'all_users':
+            return cleaned_data
+        elif notify == 'organization':
+            return self._clean_organization(cleaned_data)
+        elif notify == 'users_by_id':
+            return self._clean_users_id(cleaned_data)
+
+        return cleaned_data
+
+        
 
     def handle(self, request, data):
         # TODO(garcianavalon) better email architecture...
@@ -104,6 +128,12 @@ class EmailForm(forms.SelfHandlingForm):
                     if '@' in owner.name:
                         recipients.append(owner.name)
 
+            elif data['notify'] == 'users_by_id':
+                recipients = [u.name for u
+                              in fiware_api.keystone.user_list(request,
+                                                               filters={'enabled':True})
+                              if '@' in u.name and u.id in data['user_ids']]
+            
             if not recipients:
                 msg = ('The recipients list is empty, no email will be sent.')
                 messages.error(request, msg)
@@ -126,7 +156,7 @@ class EmailForm(forms.SelfHandlingForm):
             msg = mail.EmailMultiAlternatives(
                 subject='[FIWARE Lab] ' + data['subject'], 
                 body=text_content, 
-                from_email='no-reply@account.lab.fi-ware.org', 
+                from_email='no-reply@account.lab.fiware.org', 
                 bcc=recipients, 
                 connection=connection)
             msg.attach_alternative(html_content, "text/html")
