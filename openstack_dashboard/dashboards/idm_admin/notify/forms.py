@@ -36,7 +36,14 @@ NOTIFICATION_CHOICES = [
     ('all_users', 'Notify all users'),
     ('organization', 'Notify an organization'),
     ('users_by_id', 'Notify users by user ID'),
+    ('role', 'Notify users by role')
 ]
+ROLE_CHOICES = [ 
+    ('trial', 'Trial'),
+    ('basic', 'Basic'),
+    ('community', 'Community'),
+]
+
 class EmailForm(forms.SelfHandlingForm):
     notify = forms.ChoiceField(
         required=True,
@@ -48,6 +55,11 @@ class EmailForm(forms.SelfHandlingForm):
         max_length=50000,
         label="User IDs in CSV format",
         required=False)
+    role = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        label='Role',
+        required=False,
+        choices=ROLE_CHOICES)
     subject = forms.CharField(
         max_length=50,
         label=("Subject"),
@@ -63,6 +75,7 @@ class EmailForm(forms.SelfHandlingForm):
 
     def _clean_organization(self, cleaned_data):
         organization_id = cleaned_data.get('organization', None)
+
         if not organization_id:
             raise forms.ValidationError(
                 'You must specify an organization ID',
@@ -134,6 +147,25 @@ class EmailForm(forms.SelfHandlingForm):
                                                                filters={'enabled':True})
                               if '@' in u.name and u.id in data['user_ids']]
             
+            elif data['notify'] == 'role':
+                if data['role'] == 'trial':
+                    role = fiware_api.keystone.get_trial_role(self.request).id
+                elif data['role'] == 'basic':
+                    role = fiware_api.keystone.get_basic_role(self.request).id
+                elif data['role'] == 'community':
+                    role = fiware_api.keystone.get_community_role(self.request).id
+
+                users = [a.user['id'] for a
+                    in api.keystone.role_assignments_list(
+                        request,
+                        role=role) 
+                ]
+
+                for user_id in users:
+                    user = fiware_api.keystone.user_get(request, user_id)
+                    if '@' in user.name and user.name not in recipients:
+                        recipients.append(user.name)
+
             if not recipients:
                 msg = ('The recipients list is empty, no email will be sent.')
                 messages.error(request, msg)

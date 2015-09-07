@@ -566,12 +566,12 @@ FIWARE_DEFAULT_APPS = [
 FIWARE_CLOUD_APP = 'Cloud'
 FIWARE_DEFAULT_CLOUD_ROLE = 'Member'
 
-# reCAPTCHA
+# noCAPTCHA reCAPTCHA
 # Get your keys at: https://www.google.com/recaptcha/admin#createsite
-# More documentation at: https://github.com/praekelt/django-recaptcha
-RECAPTCHA_PUBLIC_KEY = '6LcgXvwSAAHJKES48096Gr2KKc6cjWlVWtIcDAfa'
-RECAPTCHA_PRIVATE_KEY = '6LcgXvwSAAHJKFmlOhj1bsGzT8P6vmPpVq5KYjkA'
-RECAPTCHA_USE_SSL = False
+# More documentation at: https://github.com/ImaginaryLandscape/django-nocaptcha-recaptcha
+USE_CAPTCHA = False
+NORECAPTCHA_SITE_KEY   = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
+NORECAPTCHA_SECRET_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
 
 # summernote
 SUMMERNOTE_CONFIG = {
