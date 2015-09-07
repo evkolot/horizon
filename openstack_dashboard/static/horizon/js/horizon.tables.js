@@ -38,6 +38,7 @@ horizon.datatables.ajax_paginate = function(table, page_num, register_event) {
       application_role:table.attr('data-application_role'),
       organization_id: table.attr('data-organization_id'),
       organization_role:table.attr('data-organization_role'),
+      user_id: table.attr('data-user_id'),
       name__startswith: table.find('div.table_search.client input').val() || undefined,
     },
     beforeSend: function () {
