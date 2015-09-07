@@ -233,7 +233,7 @@ INSTALLED_APPS = [
     'compressor',
     'horizon',
     'openstack_auth',
-    'captcha',
+    'nocaptcha_recaptcha',
     'django_summernote',
     'corsheaders',
 ]

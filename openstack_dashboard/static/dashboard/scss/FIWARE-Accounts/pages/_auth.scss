@@ -183,16 +183,33 @@
         font-size: 10px;
       }
     }
+    .
   }
-  #recaptcha_widget{
-    .input-group .alert-danger{
-      position: absolute;
-      width: 100%;
-      left: 0;
-      top: 34px;
-      z-index: 44;
-    }
+  /* The following g-recaptcha blocks might be removed as soon as Google updates API
+  and allows the reCAPTCHA widget to be responsive */
+  .g-recaptcha>div>div{
+    width:inherit !important;
+    position:relative;
+    display:block;
+    padding:0;
+    overflow:hidden;
+    max-width:302px;
+    border-right:1px solid #d3d3d3;
+    border-radius:4px;
+    box-shadow:2px 0px 4px -1px rgba(0,0,0,.08);
+    -webkit-box-shadow:2px 0px 4px -1px rgba(0,0,0,.08);
+    -moz-box-shadow:2px 0px 4px -1px rgba(0,0,0,.08)
   }
+  .g-recaptcha iframe{
+    position:absolute;
+    top:0;bottom:0;left:0;
+    width:100%;height:100%;
+    border:0
+  }
+  .g-recaptcha>div{
+    position:relative
+  }
+  /* end of g-recaptcha blocks */
   .modal-footer{
     padding: 0;
     border: none
@@ -235,13 +252,6 @@
       border-right: none;
       float: none;
     }
-  }
-}
-#recaptcha_image{
-  width: 100% !important;
-  margin-bottom: 10px;
-  img{
-    width: 100%;
   }
 }
 
