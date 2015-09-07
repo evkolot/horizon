@@ -22,12 +22,18 @@
     $(document).ready(function(){
       // hide the organization id field by default
       $('#id_organization').closest('div.form-group').hide();
+      $('#id_user_ids').closest('div.form-group').hide();
 
       $('#id_notify').on('change', function() {
-        if (this.value == 'organization'){
+        if (this.value == 'organization') {
           $('#id_organization').closest('div.form-group').show();
+          $('#id_user_ids').closest('div.form-group').hide();
         } else if (this.value == 'all_users') {
           $('#id_organization').closest('div.form-group').hide();
+          $('#id_user_ids').closest('div.form-group').hide();
+        } else if (this.value == 'users_by_id') {
+          $('#id_organization').closest('div.form-group').hide();
+          $('#id_user_ids').closest('div.form-group').show();
         }
       });
     });
