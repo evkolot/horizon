@@ -84,7 +84,8 @@ horizon.datatables.init_pagination = function (table, total_pages, register_even
       last:'Last',
       maxVisible: 10,
       wrapClass: 'pagination',
-      firstLastUse: true
+      firstLastUse: true,
+      leaps: true
   })
   if (register_event == true) {
     pagination.on("page", function(event, page_num){ 
