@@ -45,7 +45,7 @@ class EmailForm(forms.SelfHandlingForm):
         label='Organization ID',
         required=False)
     user_ids = forms.CharField(
-        max_length=500,
+        max_length=50000,
         label="User IDs in CSV format",
         required=False)
     subject = forms.CharField(
@@ -133,7 +133,7 @@ class EmailForm(forms.SelfHandlingForm):
                               in fiware_api.keystone.user_list(request,
                                                                filters={'enabled':True})
                               if '@' in u.name and u.id in data['user_ids']]
-
+            
             if not recipients:
                 msg = ('The recipients list is empty, no email will be sent.')
                 messages.error(request, msg)
