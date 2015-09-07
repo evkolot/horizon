@@ -156,7 +156,7 @@ class EmailForm(forms.SelfHandlingForm):
             msg = mail.EmailMultiAlternatives(
                 subject='[FIWARE Lab] ' + data['subject'], 
                 body=text_content, 
-                from_email='no-reply@account.lab.fi-ware.org', 
+                from_email='no-reply@account.lab.fiware.org', 
                 bcc=recipients, 
                 connection=connection)
             msg.attach_alternative(html_content, "text/html")
