@@ -18,8 +18,11 @@ horizon.datatables.remove_no_results_row = function (table) {
   table.find("p.empty").hide();
 };
 
-horizon.datatables.ajax_paginate = function(table, page_num) {
+horizon.datatables.ajax_paginate = function(table, page_num, register_event) {
   page_num = page_num || 1;
+  if (register_event === undefined) {
+    register_event = true;
+  }
 
   if (!table.attr('data-pagination-url')) {
     horizon.datatables.remove_no_results_row(table);
@@ -64,26 +67,30 @@ horizon.datatables.ajax_paginate = function(table, page_num) {
       }
 
       // reinitialize pagination
-      horizon.datatables.init_pagination(table, data['pages']);
+      horizon.datatables.init_pagination(table, data['pages'], register_event);
     }
   });
 }
-horizon.datatables.init_pagination = function (table, total_pages) {
+horizon.datatables.init_pagination = function (table, total_pages, register_event) {
   if (total_pages <= 0) {
     // to force pagination clearing, we set page to 1
     total_pages = 1;
   }
   // init bootpag
-  $('#'+table.attr('id')+'_pagination_container').bootpag({
+  var pagination = $('#'+table.attr('id')+'_pagination_container');
+  pagination.bootpag({
       total: total_pages,
       first: 'First',
       last:'Last',
       maxVisible: 10,
       wrapClass: 'pagination',
       firstLastUse: true
-  }).on("page", function(event, page_num){ 
-    horizon.datatables.ajax_paginate(table, page_num);
-  });
+  })
+  if (register_event == true) {
+    pagination.on("page", function(event, page_num){ 
+      horizon.datatables.ajax_paginate(table, page_num, false);
+    });
+  }
 };
 
 horizon.datatables.set_pagination_filter = function(table) {
@@ -109,7 +116,7 @@ horizon.datatables.set_pagination_filter = function(table) {
     horizon.datatables.timestamp_query = performance.now();
 
     horizon.datatables.pending_request = window.setTimeout(function() {
-        horizon.datatables.ajax_paginate(table, 1);
+        horizon.datatables.ajax_paginate(table, 1, false);
       }, MIN_TIME_BETWEEN_QUERIES);
   });
 
@@ -169,7 +176,7 @@ horizon.addInitFunction(function() {
   $('div.datatable').each(function (idx, el) {
     
     // load intial elements
-    horizon.datatables.ajax_paginate($(el), 1);
+    horizon.datatables.ajax_paginate($(el), 1, true);
 
     // set up filter
     horizon.datatables.set_pagination_filter($(el))
