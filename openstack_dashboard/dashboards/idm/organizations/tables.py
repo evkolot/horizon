@@ -116,7 +116,7 @@ class MembersTable(tables.DataTable):
 
     def __init__(self, *args, **kwargs):
         super(MembersTable, self).__init__(*args, **kwargs)
-        self.filter_data.update({'application_id': self.kwargs['application_id']})
+        self.filter_data.update({'organization_id': self.kwargs['organization_id']})
 
     class Meta:
         name = "members"
@@ -138,7 +138,7 @@ class AuthorizingApplicationsTable(tables.DataTable):
 
     def __init__(self, *args, **kwargs):
         super(AuthorizingApplicationsTable, self).__init__(*args, **kwargs)
-        self.filter_data.update({'application_id': self.kwargs['application_id']})
+        self.filter_data.update({'organization_id': self.kwargs['organization_id']})
 
     class Meta:
         name = "applications"
