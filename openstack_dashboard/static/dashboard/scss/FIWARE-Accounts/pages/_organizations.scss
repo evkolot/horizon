@@ -71,9 +71,7 @@
   .panel-body{
     padding: 0 15px;
   }
-  .panel.members,
-  .panel.organizations,
-  .panel.applications {
+  .panel.datatable {
     @media (max-width: $screen-xs-min){
       .panel-heading span{
         padding-top: 3px;

@@ -14,7 +14,7 @@
 {% else %}
   <button href='{{ action.get_link_url }}' title='{{ action.verbose_name }}' {{ action.attr_string|safe }}>
     {% if action.icon != None %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}
-    <span>
+    <span class="action">
       {{ action.verbose_name }}
     </span>
   </button>

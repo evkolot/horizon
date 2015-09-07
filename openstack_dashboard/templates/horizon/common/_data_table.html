@@ -1,4 +1,4 @@
-<div class="{% if not table.hide_panel %}panel panel-default{% endif %} datatable" id="{{ table.slugify_name }}" 
+<div class="{% if not table.hide_panel %}panel panel-default{% endif %} datatable" id="{{ table.slugify_name }}"
 {% if table.pagination_url %}
   data-pagination-url="{% url table.pagination_url %}"
   {% for key, value in table.filter_data.items %}
@@ -9,7 +9,7 @@
 {% if not table.hide_panel %}
   <div class="panel-heading">
     {% block table_heading %}
-      <span>{{ table }}</span>
+      <span class="title">{{ table }}</span>
       {{ table.render_table_actions }}
     {% endblock %}
   </div>
@@ -32,4 +32,3 @@
     {% endblock %}
   </div>
 </div>
-
