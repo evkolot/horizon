@@ -360,8 +360,6 @@ class UsersComplexFilter(ComplexAjaxFilter):
     item_detail_url = 'horizon:idm:users:detail'
     url_id_key = 'user_id'
 
-    def _sorting_method(self, data):
-        return sorted(data, key=lambda x: x.get('username', x['name']).lower())
 
     def organization_id_filter(self, request, json_users, organization_id):
         project_users_roles = api.keystone.get_project_users_roles(
@@ -386,10 +384,15 @@ class UsersComplexFilter(ComplexAjaxFilter):
                         if user['id'] == assignment.user_id), None)
             if user and user['default_project_id'] == assignment.organization_id:
                 authorized_users.append(user)
+                added_users.append(user['id'])
 
         return authorized_users
 
     def api_call(self, request, filters):
+        if 'name__startswith' in filters:
+            # NOTE(garcianavalon) we wan't to filter by username, not name
+            filters['username__startswith'] = filters.pop('name__startswith')
+
         filters.update({'enabled':True})
         users = fiware_api.keystone.user_list(request, filters=filters)
 
@@ -404,9 +407,13 @@ class UsersComplexFilter(ComplexAjaxFilter):
         # add MEDIA_URL to avatar paths or the default avatar
         json_users = []
         for user in users:
-            json_user = idm_utils.obj_to_jsonable_dict(user, attrs) 
-            json_user['img_small'] = idm_utils.get_avatar(user, 
-                'img_small', idm_utils.DEFAULT_USER_SMALL_AVATAR)
+            json_user = idm_utils.obj_to_jsonable_dict(user, attrs)
+            json_user['img_small'] = idm_utils.get_avatar(
+                user, 'img_small', idm_utils.DEFAULT_USER_SMALL_AVATAR)
+
+            if 'username' in json_user:
+                json_user['name'] = json_user.pop('username')
+
             json_users.append(json_user)
 
         return json_users
@@ -416,7 +423,7 @@ class ApplicationsComplexFilter(ComplexAjaxFilter):
     custom_filter_keys = {
         'organization_id': 5,
         'application_role': 6,
-        'user_id': 4,        
+        'user_id': 4,
     }
     item_detail_url = 'horizon:idm:myApplications:detail'
     url_id_key = 'application_id'
