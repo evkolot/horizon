@@ -93,6 +93,16 @@ class EmailForm(forms.SelfHandlingForm):
 
         return cleaned_data
 
+    def _clean_role(self, cleaned_data):
+        selected_role = cleaned_data.get('role', None)
+        import pdb
+        pdb.set_trace()
+        if not selected_role:
+            raise forms.ValidationError(
+                'A role must be specified', code='invalid')
+
+        return cleaned_data
+
     def _clean_users_id(self, cleaned_data):
         # check we can parse
         try:
@@ -112,6 +122,8 @@ class EmailForm(forms.SelfHandlingForm):
             return cleaned_data
         elif notify == 'organization':
             return self._clean_organization(cleaned_data)
+        elif notify == 'role':
+            return self._clean_role(cleaned_data)
         elif notify == 'users_by_id':
             return self._clean_users_id(cleaned_data)
 
