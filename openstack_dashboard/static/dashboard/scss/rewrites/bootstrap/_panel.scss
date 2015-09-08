@@ -10,10 +10,12 @@
     float: right;
   }
 }
-.panel-body{padding: 0 15px;}
+.panel-body{
+  padding: 0 15px;
+}
 
 .panel-footer{
-  padding: 4px 15px 6px;
+  padding: 8px;
   background-color: #FFF;
   border-top: 1px solid $border-color;
   min-height: 28px;

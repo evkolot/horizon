@@ -1,12 +1,18 @@
+*{
+  outline: none !important;
+}
+
 a{
   color: $brand-primary;
   text-decoration: none;
   &:hover{
    color: $brand-secundary;
-   text-decoration: none !important;
  }
- &:focus{
-   text-decoration: none;
+ &:focus,
+ &:active,
+ &:hover{
+   text-decoration: none !important;
+   outline: none !important;
  }
 }
 

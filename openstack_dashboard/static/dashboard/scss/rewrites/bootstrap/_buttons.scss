@@ -23,12 +23,20 @@
 	@include border-top-radius (3px);
 }
 
+// new class for link buttons (without border)
+.link{
+  border: medium none;
+  color: #193B6B;
+  font-size: 13px;
+  padding: 0;
+  &:hover{
+    color: $brand-secundary;
+  }
+}
 
-
-
-.add-members .all-users li.list-group-item, 
+.add-members .all-users li.list-group-item,
 .add-members .members-list li.list-group-item{
 	&:last-child{
-	  @include border-top-radius (0);	
+	  @include border-top-radius (0);
 	}
 }
