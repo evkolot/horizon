@@ -48,19 +48,20 @@ def internal_keystoneclient(request):
     """
 
     cache_attr = "_internal_keystoneclient_token"
+    cache_attr2 = "_internal_keystoneclient"
     token = cache.get(cache_attr, None)
+    oldclient = cache.get(cache_attr2, None)
     if not token:
         LOG.debug('There is no token cached -> New Password Session')
         idm_password_session = _password_session(request)
-        import pdb
-        pdb.set_trace()
         keystoneclient = client.Client(session=idm_password_session)
         cache.set(cache_attr, keystoneclient.session.get_token(), INTERNAL_CLIENT_CACHE_TIME)
+        cache.set(cache_attr2, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
         LOG.debug('Saved token: %s',keystoneclient.session.get_token())
     else:
         LOG.debug('There is a cached token! (%s)',token)
-        idm_token_session = _token_session(request,token)
-        keystoneclient = client.Client(session=idm_token_session)
+        oldclient._auth_token = token
+        keystoneclient=oldclient
 
     LOG.debug('Using token: %s',keystoneclient.session.get_token())
     return keystoneclient
@@ -87,8 +88,7 @@ def _password_session(request):
         project_name=credentials['project'],
         user_domain_id=domain,
         project_domain_id=domain,
-        auth_url=endpoint,
-        reauthenticate=False)
+        auth_url=endpoint)
 
     return session.Session(auth=auth, verify=verify)
 
@@ -567,8 +567,6 @@ def forward_validate_token_request(request):
 # CALLS FORBIDDEN FOR THE USER THAT NEED TO USE THE IDM ACCOUNT
 # USERS
 def user_get(request, user_id):
-    import pdb
-    pdb.set_trace()
     manager = internal_keystoneclient(request).users
     return manager.get(user_id)
 
