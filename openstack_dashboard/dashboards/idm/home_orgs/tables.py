@@ -35,6 +35,14 @@ class MembersTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
     username = tables.Column('username', verbose_name=('Members'))
     view_all_url = 'horizon:idm:organizations:index'
+    pagination_url = 'fiware_complex_server_filters_users'
+    empty_message = 'No members.'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(MembersTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'organization_id': self.request.organization.id})
 
     class Meta:
         name = "members"
@@ -51,6 +59,15 @@ class ApplicationsTable(tables.DataTable):
     name = tables.Column('name', verbose_name=('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
     view_all_url = 'horizon:idm:organizations:index'
+    pagination_url = 'fiware_complex_server_filters_applications'
+    empty_message = 'You are not authorized in any application.'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(ApplicationsTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'organization_id': self.request.organization.id})
+
 
     class Meta:
         name = "applications"

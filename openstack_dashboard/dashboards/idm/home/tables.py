@@ -37,6 +37,14 @@ class OrganizationsTable(tables.DataTable):
     description = tables.Column(lambda obj: getattr(obj, 'description', ''))
     switch = tables.Column(lambda obj: idm_utils.get_switch_url(obj))
     view_all_url = 'horizon:idm:organizations:index'
+    pagination_url = 'fiware_complex_server_filters_organizations'
+    empty_message = 'You don\'t have any organizations.'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(OrganizationsTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'user_id': self.request.user.id})
     
     class Meta:
         name = "organizations"
@@ -53,6 +61,14 @@ class ApplicationsTable(tables.DataTable):
     name = tables.Column('name', verbose_name=('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
     view_all_url = 'horizon:idm:myApplications:index'
+    pagination_url = 'fiware_complex_server_filters_applications'
+    empty_message = 'You are not authorized in any application.'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(ApplicationsTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'user_id': self.request.user.id})
 
     class Meta:
         name = "applications"

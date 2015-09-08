@@ -2,7 +2,7 @@
 <div class="table_actions clearfix">
 {% block table_filter %}
     {% if filter.filter_type == 'query' %}
-      <div class="filter table_search client filter">
+      <div class="filter table_search client">
         <input class="form-control" value="{{ filter.filter_string|default:'' }}" type="text" name="{{ filter.get_param_name }}" placeholder="filter"/>
       </div>
     {% endif %}
@@ -13,6 +13,7 @@
     {%  include "horizon/common/_data_table_table_action.html" %}
 
   {% endfor %}
+  {% comment %}
   {% if table_actions_menu|length > 0 %}
     <div class="btn-group table_actions_menu">
       <a class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" href="#">
@@ -32,6 +33,7 @@
       </ul>
     </div>
   {% endif %}
+  {% endcomment %}
 {% endblock table_actions %}
   </div>
 </div>

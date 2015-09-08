@@ -43,39 +43,39 @@ class IndexView(tables.MultiTableView):
 
     def get_members_data(self):        
         users = []
-        try:
-            # NOTE(garcianavalon) Filtering by project in user_list
-            # filters by default_project_id.
-            # We need to get the role_assignments for the user's
-            # id's and then filter the user list ourselves
-            all_users = fiware_api.keystone.user_list(self.request,
-                filters={'enabled':True})
-            project_users_roles = api.keystone.get_project_users_roles(
-                self.request,
-                project=self.request.organization.id)
-            users = [user for user in all_users if user.id in project_users_roles]
-            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
+        # try:
+        #     # NOTE(garcianavalon) Filtering by project in user_list
+        #     # filters by default_project_id.
+        #     # We need to get the role_assignments for the user's
+        #     # id's and then filter the user list ourselves
+        #     all_users = fiware_api.keystone.user_list(self.request,
+        #         filters={'enabled':True})
+        #     project_users_roles = api.keystone.get_project_users_roles(
+        #         self.request,
+        #         project=self.request.organization.id)
+        #     users = [user for user in all_users if user.id in project_users_roles]
+        #     users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
 
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve member information."))
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve member information."))
         return users
 
     def get_applications_data(self):
         applications = []
-        try:
-            # TODO(garcianavalon) extract to fiware_api
-            all_apps = fiware_api.keystone.application_list(self.request)
-            apps_with_roles = [a.application_id for a 
-                               in fiware_api.keystone.organization_role_assignments(
-                               self.request, organization=self.request.organization.id)]
-            applications = [app for app in all_apps 
-                            if app.id in apps_with_roles]
-            applications = sorted(applications, key=lambda x: x.name.lower())
+        # try:
+        #     # TODO(garcianavalon) extract to fiware_api
+        #     all_apps = fiware_api.keystone.application_list(self.request)
+        #     apps_with_roles = [a.application_id for a 
+        #                        in fiware_api.keystone.organization_role_assignments(
+        #                        self.request, organization=self.request.organization.id)]
+        #     applications = [app for app in all_apps 
+        #                     if app.id in apps_with_roles]
+        #     applications = sorted(applications, key=lambda x: x.name.lower())
 
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve application list."))
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve application list."))
         return idm_utils.filter_default(applications)
 
 class OrganizationMembersView(workflows.WorkflowView):
