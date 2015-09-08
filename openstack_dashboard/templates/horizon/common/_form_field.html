@@ -31,14 +31,14 @@
         <span class="help-icon" data-toggle="tooltip" data-placement="top" title="{{ field.help_text|safe }}"><span class="fa fa-question-circle"></span></span>
       {% endif %}
     {% endif %}
-    <div class="{{ classes.value }}">
+    <div class="radio-group radio {{ classes.value }}">
       {% for choice in field %}
-        <div class="radio">
+        <!-- <div class="radio"> -->
           <label>
             {{ choice.tag }}
             {{ choice.choice_label }}
           </label>
-        </div>
+        <!-- </div> -->
       {% endfor %}
 
       {% for error in field.errors %}

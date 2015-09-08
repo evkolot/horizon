@@ -98,10 +98,9 @@
 #organizations-table{
   .panel-body{
     .panel-footer{
-      padding: 4px 4px 6px;
       clear: both;
       margin: 0 -15px;
-      min-height: 37px;
+      min-height: 45px;
       border-top: 1px solid #A9A9A9;
       ul.pagination{
         float: right;
@@ -279,14 +278,7 @@ div#update_owners_members{
   }
 }
 
-//.all-users,
-//.members-list{
-//  .filterable{
-//    max-height: 301px;
-//    overflow-x: hidden;
-//    overflow-y: scroll;
-//  }
-//}
+
 .role_dropdown li.app-roles-list{
   display: block;
   clear: both;

@@ -64,7 +64,7 @@
       }
     }
   }
-  .modal-body, 
+  .modal-body,
   .modal-footer{
     padding: 0;
   }
@@ -217,7 +217,7 @@
       margin-right: 5px;
     }
   }
-} 
+}
 
 #add_permission{
   .modal-content{
@@ -266,7 +266,7 @@
       margin-top: 5px;
       margin-left: 2px;
     }
-    .ajax-inline-edit{ 
+    .ajax-inline-edit{
       @extend .btn;
       @extend .btn-default;
       position: absolute;
@@ -352,7 +352,7 @@
     margin-top: 0px !important;
     margin-bottom: 0px !important;
     border-top: 1px solid $gray !important;
-  } 
+  }
 }
 
 ul.disabled-list{
@@ -432,9 +432,9 @@ ul.disabled-list{
 
 .app-roles-list li{
   cursor: pointer;
-  margin: 3px 0; 
+  margin: 3px 0;
 }
-#fiware_roles_roles{ 
+#fiware_roles_roles{
   .static_page{
     .modal-header{
       display: none;
@@ -477,38 +477,6 @@ ul.disabled-list{
       }
       .modal-footer{
         margin: 0 0 15px;
-      }
-    }
-  }
-}
-
-.panel-heading .nav-tabs{
-  @media (max-width: 375px){
-    li {
-      width: 100%;
-      text-align: center;
-      margin-bottom: 0;
-      background-color: #F1F1F2;;
-      &:hover{
-        border-bottom: none;
-        color: #888;
-        background-color: #E4E4E4;
-      }
-      a{
-        border-bottom: none;
-        &:hover{
-          border-bottom: none;
-        }
-      }
-    }
-    li.active {
-      border-bottom: none;
-        background-color: $white;
-      a{
-        border-bottom: none;
-        &:hover{
-          border-bottom: none;
-        }
       }
     }
   }
