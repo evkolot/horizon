@@ -376,7 +376,7 @@ class UpdateAuthorizedOrganizations(idm_workflows.UpdateRelationshipStep):
     no_members_text = ("No organizations.")
     RELATIONSHIP_CLASS = AuthorizedOrganizationsApi
     server_filter_url = urlresolvers.reverse_lazy(
-        'fiware_server_filters_organizations')
+        'fiware_complex_server_filters_organizations')
 
 
 class ManageAuthorizedOrganizations(idm_workflows.RelationshipWorkflow):

@@ -244,7 +244,7 @@ class ComplexAjaxFilter(generic.View):
         custom_filters, api_filters = self._separate_filters(filters)
 
         # NOTE(garcianavalon) until we can use API pagination
-        page_number = api_filters.pop('page')
+        page_number = api_filters.pop('page', None)
 
         data = self.api_call(request, filters=api_filters)
 
@@ -256,7 +256,7 @@ class ComplexAjaxFilter(generic.View):
         for key, value in six.iteritems(custom_filters):
             data = getattr(self, key + '_filter')(request, data, value)
 
-        if self.paginate:
+        if self.paginate and page_number:
             # Always after all the filters are done
             data = self.pagination(data, page_number)
         else:

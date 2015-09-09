@@ -25,9 +25,9 @@ urlpatterns = patterns(
     url(r'^admins$', 
         views.UsersAndKeystoneAdminsWorkflowFilter.as_view(), 
         name='fiware_server_filters_admins'),
-    url(r'^organizations$', 
-        views.OrganizationsWorkflowFilter.as_view(), 
-        name='fiware_server_filters_organizations'),
+    # url(r'^organizations$', 
+    #     views.OrganizationsWorkflowFilter.as_view(), 
+    #     name='fiware_server_filters_organizations'),
 
     url(r'^complex/organizations$', 
         views.OrganizationsComplexFilter.as_view(), 
