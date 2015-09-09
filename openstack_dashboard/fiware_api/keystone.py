@@ -64,7 +64,7 @@ def internal_keystoneclient(request):
         oldclient._auth_token = token
         keystoneclient=oldclient
 
-    LOG.debug('Using token: %s',keystoneclient.session.get_token())
+    #LOG.debug('Using token: %s',keystoneclient.session.get_token())
     return keystoneclient
 
 def _password_session(request):
