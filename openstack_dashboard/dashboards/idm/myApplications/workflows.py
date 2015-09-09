@@ -175,7 +175,7 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
                 idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
-            for user in all_users if hasattr(user, 'username')]
+            for user in all_users if getattr(user, 'username', None)]
 
     def _list_all_objects(self, request, superset_id):
         # TODO(garcianavalon) move to fiware_api

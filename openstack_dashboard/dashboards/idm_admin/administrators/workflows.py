@@ -30,9 +30,16 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
 
     def _list_all_owners(self, request, superset_id):
         all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
+        
+        def _get_name(user):
+            name = getattr(user, 'username', None)
+            if not name:
+                name = user.name
+            return name
+
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
-                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + getattr(user, 'username', user.name))
+                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + _get_name(user))
             for user in all_users]
 
     def _list_all_objects(self, request, superset_id):
