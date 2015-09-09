@@ -8,7 +8,7 @@ horizon.membership = {
   default_role_id: [],
   app_names: [],
   users_without_roles: [],
-  timestamp_query: new Date().getTime(),
+  timestamp_query: performance.now(),
   pending_request: undefined,
 
   /* Parses the form field selector's ID to get either the
@@ -435,23 +435,25 @@ horizon.membership = {
     $('input.' + step_slug + '_server_filter').on('input', function() {
       var $input = $(this);
       var filter_data = $input.attr('value');
+
       if (filter_data.length < MIN_LETTERS_TO_QUERY){
         return;
       }
-      var dif =  new Date().getTime() - horizon.membership.timestamp_query;
-      if(dif < MIN_TIME_BETWEEN_QUERIES){
+
+      var dif =  performance.now() - horizon.membership.timestamp_query;
+      if (dif < MIN_TIME_BETWEEN_QUERIES) {
         if (horizon.membership.pending_request !== undefined) {
           // kill previous request
           window.clearTimeout(horizon.membership.pending_request);
         }
-        
-        horizon.membership.pending_request = window.setTimeout(function() {
-            horizon.membership.perform_server_filtering(step_slug, $input.attr('data-url'), $input.attr('data-org'), filter_data);
-          }, MIN_TIME_BETWEEN_QUERIES);
-
-      } else {
-        horizon.membership.perform_server_filtering(step_slug, $input.attr('data-url'), $input.attr('data-org'), filter_data);
       }
+      //store query time
+      horizon.membership.timestamp_query = performance.now(); 
+
+      horizon.membership.pending_request = window.setTimeout(function() {
+        horizon.membership.perform_server_filtering(step_slug, $input.attr('data-url'), $input.attr('data-org'), filter_data);
+      }, MIN_TIME_BETWEEN_QUERIES);
+
     });
   },
 
@@ -464,8 +466,6 @@ horizon.membership = {
           organization: filter_organization
         },
         beforeSend: function () {
-          //store query time
-          horizon.membership.timestamp_query = new Date().getTime();
         },
         complete: function () {
         },
