@@ -46,15 +46,25 @@ def internal_keystoneclient(request):
     The client is cached so that subsequent API calls don't have
     to be re-authenticated.
     """
-    cache_attr = "_internal_keystoneclient"
-    #keystoneclient = cache.get(cache_attr, None)
-    keystoneclient = getattr(request, cache_attr, None)
-    if not keystoneclient:
-        idm_user_session = _password_session(request)
-        keystoneclient = client.Client(session=idm_user_session)
-        #cache.set(cache_attr, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
-        if request:
-            setattr(request, cache_attr, keystoneclient)
+
+    cache_client = "_internal_keystoneclient_token"
+    cache_token = "_internal_keystoneclient"
+    
+    token = cache.get(cache_client, None)
+    oldclient = cache.get(cache_token, None)
+    if not token:
+        #LOG.debug('There is no token cached -> New Password Session')
+        idm_password_session = _password_session(request)
+        keystoneclient = client.Client(session=idm_password_session)
+        cache.set(cache_client, keystoneclient.session.get_token(), INTERNAL_CLIENT_CACHE_TIME)
+        cache.set(cache_token, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
+        #LOG.debug('Saved token: %s',keystoneclient.session.get_token())
+    else:
+        #LOG.debug('There is a cached token! (%s)',token)
+        oldclient._auth_token = token
+        keystoneclient=oldclient
+
+    LOG.debug('Using token: %s',keystoneclient.session.get_token())
     return keystoneclient
 
 def _password_session(request):
