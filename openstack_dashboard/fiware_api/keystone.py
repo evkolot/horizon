@@ -38,7 +38,7 @@ LOG = logging.getLogger('idm_logger')
 # NOTE(garcianavalon) time in seconds to cache the default roles
 # and other objects
 DEFAULT_OBJECTS_CACHE_TIME = 60 * 15
-INTERNAL_CLIENT_CACHE_TIME = 5
+INTERNAL_CLIENT_CACHE_TIME = 60 * 60
 
 def internal_keystoneclient(request):
     """Creates a connection with keystone using the IdM account.
@@ -47,19 +47,20 @@ def internal_keystoneclient(request):
     to be re-authenticated.
     """
 
-    cache_attr = "_internal_keystoneclient_token"
-    cache_attr2 = "_internal_keystoneclient"
-    token = cache.get(cache_attr, None)
-    oldclient = cache.get(cache_attr2, None)
+    cache_client = "_internal_keystoneclient_token"
+    cache_token = "_internal_keystoneclient"
+    
+    token = cache.get(cache_client, None)
+    oldclient = cache.get(cache_token, None)
     if not token:
-        LOG.debug('There is no token cached -> New Password Session')
+        #LOG.debug('There is no token cached -> New Password Session')
         idm_password_session = _password_session(request)
         keystoneclient = client.Client(session=idm_password_session)
-        cache.set(cache_attr, keystoneclient.session.get_token(), INTERNAL_CLIENT_CACHE_TIME)
-        cache.set(cache_attr2, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
-        LOG.debug('Saved token: %s',keystoneclient.session.get_token())
+        cache.set(cache_client, keystoneclient.session.get_token(), INTERNAL_CLIENT_CACHE_TIME)
+        cache.set(cache_token, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
+        #LOG.debug('Saved token: %s',keystoneclient.session.get_token())
     else:
-        LOG.debug('There is a cached token! (%s)',token)
+        #LOG.debug('There is a cached token! (%s)',token)
         oldclient._auth_token = token
         keystoneclient=oldclient
 
@@ -89,27 +90,6 @@ def _password_session(request):
         user_domain_id=domain,
         project_domain_id=domain,
         auth_url=endpoint)
-
-    return session.Session(auth=auth, verify=verify)
-
-def _token_session(request,token):
-    domain = 'default'
-    endpoint = getattr(settings, 'OPENSTACK_KEYSTONE_URL')
-    insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
-    verify = getattr(settings, 'OPENSTACK_SSL_CACERT', True)
-
-    if insecure:
-        verify = False
-
-    credentials = getattr(settings, 'IDM_USER_CREDENTIALS')
-
-    LOG.debug('Retrieving keystoneclient from old token.')
-    auth = v3.Token(
-        auth_url=endpoint,
-        token=token,
-        project_name=credentials['project'],
-        project_domain_id=domain,
-        reauthenticate=False)
 
     return session.Session(auth=auth, verify=verify)
 
