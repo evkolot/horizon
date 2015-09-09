@@ -12,11 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from django.conf import settings
-
 from horizon import tables
 
-from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import tables as idm_tables
@@ -48,7 +45,8 @@ class MembersTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
     name = tables.Column(lambda obj: getattr(obj, 'username', obj.name))
-
+    pagination_url = 'fiware_complex_server_filters_users'
+    
     class Meta:
         name = "members"
         verbose_name = ("Authorized Administrators")

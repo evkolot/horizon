@@ -16,13 +16,6 @@
   }
 }
 
-#administrators-page{
-  .table_actions .filter{
-    margin-left: 0;
-  }
-}
-
-
 #notify,
 #user_accounts{
   .modal-header{
@@ -53,7 +46,7 @@
 #id_body_iframe{
   padding: 0;
   background-color: $white;
-  border: none; 
+  border: none;
 }
 
 .note-editor{

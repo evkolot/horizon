@@ -27,7 +27,6 @@ from horizon import tabs
 from horizon import workflows
 from horizon.utils import memoized
 
-from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import views as idm_views
@@ -315,53 +314,60 @@ class DetailApplicationView(tables.MultiTableView):
         return super(DetailApplicationView, self).dispatch(request, *args, **kwargs)
 
     def get_auth_users_data(self):
-        users = []
-        try:
-            # NOTE(garcianavalon) Get all the users' ids that belong to
-            # the application (they have one or more roles in their default
-            # organization)
-            all_users = fiware_api.keystone.user_list(self.request,
-                filters={'enabled':True})
-            role_assignments = fiware_api.keystone.user_role_assignments(
-                self.request, application=self.kwargs['application_id'])
-            authorized_users = set()
-            for assignment in role_assignments:
-                user = next((user for user in all_users if user.id == assignment.user_id), 
-                            None)
-                if user and user.default_project_id == assignment.organization_id:
-                    authorized_users.add(user)
-            authorized_users = sorted(authorized_users, key=lambda x: x.username.lower())
-            index_mem = self.request.GET.get('index_mem', 0)
-            authorized_users = idm_utils.paginate(self, authorized_users,
-                                                  index=index_mem, limit=LIMIT_MINI,
-                                                  table_name='auth_users')
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve member information."))
+        authorized_users = set()
+        # try:
+        #     # NOTE(garcianavalon) Get all the users' ids that belong to
+        #     # the application (they have one or more roles in their default
+        #     # organization)
+        #     all_users = fiware_api.keystone.user_list(self.request,
+        #         filters={'enabled':True})
+        #     role_assignments = fiware_api.keystone.user_role_assignments(
+        #         self.request, application=self.kwargs['application_id'])
+            
+        #     for assignment in role_assignments:
+        #         user = next((user for user in all_users if user.id == assignment.user_id), 
+        #                     None)
+        #         if user and user.default_project_id == assignment.organization_id:
+        #             authorized_users.add(user)
+
+        #     authorized_users = sorted(authorized_users, key=lambda x: x.username.lower())
+
+        #     self._tables['auth_users'].pages = idm_utils.total_pages(
+        #         authorized_users, LIMIT_MINI)
+
+        #     authorized_users = idm_utils.paginate_list(authorized_users, 1, LIMIT_MINI)
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve member information."))
         return authorized_users
 
     def get_organizations_data(self):
         organizations = []
-        try:
-            # NOTE(garcianavalon) Get all the orgs' ids that belong to
-            # the application (they have one or more roles)
-            all_organizations = fiware_api.keystone.project_list(
-                self.request)
-            role_assignments = fiware_api.keystone.organization_role_assignments(
-                self.request, application=self.kwargs['application_id'])
+        # try:
+        #     # NOTE(garcianavalon) Get all the orgs' ids that belong to
+        #     # the application (they have one or more roles)
+        #     all_organizations = fiware_api.keystone.project_list(
+        #         self.request)
+        #     role_assignments = fiware_api.keystone.organization_role_assignments(
+        #         self.request, application=self.kwargs['application_id'])
 
-            authorized_organizations = set([a.organization_id for a in role_assignments])
-            organizations = [org for org in all_organizations if org.id
-                     in authorized_organizations]
+        #     authorized_organizations = set([a.organization_id for a in role_assignments])
+        #     organizations = [org for org in all_organizations if org.id
+        #              in authorized_organizations]
 
-            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
-            index_org = self.request.GET.get('index_org', 0)
-            organizations = idm_utils.paginate(self, organizations,
-                                               index=index_org, limit=LIMIT_MINI,
-                                               table_name='organizations')
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve member information."))
+        #     # sort
+        #     organizations = idm_utils.filter_default(
+        #         sorted(organizations, key=lambda x: x.name.lower()))
+
+        #     # save total pages
+        #     self._tables['organizations'].pages = idm_utils.total_pages(
+        #         organizations, LIMIT_MINI)
+
+        #     # render first page
+        #     organizations = idm_utils.paginate_list(organizations, 1, LIMIT_MINI)
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve organizations information."))
 
         return organizations
 
@@ -428,9 +434,6 @@ class DetailApplicationView(tables.MultiTableView):
             context['manage_roles'] = True
         if self.allowed(self.request, self.request.user, application):
             context['viewCred'] = True
-
-        context['index_org'] = self.request.GET.get('index_org', 0)
-        context['index_mem'] = self.request.GET.get('index_mem', 0)
 
         # consume pep_proxy_password if present
         context['pep_proxy_password'] = self.request.session.pop('pep_proxy_password', None)

@@ -18,7 +18,6 @@ from horizon import tabs
 
 from django.core.cache import cache
 
-from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.local import local_settings as settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
@@ -38,27 +37,25 @@ class OtherOrganizationsTab(tabs.TableTab):
 
     def get_other_organizations_data(self):
         organizations = []
-        index = self.request.GET.get('index', 0)
-        try:
-            all_organizations = fiware_api.keystone.project_list(
-                self.request)
-            my_organizations = fiware_api.keystone.project_list(
-                self.request, user=self.request.user.id)
-            all_organizations = idm_utils.filter_default([t for t in
-                                                           all_organizations
-                                                           if not t in
-                                                           my_organizations])
-            all_organizations = sorted(all_organizations, key=lambda x: x.name.lower())
-        
-            organizations = idm_utils.paginate(self, all_organizations,
-                                               index=index, limit=LIMIT,
-                                               table_name='other_organizations')
+        # try:
+        #     all_organizations = fiware_api.keystone.project_list(
+        #         self.request)
+        #     my_organizations = fiware_api.keystone.project_list(
+        #         self.request, user=self.request.user.id)
 
-        except Exception as e:
-            self._more = False
-            exceptions.handle(self.request,
-                              ("Unable to retrieve organization list. \
-                                    Error message: {0}".format(e)))
+        #     organizations = idm_utils.filter_default(
+        #         [t for t in all_organizations if not t in my_organizations])
+        #     organizations = sorted(organizations, key=lambda x: x.name.lower())
+        
+        #     self._tables['other_organizations'].pages = idm_utils.total_pages(
+        #         organizations, LIMIT)
+
+        #     organizations = idm_utils.paginate_list(organizations, 1, LIMIT)
+
+        # except Exception as e:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve organization list. \
+        #                             Error message: {0}".format(e)))
         return organizations
 
 
@@ -71,22 +68,21 @@ class OwnedOrganizationsTab(tabs.TableTab):
 
     def get_owned_organizations_data(self):
         organizations = []
-        try:
-            # NOTE(garcianavalon) the organizations the user is owner(admin)
-            # are already in the request object by the middleware
-            organizations = self.request.organizations
-            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
-            self._more = False
+        # try:
+        #     # NOTE(garcianavalon) the organizations the user is owner(admin)
+        #     # are already in the request object by the middleware
+        #     organizations = self.request.organizations
+        #     organizations = idm_utils.filter_default(
+        #         sorted(organizations, key=lambda x: x.name.lower()))
 
-            index = self.request.GET.get('index', 0)
-            organizations = idm_utils.paginate(self, organizations,
-                                               index=index, limit=LIMIT,
-                                               table_name='owned_organizations')
+        #     self._tables['owned_organizations'].pages = idm_utils.total_pages(
+        #         organizations, LIMIT)
 
-        except Exception:
-            self._more = False
-            exceptions.handle(self.request,
-                              ("Unable to retrieve organization information."))
+        #     organizations = idm_utils.paginate_list(organizations, 1, LIMIT)
+
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve organization information."))
         return organizations
 
 
@@ -99,23 +95,23 @@ class MemberOrganizationsTab(tabs.TableTab):
 
     def get_member_organizations_data(self):
         organizations = []
-        try:
-            my_organizations = fiware_api.keystone.project_list(
-                self.request, user=self.request.user.id)
-            owner_organizations = [org.id for org in self.request.organizations]
-            organizations = [o for o in my_organizations 
-                             if not o.id in owner_organizations]
-            organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
+        # try:
+        #     my_organizations = fiware_api.keystone.project_list(
+        #         self.request, user=self.request.user.id)
+        #     owner_organizations = [org.id for org in self.request.organizations]
+        #     organizations = [o for o in my_organizations 
+        #                      if not o.id in owner_organizations]
 
-            index = self.request.GET.get('index', 0)
-            organizations = idm_utils.paginate(self, organizations,
-                                               index=index, limit=LIMIT,
-                                               table_name='member_organizations')
+        #     organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))
 
+        #     self._tables['member_organizations'].pages = idm_utils.total_pages(
+        #         organizations, LIMIT)
 
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve organization information."))
+        #     organizations = idm_utils.paginate_list(organizations, 1, LIMIT)
+
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve organization information."))
         return organizations
 
 

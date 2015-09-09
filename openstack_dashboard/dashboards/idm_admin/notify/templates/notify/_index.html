@@ -20,31 +20,34 @@
 
   <script type="text/javascript">
     $(document).ready(function(){
-      // hide the organization id field by default
-      $('#id_organization').closest('div.form-group').hide();
-      $('#id_user_ids').closest('div.form-group').hide();
 
-      // hide the roles radio buttons by default
-      $('.radio').closest('div.form-group').hide();
-
-      $('#id_notify').on('change', function() {
-        if (this.value == 'organization') {
+      function show_complementary_fields(select_value) {
+        console.log(select_value)
+        if (select_value == 'organization') {
           $('#id_organization').closest('div.form-group').show();
           $('#id_user_ids').closest('div.form-group').hide();
           $('.radio').closest('div.form-group').hide();
-        } else if (this.value == 'all_users') {
+        } else if (select_value == 'all_users') {
           $('#id_organization').closest('div.form-group').hide();
           $('#id_user_ids').closest('div.form-group').hide();
           $('.radio').closest('div.form-group').hide();
-        } else if (this.value == 'users_by_id') {
+        } else if (select_value == 'users_by_id') {
           $('#id_organization').closest('div.form-group').hide();
           $('#id_user_ids').closest('div.form-group').show();
           $('.radio').closest('div.form-group').hide();
-        } else if (this.value == 'role'){
+        } else if (select_value == 'role'){
           $('#id_organization').closest('div.form-group').hide();
           $('#id_user_ids').closest('div.form-group').hide();
           $('.radio').closest('div.form-group').show();
         }
+      }
+
+      // initial load
+      show_complementary_fields($('#id_notify option:selected').val());
+
+      // on change
+      $('#id_notify').on('change', function() {
+        show_complementary_fields(this.value);
       });
     });
   </script>

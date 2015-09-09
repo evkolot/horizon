@@ -46,27 +46,26 @@ class IndexView(tables.MultiTableView):
 
     def get_members_data(self):        
         users = []
-        try:
-            index = self.request.GET.get('index', 0)
-            # NOTE(garcianavalon) Filtering by project in user_list
-            # filters by default_project_id.
-            # We need to get the role_assignments for the user's
-            # id's and then filter the user list ourselves
-            all_users = fiware_api.keystone.user_list(self.request, 
-                filters={'enabled':True})
-            project_users_roles = api.keystone.get_project_users_roles(
-                self.request,
-                project=self.request.organization.id)
-            users = [user for user in all_users if user.id in project_users_roles]
-            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
+        # try:
+        #     # NOTE(garcianavalon) Filtering by project in user_list
+        #     # filters by default_project_id.
+        #     # We need to get the role_assignments for the user's
+        #     # id's and then filter the user list ourselves
+        #     all_users = fiware_api.keystone.user_list(self.request, 
+        #         filters={'enabled':True})
+        #     project_users_roles = api.keystone.get_project_users_roles(
+        #         self.request,
+        #         project=self.request.organization.id)
+        #     users = [user for user in all_users if user.id in project_users_roles]
+        #     users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
         
-            users = idm_utils.paginate(self, users,
-                                       index=index, limit=LIMIT,
-                                       table_name='members')
+        #     self._tables['members'].pages = idm_utils.total_pages(users, LIMIT)
 
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve member information."))
+        #     users = idm_utils.paginate_list(users, 1, LIMIT)
+
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve member information."))
         return users
 
 

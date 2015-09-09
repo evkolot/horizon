@@ -90,90 +90,9 @@
     </div>
   </div>
 
-  <div class="panel panel-default members" id="{{auth_users_table.slugify_name}}">
-    <div class="panel-heading">
-      <span>{{ auth_users_table }}</span>
-      {{ auth_users_table.render_table_actions }}
-    </div>
-    <div class="panel-body">
-      {% if auth_users_table.get_rows %}
-      {{ auth_users_table.render}}
-      {% else %}
-      <p class="alert alert-info empty">{{ application.name }} does not have any authorized users.</p>
-      {% endif %}
-    </div>
-    {% if auth_users_table.indexes|length > 1 and auth_users_table.indexes %}
-    <div class="panel-footer">
-      <nav>
-        <ul class="pagination">
-        <li {%if auth_users_table.index_act = auth_users_table.index_first %}class="active"{%endif%}>
-              <a href="?index_mem={{auth_users_table.index_first}}&index_org={{index_org}}#{{auth_users_table.slugify_name}}"><span aria-hidden="true">First</span></a>
-          </li>
-          <!--<li>
-            <a href="#" aria-label="Previous">
-              <span aria-hidden="true">&laquo;</span>
-            </a>
-          </li>-->
-          {% for index, num in auth_users_table.indexes %}
-            <li {%if auth_users_table.index_act = index %}class="active"{%endif%}>
-              <a href="?index_mem={{index}}&index_org={{index_org}}#{{auth_users_table.slugify_name}}">{{ num }}</a>
-            </li>
-          {% endfor %}
-          <li {%if auth_users_table.index_act = auth_users_table.index_last %}class="active"{%endif%}>
-              <a href="?index_mem={{auth_users_table.index_last}}&index_org={{index_org}}#{{auth_users_table.slugify_name}}"><span aria-hidden="true">Last</span></a>
-          </li>
-          <!--<li>
-            <a href="#" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
-            </a>
-          </li>-->
-        </ul>
-      </nav>
-    </div>
-    {% endif %}
-  </div>
 
-  <div class="panel panel-default organizations" id="{{organizations_table.slugify_name}}">
-    <div class="panel-heading">
-      <span>{{ organizations_table }}</span>
-      {{ organizations_table.render_table_actions }}
-    </div>
-    <div class="panel-body">
-      {% if organizations_table.get_rows %}
-      {{ organizations_table.render}}
-      {% else %}
-      <p class="alert alert-info empty">{{ application.name }} does not have any authorized organizations.</p>
-      {% endif %}
-    </div>
-  {% if organizations_table.indexes|length > 1 and organizations_table.indexes %}
-    <div class="panel-footer">
-      <nav>
-        <ul class="pagination">
-          <li {%if organizations_table.index_act = organizations_table.index_first %}class="active"{%endif%}>
-                <a href="?index_mem={{index_mem}}&index_org={{organizations_table.index_first}}#{{organizations_table.slugify_name}}"><span aria-hidden="true">First</span></a>
-          </li>
-          <!--<li>
-            <a href="#" aria-label="Previous">
-              <span aria-hidden="true">&laquo;</span>
-            </a>
-          </li>-->
-          {% for index, num in organizations_table.indexes %}
-            <li {% if organizations_table.index_act = index%}class="active"{%endif%}>
-              <a href="?index_mem={{index_mem}}&index_org={{index}}#{{organizations_table.slugify_name}}">{{ num }}</a>
-            </li>
-          {% endfor %}
-          <li {%if organizations_table.index_act = organizations_table.index_last %}class="active"{%endif%}>
-              <a href="?index_mem={{index_mem}}&index_org={{organizations_table.index_last}}#{{organizations_table.slugify_name}}"><span aria-hidden="true">Last</span></a>
-          </li>
-          <!--<li>
-            <a href="#" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
-            </a>
-          </li>-->
-        </ul>
-      </nav>
-    </div>
-  {% endif %}
-  </div>
+  {{ auth_users_table.render}}
+
+  {{ organizations_table.render}}
 </div>
 {% endblock %}

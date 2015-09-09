@@ -12,15 +12,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from django.conf import settings
 from django.shortcuts import redirect
 
 from horizon import exceptions
 from horizon import tables
 from horizon import workflows
 
-from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.dashboards.idm \
+    import utils as idm_utils
 from openstack_dashboard.dashboards.idm_admin.administrators \
     import tables as administrators_tables
 from openstack_dashboard.dashboards.idm_admin \
@@ -43,28 +43,27 @@ class DetailApplicationView(tables.MultiTableView):
 
     def get_members_data(self):
         users = []
-        try:
-            # NOTE(garcianavalon) Get all the users' ids that belong to
-            # the application (they have one or more roles)
-            all_users = fiware_api.keystone.user_list(self.request,
-                                               filters={'enabled':True})
-            role_assignments = fiware_api.keystone.user_role_assignments(
-                self.request,
-                application=fiware_api.keystone.get_idm_admin_app(
-                    self.request).id)
-            users = [user for user in all_users if user.id
-                     in set([a.user_id for a in role_assignments])]
+        # try:
+        #     # NOTE(garcianavalon) Get all the users' ids that belong to
+        #     # the application (they have one or more roles)
+        #     all_users = fiware_api.keystone.user_list(self.request,
+        #                                        filters={'enabled':True})
+        #     role_assignments = fiware_api.keystone.user_role_assignments(
+        #         self.request,
+        #         application=fiware_api.keystone.get_idm_admin_app(
+        #             self.request).id)
+        #     users = [user for user in all_users if user.id
+        #              in set([a.user_id for a in role_assignments])]
             
-            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
+        #     users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
 
-            index = self.request.GET.get('index', 0)
-            users = idm_admin_utils.paginate(self, users,
-                                             index=index, limit=LIMIT,
-                                             table_name='members')
+        #     self._tables['members'].pages = idm_utils.total_pages(users, LIMIT)
+
+        #     users = idm_utils.paginate_list(users, 1, LIMIT)
         
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve member information."))
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve member information."))
         return users
 
     def get_context_data(self, **kwargs):

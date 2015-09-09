@@ -1,3 +1,5 @@
+{% comment %}
+{# NOTE(garcianvalon) client-side rendering #}
 <div class="list-group-item">
   {% if row.clickable == True %}
     <a class="item" href="{{ row.get_url }}">
@@ -16,3 +18,4 @@
     {% endif %}
   {% endfor %}
 </div>
+{% endcomment %}

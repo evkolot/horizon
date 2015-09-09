@@ -38,7 +38,7 @@ class UserRoleApi(idm_workflows.RelationshipApiInterface):
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
                 idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
-            for user in all_users if hasattr(user, 'username')]
+            for user in all_users if getattr(user, 'username', None)]
 
     def _list_all_objects(self, request, superset_id):
         return idm_utils.filter_default(fiware_api.keystone.keystone_role_list(request))
@@ -93,7 +93,7 @@ class UpdateProjectMembers(idm_workflows.UpdateRelationshipStep):
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = UserRoleApi
     server_filter_url = urlresolvers.reverse_lazy(
-        'fiware_server_filters_users')
+        'fiware_complex_server_filters_users')
 
 
 class ManageOrganizationMembers(idm_workflows.RelationshipWorkflow):
@@ -238,7 +238,7 @@ class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = AuthorizedMembersApi
     server_filter_url = urlresolvers.reverse_lazy(
-        'fiware_server_filters_users')
+        'fiware_complex_server_filters_users')
     filter_by_organization = True
 
     def contribute(self, data, context):

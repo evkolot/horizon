@@ -43,37 +43,37 @@ class IndexView(tables.MultiTableView):
 
     def get_organizations_data(self):
         organizations = []
-        try:
-            organizations = fiware_api.keystone.project_list(
-                self.request,
-                user=self.request.user.id)
-            switchable_organizations = [org.id for org
-                                        in self.request.organizations]
-            organizations = sorted(organizations, key=lambda x: x.name.lower())
-            for org in organizations:
-                if org.id in switchable_organizations:
-                    setattr(org, 'switchable', True)
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve organization list."))
+        # try:
+        #     organizations = fiware_api.keystone.project_list(
+        #         self.request,
+        #         user=self.request.user.id)
+        #     switchable_organizations = [org.id for org
+        #                                 in self.request.organizations]
+        #     organizations = sorted(organizations, key=lambda x: x.name.lower())
+        #     for org in organizations:
+        #         if org.id in switchable_organizations:
+        #             setattr(org, 'switchable', True)
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve organization list."))
 
         return idm_utils.filter_default(organizations)
 
     def get_applications_data(self):
         applications = []
-        try:
-            # TODO(garcianavalon) extract to fiware_api
-            all_apps = fiware_api.keystone.application_list(self.request)
-            apps_with_roles = [a.application_id for a
-                               in fiware_api.keystone.user_role_assignments(
-                               self.request, 
-                               user=self.request.user.id, 
-                               organization=self.request.organization)]
-            applications = [app for app in all_apps
-                            if app.id in apps_with_roles]
-            applications = sorted(applications, key=lambda x: x.name.lower())
+        # try:
+        #     # TODO(garcianavalon) extract to fiware_api
+        #     all_apps = fiware_api.keystone.application_list(self.request)
+        #     apps_with_roles = [a.application_id for a
+        #                        in fiware_api.keystone.user_role_assignments(
+        #                        self.request, 
+        #                        user=self.request.user.id, 
+        #                        organization=self.request.organization)]
+        #     applications = [app for app in all_apps
+        #                     if app.id in apps_with_roles]
+        #     applications = sorted(applications, key=lambda x: x.name.lower())
 
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve application list."))
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve application list."))
         return idm_utils.filter_default(applications)

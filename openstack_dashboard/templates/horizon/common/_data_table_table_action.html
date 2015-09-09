@@ -1,3 +1,4 @@
+{% comment %}
 {% if action.method != "GET" %}
   <button {{ action.attr_string|safe }} name="action" value="{{ action.get_param_name }}" type="submit">
     {% if action.icon != None %}
@@ -12,10 +13,13 @@
     </span>
   </button>
 {% else %}
+{% endcomment %}
   <button href='{{ action.get_link_url }}' title='{{ action.verbose_name }}' {{ action.attr_string|safe }}>
     {% if action.icon != None %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}
-    <span>
+    <span class="action">
       {{ action.verbose_name }}
     </span>
   </button>
+{% comment %}
 {% endif %}
+{% endcomment %}

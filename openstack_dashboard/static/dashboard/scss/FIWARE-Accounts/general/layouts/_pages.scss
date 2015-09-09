@@ -15,6 +15,8 @@
     }
   }
 }
+
+
 #home{
   .panel.applications,
   .panel.members{
@@ -145,13 +147,11 @@ ul#perform_filter_available_update_owners_organizations{
   }
 }
 
-.panel.members,
-.panel.applications,
-.panel.organizations{
+.panel.datatable{
   .panel-footer{
-    padding: 4px 4px 6px;
+    padding: 8px;
     nav{
-      min-height: 26px;
+      min-height: 28px;
       ul.pagination{
         float: right;
         margin: 0;
@@ -267,27 +267,7 @@ ul#perform_filter_available_update_owners_organizations{
   }
 }
 
-.panel-heading{
-  span{
-    float: left;
-    padding-top: 6px;
-    font-size: 12px;
-  }
-  .table_actions{
-    .filter{
-      margin-left: 10px;
-      float: left;
-      @media (max-width: $screen-xs-min){
-        @include make-xs-column(3, $gutter: $grid-gutter-width);
-        padding: 0;
-      }
-    }
-    .form-control{
-      height: 28px;
-      padding: 3px 5px;
-    }
-  }
-}
+
 
 #authorize_application_modal{
   @extend .well;
@@ -339,15 +319,6 @@ ul#perform_filter_available_update_owners_organizations{
     }
   }
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -571,27 +542,7 @@ textarea {
   }
 }
 
-.panel-heading{
-  span{
-    float: left;
-    padding-top: 6px;
-    font-size: 12px;
-  }
-  .table_actions{
-    .filter{
-      margin-left: 10px;
-      float: left;
-      @media (max-width: $screen-xs-min){
-        @include make-xs-column(3, $gutter: $grid-gutter-width);
-        padding: 0;
-      }
-    }
-    .form-control{
-      height: 28px;
-      padding: 3px 5px;
-    }
-  }
-}
+
 
 #authorize_application_modal{
   @extend .well;

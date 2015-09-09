@@ -15,6 +15,7 @@ from django.core import urlresolvers
 from horizon import tables
 
 from openstack_dashboard import fiware_api
+from openstack_dashboard.local import local_settings
 from openstack_dashboard.dashboards.idm import utils as idm_utils
 from openstack_dashboard.dashboards.idm import tables as idm_tables
 
@@ -24,6 +25,13 @@ class ProvidingApplicationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
+    hide_panel = True
+    pagination_url = 'fiware_complex_server_filters_applications'
+    empty_message = 'You are not provider of any application.'
+    filter_data = {
+        'application_role': getattr(local_settings, "FIWARE_PROVIDER_ROLE_ID"),
+    }
+
     
     class Meta:
         name = "providing_table"
@@ -36,7 +44,13 @@ class PurchasedApplicationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
-    url = tables.Column(lambda obj: getattr(obj, 'url', ''))  
+    url = tables.Column(lambda obj: getattr(obj, 'url', ''))
+    hide_panel = True
+    pagination_url = 'fiware_complex_server_filters_applications'
+    empty_message = 'You are not purchaser of any application.'
+    filter_data = {
+        'application_role': getattr(local_settings, "FIWARE_PURCHASER_ROLE_ID"),
+    }
 
     class Meta:
         name = "purchased_table"
@@ -49,7 +63,13 @@ class AuthorizedApplicationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Name'))
-    url = tables.Column(lambda obj: getattr(obj, 'url', ''))  
+    url = tables.Column(lambda obj: getattr(obj, 'url', ''))
+    hide_panel = True
+    pagination_url = 'fiware_complex_server_filters_applications'
+    empty_message = 'You are not authorized in any application.'
+    filter_data = {
+        'application_role': 'OTHER',
+    }
 
     class Meta:
         name = "authorized_table"
@@ -89,6 +109,15 @@ class AuthUsersTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
     username = tables.Column('username')
+    empty_message = 'This application does not have any authorized users.'
+    pagination_url = 'fiware_complex_server_filters_users'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(AuthUsersTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'application_id': self.kwargs['application_id']})
+            
     
     class Meta:
         name = "auth_users"
@@ -130,6 +159,14 @@ class AuthorizedOrganizationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Applications'))
     description = tables.Column(lambda obj: getattr(obj, 'description', ''))
+    empty_message = 'This application does not have any authorized organizations.'
+    pagination_url = 'fiware_complex_server_filters_organizations'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(AuthorizedOrganizationsTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'application_id': self.kwargs['application_id']})
 
     class Meta:
         name = "organizations"

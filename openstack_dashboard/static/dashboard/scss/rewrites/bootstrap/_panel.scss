@@ -1,7 +1,7 @@
 .panel-default > .panel-heading{
   background-color: transparent;
   min-height: 39px;
-  padding: 6px;
+  padding: 7px 6px 6px 13px;
   h5{
     float: left;
     color: $gray-darker;
@@ -10,14 +10,17 @@
     float: right;
   }
 }
-.panel-body{padding: 0 15px;}
+.panel-body{
+  padding: 0 15px;
+}
 
 .panel-footer{
-  padding: 4px 15px 6px;
+  padding: 8px;
   background-color: #FFF;
   border-top: 1px solid $border-color;
   min-height: 28px;
   a{
-    float: right;   
+    float: right;
+    min-height: 28px;
   }
 }

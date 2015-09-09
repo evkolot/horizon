@@ -30,6 +30,13 @@ class OrganizationsTable(tables.DataTable):
     name = tables.Column('name', verbose_name=('Name'))
     description = tables.Column(lambda obj: getattr(obj, 'description', ''),
                                 verbose_name=('Description'))
+    pagination_url = 'fiware_complex_server_filters_organizations'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(OrganizationsTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'user_id': self.kwargs['user_id']})
 
     class Meta:
         name = "organizations"
@@ -43,6 +50,13 @@ class ApplicationsTable(tables.DataTable):
         obj, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR))
     name = tables.Column('name', verbose_name=('Applications'))
     url = tables.Column(lambda obj: getattr(obj, 'url', ''))
+    pagination_url = 'fiware_complex_server_filters_applications'
+    filter_data = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(ApplicationsTable, self).__init__(*args, **kwargs)
+        self.filter_data.update({'user_id': self.kwargs['user_id']})
 
     class Meta:
         name = "applications"

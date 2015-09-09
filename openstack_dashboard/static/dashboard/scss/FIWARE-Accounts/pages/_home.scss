@@ -1,11 +1,11 @@
 #home{
-  .applications{
+  #applications{
     @include make-sm-column(6, $gutter: $grid-gutter-width);
     @include make-md-column(6, $gutter: $grid-gutter-width);
     @include make-lg-column(6, $gutter: $grid-gutter-width);
   }
-  .tenants,
-  .members{
+  #organizations,
+  #members{
     @include make-sm-column(5, $gutter: $grid-gutter-width);
     @include make-md-column(5, $gutter: $grid-gutter-width);
     @include make-lg-column(5, $gutter: $grid-gutter-width);
@@ -16,42 +16,5 @@
       @include switch-hover;
     }
   }
-  .applications,
-  .tenants,
-  .members {
-    padding: 0;
-    .panel-heading{
-      font-family: $corporate-font-family-sans-serif-Regular;
-      div{
-        margin-top: 5px;
-      }
-    }
-    .panel-body{
-      min-height: 295px;
-      max-height: 295px;
-      overflow-x: hidden;
-      overflow-y: scroll;
-      @media (max-width: $screen-sm-min){
-        min-height: 15px;
-      }
-    }
-  }
-  .members{
-    .table_actions{
-      float: right;
-      margin-top: -4px !important;
-      padding-top: 0;
-      .btn-group{
-        margin-top: 0;
-      }
-      button{
-        border: none;
-        color: $brand-primary;
-        font-size: 13px; 
-        &:hover{
-          color: $brand-secundary;
-        }
-      }
-    }
-  }
+
 }

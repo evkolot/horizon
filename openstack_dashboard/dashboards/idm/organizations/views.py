@@ -93,47 +93,49 @@ class DetailOrganizationView(tables.MultiTableView):
 
     def get_members_data(self):
         users = []
-        try:
-            # NOTE(garcianavalon) Filtering by project in user_list
-            # filters by default_project_id.
-            # We need to get the role_assignments for the user's
-            # id's and then filter the user list ourselves
-            all_users = fiware_api.keystone.user_list(self.request,
-                filters={'enabled':True})
-            project_users_roles = api.keystone.get_project_users_roles(
-                self.request,
-                project=self.kwargs['organization_id'])
-            users = [user for user in all_users if user.id in project_users_roles]
-            users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
-            index_mem = self.request.GET.get('index_mem', 0)
-            users = idm_utils.paginate(self, users,
-                                       index=index_mem, limit=LIMIT_MINI,
-                                       table_name='members')
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve member information."))
+        # try:
+        #     # NOTE(garcianavalon) Filtering by project in user_list
+        #     # filters by default_project_id.
+        #     # We need to get the role_assignments for the user's
+        #     # id's and then filter the user list ourselves
+        #     all_users = fiware_api.keystone.user_list(
+        #         self.request, filters={'enabled':True})
+        #     project_users_roles = api.keystone.get_project_users_roles(
+        #         self.request,
+        #         project=self.kwargs['organization_id'])
+        #     users = [user for user in all_users if user.id in project_users_roles]
+        #     users = sorted(users, key=lambda x: getattr(x, 'username', x.name).lower())
+
+        #     self._tables['members'].pages = idm_utils.total_pages(users, LIMIT_MINI)
+
+        #     users = idm_utils.paginate_list(users, 1, LIMIT_MINI)
+
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve member information."))
         return users
 
     def get_applications_data(self):
         applications = []
-        try:
-            # TODO(garcianavalon) extract to fiware_api
-            all_apps = fiware_api.keystone.application_list(self.request)
-            apps_with_roles = [
-                a.application_id for a 
-                in fiware_api.keystone.organization_role_assignments(
-                self.request, organization=self.kwargs['organization_id'])
-            ]
-            applications = [app for app in all_apps 
-                            if app.id in apps_with_roles]
-            applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
-            index_app = self.request.GET.get('index_app', 0)
-            applications = idm_utils.paginate(self, applications,
-                                              index=index_app, limit=LIMIT_MINI,
-                                              table_name='applications')
-        except Exception:
-            exceptions.handle(self.request,
-                              ("Unable to retrieve application list."))
+        # try:
+        #     # TODO(garcianavalon) extract to fiware_api
+        #     all_apps = fiware_api.keystone.application_list(self.request)
+        #     apps_with_roles = [
+        #         a.application_id for a 
+        #         in fiware_api.keystone.organization_role_assignments(
+        #         self.request, organization=self.kwargs['organization_id'])
+        #     ]
+        #     applications = [app for app in all_apps 
+        #                     if app.id in apps_with_roles]
+        #     applications = idm_utils.filter_default(sorted(applications, key=lambda x: x.name.lower()))
+            
+        #     self._tables['applications'].pages = idm_utils.total_pages(applications, LIMIT_MINI)
+
+        #     applications = idm_utils.paginate_list(applications, 1, LIMIT_MINI)
+
+        # except Exception:
+        #     exceptions.handle(self.request,
+        #                       ("Unable to retrieve application list."))
         return applications
 
     def _can_edit(self):
@@ -171,9 +173,6 @@ class DetailOrganizationView(tables.MultiTableView):
                 + 'dashboard/img/logos/original/group.png')
 
         context['image'] = image
-
-        context['index_app'] = self.request.GET.get('index_app', 0)
-        context['index_mem'] = self.request.GET.get('index_mem', 0)
 
         if self._can_edit():
             context['edit'] = True

@@ -8,7 +8,7 @@ horizon.membership = {
   default_role_id: [],
   app_names: [],
   users_without_roles: [],
-  timestamp_query: new Date().getTime(),
+  timestamp_query: performance.now(),
   pending_request: undefined,
 
   /* Parses the form field selector's ID to get either the
@@ -435,37 +435,41 @@ horizon.membership = {
     $('input.' + step_slug + '_server_filter').on('input', function() {
       var $input = $(this);
       var filter_data = $input.attr('value');
+
       if (filter_data.length < MIN_LETTERS_TO_QUERY){
-        return;
-      }
-      var dif =  new Date().getTime() - horizon.membership.timestamp_query;
-      if(dif < MIN_TIME_BETWEEN_QUERIES){
         if (horizon.membership.pending_request !== undefined) {
           // kill previous request
           window.clearTimeout(horizon.membership.pending_request);
         }
-        
-        horizon.membership.pending_request = window.setTimeout(function() {
-            horizon.membership.perform_server_filtering(step_slug, $input.attr('data-url'), $input.attr('data-org'), filter_data);
-          }, MIN_TIME_BETWEEN_QUERIES);
-
-      } else {
-        horizon.membership.perform_server_filtering(step_slug, $input.attr('data-url'), $input.attr('data-org'), filter_data);
+        return;
       }
+
+      var dif =  performance.now() - horizon.membership.timestamp_query;
+      if (dif < MIN_TIME_BETWEEN_QUERIES) {
+        if (horizon.membership.pending_request !== undefined) {
+          // kill previous request
+          window.clearTimeout(horizon.membership.pending_request);
+        }
+      }
+      //store query time
+      horizon.membership.timestamp_query = performance.now(); 
+
+      horizon.membership.pending_request = window.setTimeout(function() {
+        horizon.membership.perform_server_filtering(step_slug, $input);
+      }, MIN_TIME_BETWEEN_QUERIES);
+
     });
   },
 
-  perform_server_filtering: function (step_slug, filter_url, filter_organization, filter_data) {
+  perform_server_filtering: function (step_slug, input) {
     horizon.ajax.queue({
-        type: 'POST',
-        url: filter_url,
+        type: 'GET',
+        url:  input.attr('data-url'),
         data: {
-          filter_by: filter_data,
-          organization: filter_organization
+          name__startswith: input.attr('value'),
+          organization_id: input.attr('data-org')
         },
         beforeSend: function () {
-          //store query time
-          horizon.membership.timestamp_query = new Date().getTime();
         },
         complete: function () {
         },
@@ -473,13 +477,15 @@ horizon.membership = {
         },
         success: function (data, textStatus, jqXHR) {
           $(".available_" + step_slug).empty()
-          for (var i in data) {
-            var display_name = data[i]['username'];
+          var items = data['items'];
+          console.log(items)
+          for (var i in items) {
+            var display_name = items[i]['username'];
             if (display_name === undefined) {
-              display_name = data[i]['name'];
+              display_name = items[i]['name'];
             }
-            var avatar = data[i]['img_small'];
-            var data_id = data[i]['id'];
+            var avatar = items[i]['img_small'];
+            var data_id = items[i]['id'];
             var role_ids = horizon.membership.get_member_roles(step_slug, data_id);
             if (role_ids.length == 0) {
               $(".available_" + step_slug).append(horizon.membership.generate_member_element(step_slug, display_name, data_id, avatar, role_ids, 'fa fa-plus'));

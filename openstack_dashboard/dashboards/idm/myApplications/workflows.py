@@ -175,7 +175,7 @@ class AuthorizedUsersApi(idm_workflows.RelationshipApiInterface):
         return [
             (user.id, idm_utils.get_avatar(user, 'img_small', 
                 idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
-            for user in all_users if hasattr(user, 'username')]
+            for user in all_users if getattr(user, 'username', None)]
 
     def _list_all_objects(self, request, superset_id):
         # TODO(garcianavalon) move to fiware_api
@@ -267,7 +267,7 @@ class UpdateAuthorizedUsers(idm_workflows.UpdateRelationshipStep):
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = AuthorizedUsersApi
     server_filter_url = urlresolvers.reverse_lazy(
-        'fiware_server_filters_users')
+        'fiware_complex_server_filters_users')
 
 
 class ManageAuthorizedUsers(idm_workflows.RelationshipWorkflow):
@@ -376,7 +376,7 @@ class UpdateAuthorizedOrganizations(idm_workflows.UpdateRelationshipStep):
     no_members_text = ("No organizations.")
     RELATIONSHIP_CLASS = AuthorizedOrganizationsApi
     server_filter_url = urlresolvers.reverse_lazy(
-        'fiware_server_filters_organizations')
+        'fiware_complex_server_filters_organizations')
 
 
 class ManageAuthorizedOrganizations(idm_workflows.RelationshipWorkflow):

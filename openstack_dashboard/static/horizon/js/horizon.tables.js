@@ -1,43 +1,128 @@
 /* Namespace for core functionality related to DataTables. */
 horizon.datatables = {
-
-};
-
-horizon.datatables.update_footer_count = function (el, modifier) {
-  var $el = $(el),
-    $browser, $footer, row_count, footer_text_template, footer_text;
-  if (!modifier) {
-    modifier = 0;
-  }
-  // code paths for table or browser footers...
-  $browser = $el.closest("#browser_wrapper");
-  if ($browser.length) {
-    $footer = $browser.find('.tfoot span.content_table_count');
-  }
-  else {
-    $footer = $el.find('tfoot span.table_count');
-  }
-  row_count = $el.find('tbody tr:visible').length + modifier - $el.find('.empty').length;
-  footer_text_template = ngettext("Displaying %s item", "Displaying %s items", row_count);
-  footer_text = interpolate(footer_text_template, [row_count]);
-  $footer.text(footer_text);
-  return row_count;
+  timestamp_query: performance.now(),
+  pending_request: undefined,
 };
 
 horizon.datatables.add_no_results_row = function (table) {
-  // Add a "no results" row if there are no results.
+  /*// Add a "no results" row if there are no results.
   template = horizon.templates.compiled_templates["#empty_row_template"];
   if (!table.find("div.list-group-item:visible").length 
       && typeof(template) !== "undefined") {
     table.append(template.render());
-  }
+  }*/
+  table.find("p.empty").show();
 };
 
 horizon.datatables.remove_no_results_row = function (table) {
-  table.find("p.empty").remove();
+  table.find("p.empty").hide();
 };
 
+horizon.datatables.ajax_paginate = function(table, page_num, register_event) {
+  page_num = page_num || 1;
+  if (register_event === undefined) {
+    register_event = true;
+  }
 
+  if (!table.attr('data-pagination-url')) {
+    horizon.datatables.remove_no_results_row(table);
+    return;
+  }
+  var table_selector = table.attr('id');
+  horizon.ajax.queue({
+    type: 'GET',
+    url: table.attr('data-pagination-url'),
+    data: {
+      page: page_num,
+      application_id: table.attr('data-application_id'),
+      application_role:table.attr('data-application_role'),
+      organization_id: table.attr('data-organization_id'),
+      organization_role:table.attr('data-organization_role'),
+      user_id: table.attr('data-user_id'),
+      name__startswith: table.find('div.table_search.client input').val() || undefined,
+    },
+    beforeSend: function () {
+      // add a spinner to show progress
+      var list_group = $('#'+table_selector).find('div.list-group');
+      list_group.html('<i class="fa fa-gear fa-spin"></i>');
+      horizon.datatables.remove_no_results_row(table);
+    },
+    complete: function () {
+    },
+    error: function(jqXHR, status, errorThrown) {
+    },
+    success: function (data, textStatus, jqXHR) {
+      var list_group = $('#'+table_selector).find('div.list-group');
+      list_group.empty();
+
+      // process data
+      var items = data['items'];
+      if (items.length) {
+        horizon.datatables.remove_no_results_row(table);
+      } else {
+        horizon.datatables.add_no_results_row(table);
+      }
+      var template = horizon.templates.compiled_templates["#table_row_template"];
+      for (var i in items) {
+        list_group.append(template.render(items[i]));
+      }
+
+      // reinitialize pagination
+      horizon.datatables.init_pagination(table, data['pages'], register_event);
+    }
+  });
+}
+horizon.datatables.init_pagination = function (table, total_pages, register_event) {
+  if (total_pages <= 0) {
+    // to force pagination clearing, we set page to 1
+    total_pages = 1;
+  }
+  // init bootpag
+  var pagination = $('#'+table.attr('id')+'_pagination_container');
+  pagination.bootpag({
+      total: total_pages,
+      first: 'First',
+      last:'Last',
+      maxVisible: 10,
+      wrapClass: 'pagination',
+      firstLastUse: true,
+      leaps: true
+  })
+  if (register_event == true) {
+    pagination.on("page", function(event, page_num){ 
+      horizon.datatables.ajax_paginate(table, page_num, false);
+    });
+  }
+};
+
+horizon.datatables.set_pagination_filter = function(table) {
+  var MIN_TIME_BETWEEN_QUERIES = 600; // ms
+  var MIN_LETTERS_TO_QUERY = -1;
+
+  table.find('div.table_search.client input').on('input', function() {
+    var $input = $(this);
+    var filter_data = $input.attr('value');
+    if (filter_data.length < MIN_LETTERS_TO_QUERY){
+      return;
+    }
+
+    var dif =  performance.now() - horizon.datatables.timestamp_query;
+    if(dif < MIN_TIME_BETWEEN_QUERIES){
+      if (horizon.datatables.pending_request !== undefined) {
+        // kill previous request
+        window.clearTimeout(horizon.datatables.pending_request);
+      }
+    }
+
+    //store query time
+    horizon.datatables.timestamp_query = performance.now();
+
+    horizon.datatables.pending_request = window.setTimeout(function() {
+        horizon.datatables.ajax_paginate(table, 1, false);
+      }, MIN_TIME_BETWEEN_QUERIES);
+  });
+
+};
 
 horizon.datatables.set_table_query_filter = function (parent) {
   horizon.datatables.qs = {};
@@ -61,6 +146,7 @@ horizon.datatables.set_table_query_filter = function (parent) {
 
       // Enable the client-side searching.
       table_selector = '#' + $(elm).find('div.list-group').attr('id');
+
       var qs = input.quicksearch(table_selector + ' div.list-group-item', {
         'delay': 300,
         'loader': 'span.loading',
@@ -74,7 +160,6 @@ horizon.datatables.set_table_query_filter = function (parent) {
         onAfter: function () {
           var template, table, colspan, params;
           table = $(table_selector);
-          //horizon.datatables.update_footer_count(table);
           horizon.datatables.add_no_results_row(table);
         },
         prepareQuery: function (val) {
@@ -84,27 +169,29 @@ horizon.datatables.set_table_query_filter = function (parent) {
           return query.test($(_row).find('div.filter_field:not(.hidden):not(.actions_column)').text());
         }
       });
-      //horizon.datatables.qs[$(elm).attr('id')] = qs;
     }
   });
 };
 
 
 horizon.addInitFunction(function() {
-  //horizon.datatables.validate_button();
-  $('table.datatable').each(function (idx, el) {
-    horizon.datatables.update_footer_count($(el), 0);
+  $('div.datatable').each(function (idx, el) {
+    
+    // load intial elements
+    horizon.datatables.ajax_paginate($(el), 1, true);
+
+    // set up filter
+    horizon.datatables.set_pagination_filter($(el))
   });
 
   // Trigger run-once setup scripts for tables.
-  horizon.datatables.set_table_query_filter($('body'));
+  //horizon.datatables.set_table_query_filter($('body'));
 
   // Also apply on tables in modal views.
   horizon.modals.addModalInitFunction(horizon.datatables.set_table_query_filter);
 
   // Also apply on tables in tabs views for lazy-loaded data.
-  horizon.tabs.addTabLoadFunction(horizon.datatables.set_table_query_filter);
-  //horizon.tabs.addTabLoadFunction(horizon.datatables.validate_button);
+  horizon.tabs.addTabLoadFunction(horizon.datatables.ajax_paginate);
+  horizon.tabs.addTabLoadFunction(horizon.datatables.set_pagination_filter);
 
-  //horizon.datatables.update();
 });
