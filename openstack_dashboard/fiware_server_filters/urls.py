@@ -19,25 +19,15 @@ from openstack_dashboard.fiware_server_filters import views
 
 urlpatterns = patterns(
     '',
-    url(r'^users$', 
-        views.UsersWorkflowFilter.as_view(), 
-        name='fiware_server_filters_users'),
-    url(r'^admins$', 
-        views.UsersAndKeystoneAdminsWorkflowFilter.as_view(), 
-        name='fiware_server_filters_admins'),
-    # url(r'^organizations$', 
-    #     views.OrganizationsWorkflowFilter.as_view(), 
-    #     name='fiware_server_filters_organizations'),
-
-    url(r'^complex/organizations$', 
+    url(r'^organizations$', 
         views.OrganizationsComplexFilter.as_view(), 
         name='fiware_complex_server_filters_organizations'),
 
-    url(r'^complex/users$', 
+    url(r'^users$', 
         views.UsersComplexFilter.as_view(), 
         name='fiware_complex_server_filters_users'),
 
-    url(r'^complex/applications$', 
+    url(r'^applications$', 
         views.ApplicationsComplexFilter.as_view(), 
         name='fiware_complex_server_filters_applications'),
 )

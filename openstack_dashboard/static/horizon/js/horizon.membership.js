@@ -437,6 +437,10 @@ horizon.membership = {
       var filter_data = $input.attr('value');
 
       if (filter_data.length < MIN_LETTERS_TO_QUERY){
+        if (horizon.membership.pending_request !== undefined) {
+          // kill previous request
+          window.clearTimeout(horizon.membership.pending_request);
+        }
         return;
       }
 
@@ -451,19 +455,19 @@ horizon.membership = {
       horizon.membership.timestamp_query = performance.now(); 
 
       horizon.membership.pending_request = window.setTimeout(function() {
-        horizon.membership.perform_server_filtering(step_slug, $input.attr('data-url'), $input.attr('data-org'), filter_data);
+        horizon.membership.perform_server_filtering(step_slug, $input);
       }, MIN_TIME_BETWEEN_QUERIES);
 
     });
   },
 
-  perform_server_filtering: function (step_slug, filter_url, filter_organization, filter_data) {
+  perform_server_filtering: function (step_slug, input) {
     horizon.ajax.queue({
         type: 'GET',
-        url: filter_url,
+        url:  input.attr('data-url'),
         data: {
-          name__startswith: filter_data,
-          organization_id: filter_organization
+          name__startswith: input.attr('value'),
+          organization_id: input.attr('data-org')
         },
         beforeSend: function () {
         },

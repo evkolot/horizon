@@ -91,7 +91,7 @@ class UpdateProjectMembers(idm_workflows.UpdateRelationshipStep):
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = UserRoleApi
     server_filter_url = urlresolvers.reverse_lazy(
-        'fiware_server_filters_users')
+        'fiware_complex_server_filters_users')
 
 class ManageOrganizationMembers(idm_workflows.RelationshipWorkflow):
     slug = "manage_organization_users"

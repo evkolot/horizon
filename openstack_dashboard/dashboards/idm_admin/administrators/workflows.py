@@ -123,7 +123,7 @@ class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = AuthorizedMembersApi
     server_filter_url = urlresolvers.reverse_lazy(
-        'fiware_server_filters_admins')
+        'fiware_complex_server_filters_users')
 
 
 class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):
