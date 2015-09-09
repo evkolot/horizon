@@ -300,7 +300,7 @@ class RequestPasswordResetView(_RequestPassingFormView):
                 msg = ('The email address you have specific is registered but not '
                     'activated. Please check your email for the activation link '
                     'or request a new one. If your problem '
-                    'persits, please contact: fiware-lab-help@lists.fi-ware.org')
+                    'persits, please contact: fiware-lab-help@lists.fiware.org')
                 raise messages.error(request, msg)
 
             reset_password_token = fiware_api.keystone.get_reset_token(request, user)
@@ -314,7 +314,7 @@ class RequestPasswordResetView(_RequestPassingFormView):
             LOG.debug('email address %s is not registered', email)
             msg = ('Sorry. You have specified an email address that is not '
                 'registered to any our our user accounts. If your problem '
-                'persits, please contact: fiware-lab-help@lists.fi-ware.org')
+                'persits, please contact: fiware-lab-help@lists.fiware.org')
             messages.error(request, msg)
 
         except Exception:
@@ -427,7 +427,7 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
             LOG.debug('email address %s is not registered', email)
             msg = ('Sorry. You have specified an email address that is not '
                 'registered to any our our user accounts. If your problem '
-                'persits, please contact: fiware-lab-help@lists.fi-ware.org')
+                'persits, please contact: fiware-lab-help@lists.fiware.org')
             messages.error(request, msg)
 
         except Exception:
