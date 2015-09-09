@@ -263,7 +263,7 @@ class UsersComplexFilter(ComplexAjaxFilter):
             'username',
             'default_project_id',
             'img_small',
-            'name' # for no-username users
+            'name',
         ]
 
         # add MEDIA_URL to avatar paths or the default avatar
@@ -280,6 +280,34 @@ class UsersComplexFilter(ComplexAjaxFilter):
 
         return json_users
 
+class KeystoneUsersComplexFilter(UsersComplexFilter):
+    """Use name field instead of username. Filter regular users."""
+
+    def api_call(self, request, filters):
+        filters.update({'enabled':True})
+        users = fiware_api.keystone.user_list(request, filters=filters)
+
+        attrs = [
+            'id',
+            'default_project_id',
+            'img_small',
+            'name',
+        ]
+
+        # add MEDIA_URL to avatar paths or the default avatar
+        json_users = []
+        for user in users:
+            if getattr(user, 'username', None):
+                # Skip regular users
+                continue
+
+            json_user = idm_utils.obj_to_jsonable_dict(user, attrs)
+            json_user['img_small'] = idm_utils.get_avatar(
+                user, 'img_small', idm_utils.DEFAULT_USER_SMALL_AVATAR)
+
+            json_users.append(json_user)
+
+        return json_users
 
 class ApplicationsComplexFilter(ComplexAjaxFilter):
     custom_filter_keys = {

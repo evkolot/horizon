@@ -467,7 +467,8 @@ horizon.membership = {
         url:  input.attr('data-url'),
         data: {
           name__startswith: input.attr('value'),
-          organization_id: input.attr('data-org')
+          organization_id: input.attr('data-org'),
+          application_id: input.attr('data-application_id'),
         },
         beforeSend: function () {
         },
