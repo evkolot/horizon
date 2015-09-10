@@ -29,7 +29,6 @@ from openstack_dashboard.dashboards.idm_admin.administrators \
     import workflows as administrators_workflows
 from openstack_dashboard.local import local_settings
 
-LIMIT = getattr(local_settings, 'PAGE_LIMIT', 8)
 
 class DetailApplicationView(tables.MultiTableView):
     template_name = 'idm_admin/administrators/index.html'

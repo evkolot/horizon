@@ -45,7 +45,7 @@ class MembersTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
         obj, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR))
     name = tables.Column(lambda obj: getattr(obj, 'username', obj.name))
-    pagination_url = 'fiware_complex_server_filters_keystone_users'
+    pagination_url = 'fiware_complex_server_filters_users'
     filter_data = {
     }
 

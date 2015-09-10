@@ -30,17 +30,12 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
 
     def _list_all_owners(self, request, superset_id):
         all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
-        
-        def _get_name(user):
-            name = getattr(user, 'username', None)
-            if not name:
-                name = user.name
-            return name
 
         return [
-            (user.id, idm_utils.get_avatar(user, 'img_small', 
-                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + _get_name(user))
-            for user in all_users]
+            (user.id, idm_utils.get_avatar(
+                user, 'img_small', idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username)
+            for user in all_users if getattr(user, 'username', None)
+        ]
 
     def _list_all_objects(self, request, superset_id):
         # TODO(garcianavalon) move to fiware_api
@@ -50,8 +45,10 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
             user=request.user.id,
             organization=request.user.default_project_id)
 
-        self.allowed = [role for role in all_roles
-                   if role.id in allowed[superset_id]]
+        self.allowed = [
+            role for role in all_roles
+            if role.id in allowed[superset_id]
+        ]
         return self.allowed
 
     def _list_current_assignments(self, request, superset_id):
@@ -123,7 +120,7 @@ class UpdateAuthorizedMembers(idm_workflows.UpdateRelationshipStep):
     no_members_text = ("No users.")
     RELATIONSHIP_CLASS = AuthorizedMembersApi
     server_filter_url = urlresolvers.reverse_lazy(
-        'fiware_complex_server_filters_keystone_users')
+        'fiware_complex_server_filters_users')
 
 
 class ManageAuthorizedMembers(idm_workflows.RelationshipWorkflow):

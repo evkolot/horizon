@@ -27,10 +27,6 @@ urlpatterns = patterns(
         views.UsersComplexFilter.as_view(), 
         name='fiware_complex_server_filters_users'),
 
-    url(r'^keystoneusers$', 
-        views.KeystoneUsersComplexFilter.as_view(), 
-        name='fiware_complex_server_filters_keystone_users'),
-
     url(r'^applications$', 
         views.ApplicationsComplexFilter.as_view(), 
         name='fiware_complex_server_filters_applications'),
