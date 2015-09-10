@@ -35,8 +35,6 @@ DEFAULT_ORG_SMALL_AVATAR = 'dashboard/img/logos/small/group.png'
 DEFAULT_APP_SMALL_AVATAR = 'dashboard/img/logos/small/app.png'
 DEFAULT_USER_SMALL_AVATAR = 'dashboard/img/logos/small/user.png'
 
-NUM_PAGES = getattr(local_settings, 'NUM_PAGES', 10)
-
 
 def filter_default(items):
     """Remove from a list the automated created project for a user. This project
