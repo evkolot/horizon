@@ -46,7 +46,7 @@
 
 <script src='{{ STATIC_URL }}horizon/js/horizon.membership.js' type='text/javascript' charset='utf-8'></script>
 
-<script src="{{ STATIC_URL }}library/expander/js/jquery.expander.js"></script>
+<script src="{{ STATIC_URL }}library/expander/js/jquery.expander.min.js"></script>
 {# FIWARE js for single signout #}
 <script src="{{ STATIC_URL }}fiware/signOut.js"/></script>
 {##}
@@ -71,4 +71,8 @@
 <script type='text/javascript' charset='utf-8'>
   // Call init on DOM ready.
   $(document).ready(horizon.init);
+  $(document).ready(function(){
+    $('textarea').autosize();
+    $('div.expander').expander();
+  });
 </script>

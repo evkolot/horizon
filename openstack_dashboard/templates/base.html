@@ -47,40 +47,5 @@
     <div id="modal_wrapper"></div>
     {% include '_footer.html' %}
 
-    <script type="text/javascript">
-      $(document).ready(function(){
-        $('textarea').autosize();    
-      });
-      $(document).ready(function() {
-        var opts = {collapseTimer: 1000};
-
-        $.each(['beforeExpand', 'afterExpand', 'onCollapse'], function(i, callback) {
-          opts[callback] = function(byUser) {
-            var msg = '<div class="success">' + callback;
-
-            if (callback === 'onCollapse') {
-              msg += ' (' + (byUser ? 'user' : 'timer') + ')';
-            }
-            msg += '</div>';
-
-            $(this).parent().parent().append(msg);
-          };
-        });
-
-        $('dl.expander dd').eq(0).expander();
-        $('dl.expander dd').slice(1).expander(opts);
-
-        $('ul.expander li').expander({
-          slicePoint: 50,
-          widow: 2,
-          expandSpeed: 10000,
-          userCollapseText: '[^]'
-        });
-
-        $('div.expander').expander();
-      });
-    </script>
-
-
   </body>
 </html>
