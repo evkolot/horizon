@@ -22,6 +22,7 @@ class CreateOrganization(tables.LinkAction):
     verbose_name = "Create"
     url = "horizon:idm:organizations:create"
     classes = ("link",)
+    render_as_link = True
 
 
 class RegisterApplication(tables.LinkAction):
@@ -29,6 +30,7 @@ class RegisterApplication(tables.LinkAction):
     verbose_name = "Register"
     url = "horizon:idm:myApplications:create"
     classes = ("link",)
+    render_as_link = True
 
 class OrganizationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(

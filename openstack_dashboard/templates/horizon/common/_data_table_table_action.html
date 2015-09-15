@@ -14,12 +14,19 @@
   </button>
 {% else %}
 {% endcomment %}
+{% if action.render_as_link %}
+  <a href='{{ action.get_link_url }}' title='{{ action.verbose_name }}' {{ action.attr_string|safe }}>
+    {% if action.icon != None %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}
+      {{ action.verbose_name }}
+  </a>
+{% else %}
   <button href='{{ action.get_link_url }}' title='{{ action.verbose_name }}' {{ action.attr_string|safe }}>
     {% if action.icon != None %}<i class="fa fa-{{ action.icon }}"></i> {% endif %}
     <span class="action">
       {{ action.verbose_name }}
     </span>
   </button>
+{% endif %}
 {% comment %}
 {% endif %}
 {% endcomment %}

@@ -29,6 +29,7 @@ class RegisterApplication(tables.LinkAction):
     verbose_name = "Register"
     url = "horizon:idm:myApplications:create"
     classes = ("link",)
+    render_as_link = True
 
 class MembersTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
