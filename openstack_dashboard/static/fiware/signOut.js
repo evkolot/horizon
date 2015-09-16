@@ -33,7 +33,7 @@ Fiware.signOut = (function($, undefined) {
     health: {
       name:      'Health',
       verb:      'GET',
-      protocol:  'http',
+      protocol:  'https',
       subdomain: 'fi-health',
       path:      '/logout'
     },
