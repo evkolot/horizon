@@ -471,6 +471,7 @@ horizon.membership = {
           application_id: input.attr('data-application_id'),
         },
         beforeSend: function () {
+          $(".available_" + step_slug).html('<i class="fa fa-gear fa-spin"></i>');
         },
         complete: function () {
         },
