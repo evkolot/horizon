@@ -7,7 +7,7 @@
       <div class="form-group has-feedback">
         <input type="text" name="available_{{ step.slug }}_filter" id="available_{{ step.slug }}" class="filter {{ step.slug }}_server_filter form-control input-sm" placeholder="{% trans "filter" %}" data-url="{{ step.server_filter_url }}" {% if step.filter_by_organization %} data-org="{{step.workflow.request.organization.id}}"{% endif %}>
       </div>
-      <div id="spinner_{{ step.slug }}" style="width: 10px; float: right; margin: 4px 10px; display: none;" class="filtering-spinner-inline"><i class="fa fa-circle-o-notch fa-spin" style="color: #5B5B5F;"></i></div>
+      <div id="spinner_{{ step.slug }}" class="filtering-spinner-inline"><i class="fa fa-circle-o-notch fa-spin"></i></div>
     </header>
     <div class="filterable {{ step.slug }}_server_filterable" id="available_{{ step.slug }}">
       <ul class="available_members available_{{ step.slug }} list-group"></ul>

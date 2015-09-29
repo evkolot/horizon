@@ -7,7 +7,7 @@ horizon.datatables = {
 horizon.datatables.add_no_results_row = function (table) {
   /*// Add a "no results" row if there are no results.
   template = horizon.templates.compiled_templates["#empty_row_template"];
-  if (!table.find("div.list-group-item:visible").length 
+  if (!table.find("div.list-group-item:visible").length
       && typeof(template) !== "undefined") {
     table.append(template.render());
   }*/
@@ -44,7 +44,7 @@ horizon.datatables.ajax_paginate = function(table, page_num, register_event) {
     beforeSend: function () {
       // add a spinner to show progress
       var list_group = $('#'+table_selector).find('div.list-group');
-      list_group.html('<i class="fa fa-gear fa-spin"></i>');
+      list_group.html('<i class="fa fa-circle-o-notch fa-spin"></i>');
       horizon.datatables.remove_no_results_row(table);
     },
     complete: function () {
@@ -89,7 +89,7 @@ horizon.datatables.init_pagination = function (table, total_pages, register_even
       leaps: true
   })
   if (register_event == true) {
-    pagination.on("page", function(event, page_num){ 
+    pagination.on("page", function(event, page_num){
       horizon.datatables.ajax_paginate(table, page_num, false);
     });
   }
@@ -176,7 +176,7 @@ horizon.datatables.set_table_query_filter = function (parent) {
 
 horizon.addInitFunction(function() {
   $('div.datatable').each(function (idx, el) {
-    
+
     // load intial elements
     horizon.datatables.ajax_paginate($(el), 1, true);
 
