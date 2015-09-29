@@ -42,12 +42,11 @@ horizon.datatables.ajax_paginate = function(table, page_num, register_event) {
       name__startswith: table.find('div.table_search.client input').val() || undefined,
     },
     beforeSend: function () {
-      // add a spinner to show progress
-      var list_group = $('#'+table_selector).find('div.list-group');
-      list_group.html('<i class="fa fa-circle-o-notch fa-spin"></i>');
+      $('#spinner_' + table.attr('id')).show();
       horizon.datatables.remove_no_results_row(table);
     },
     complete: function () {
+      $('#spinner_' + table.attr('id')).hide();
     },
     error: function(jqXHR, status, errorThrown) {
     },
