@@ -96,7 +96,7 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
         organization_id = self.object.id
         user_id = request.user.id
 
-        LOG.debug('Organization {0} created'.format(organization_id))
+        LOG.debug('Organization %s created', organization_id)
 
         # Grant purchaser in all default apps
         default_apps = fiware_api.keystone.get_fiware_default_apps(
@@ -110,8 +110,7 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
                     purchaser_role.id, 
                     organization_id, 
                     app.id)
-                LOG.debug('Granted role {0} in app {1}'.format(
-                    purchaser_role.name, app.name))
+                LOG.debug('Granted role %s in app %s', purchaser_role.name, app.name)
         except Exception as e:
             exceptions.handle(self.request,
                 redirect=reverse('horizon:idm:organizations:index'))
