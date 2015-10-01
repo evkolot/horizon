@@ -331,13 +331,13 @@ class FindUserByEmailForm(forms.SelfHandlingForm):
     def clean_email(self):
         try:
             email = self.cleaned_data['email']
-            user = fiware_api.keystone.user_list(self.request,
-                filters={'name':email})
+            user = fiware_api.keystone.user_list(
+                self.request, filters={'name':email})
 
             if not user:
                 raise forms.ValidationError(
-                'There is no user registered under that email account',
-                code='invalid')
+                    'There is no user registered under that email account',
+                    code='invalid')
 
             # NOTE(garcianavalon) there is no users.find binding
             # in api.keystone so we use list filtering
@@ -345,10 +345,22 @@ class FindUserByEmailForm(forms.SelfHandlingForm):
             # we need to unpack it.
             self.user = user[0]
 
+            # Check that the user has a cloud organization
+            try:
+                fiware_api.keystone.project_get(
+                    self.request, self.user.cloud_project_id)
+            except Exception as e:
+                raise forms.ValidationError(
+                    'The user has no Cloud Project. Please contact an administrator',
+                    code='error')
+
             return email
 
-        except Exception:
-            msg = 'An unexpected error ocurred. Try again later'
+        except forms.ValidationError:
+            raise
+
+        except Exception as e:
+            msg = 'An unexpected error ocurred. Please contact an administrator'
             messages.error(self.request, msg)
             exceptions.handle(self.request, msg)
 
