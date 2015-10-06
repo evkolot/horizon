@@ -104,8 +104,8 @@ class UpdateAccountView(forms.ModalFormView):
         account_type = _current_account(self.request, user.id)[1]
         account_info = {
             'account_type': account_type,
-            'started_at': getattr(user, account_type + '_started_at', None),
-            'duration': getattr(user, account_type + '_duration',
+            'started_at': getattr(user, str(account_type) + '_started_at', None),
+            'duration': getattr(user, str(account_type) + '_duration',
                                 FIWARE_DEFAULT_DURATION.get(account_type)),
             'regions': _current_regions(self.request, user.cloud_project_id)
         }
@@ -135,7 +135,7 @@ class UpdateAccountView(forms.ModalFormView):
 
 class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin,
                                 fiware_auth.TemplatedEmailMixin):
-    """ Upgrade account logic with out the form"""
+    """ Upgrade account logic without the form"""
     http_method_names = ['post']
     use_idm_account = True
     
@@ -147,7 +147,12 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
             return http.HttpResponse('Unauthorized', status=401)
 
         try:
-            fiware_api.keystone.validate_keystone_token(request, token)
+            access_info = fiware_api.keystone.validate_keystone_token(request, token)
+            Log.debug(access_info)
+            user_id = access_info['user']['name']
+            if not idm_admin_utils.is_user_administrator(request,user_id):
+                raise Exception('The authenticated user is not admin.')
+            
         except Exception:
             return http.HttpResponse('Unauthorized', status=401)
 
@@ -222,7 +227,12 @@ class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
             return http.HttpResponse('Unauthorized', status=401)
 
         try:
-            fiware_api.keystone.validate_keystone_token(request, token)
+            access_info = fiware_api.keystone.validate_keystone_token(request, token)
+            Log.debug(access_info)
+            user_id = access_info['user']['name']
+            if not idm_admin_utils.is_user_administrator(request,user_id):
+                raise Exception('The authenticated user is not admin.')
+
         except Exception:
             return http.HttpResponse('Unauthorized', status=401)
 
