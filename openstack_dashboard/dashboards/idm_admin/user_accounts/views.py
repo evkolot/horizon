@@ -148,7 +148,6 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
 
         try:
             access_info = fiware_api.keystone.validate_keystone_token(request, token)
-            Log.debug(access_info)
             user_id = access_info['user']['name']
             if not idm_admin_utils.is_user_administrator(request,user_id):
                 raise Exception('The authenticated user is not admin.')
@@ -228,7 +227,6 @@ class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
 
         try:
             access_info = fiware_api.keystone.validate_keystone_token(request, token)
-            Log.debug(access_info)
             user_id = access_info['user']['name']
             if not idm_admin_utils.is_user_administrator(request,user_id):
                 raise Exception('The authenticated user is not admin.')
