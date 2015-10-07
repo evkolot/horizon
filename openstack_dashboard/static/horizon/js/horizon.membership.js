@@ -471,8 +471,10 @@ horizon.membership = {
           application_id: input.attr('data-application_id'),
         },
         beforeSend: function () {
+          $("#spinner_" + step_slug).show();
         },
         complete: function () {
+          $("#spinner_" + step_slug).hide();
         },
         error: function(jqXHR, status, errorThrown) {
         },

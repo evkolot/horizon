@@ -39,6 +39,8 @@ LOG = logging.getLogger('idm_logger')
 # and other objects
 DEFAULT_OBJECTS_CACHE_TIME = 60 * 15
 INTERNAL_CLIENT_CACHE_TIME = 60 * 60
+CACHE_CLIENT = "_internal_keystoneclient_token"
+CACHE_TOKEN = "_internal_keystoneclient"
 
 def internal_keystoneclient(request):
     """Creates a connection with keystone using the IdM account.
@@ -46,23 +48,19 @@ def internal_keystoneclient(request):
     The client is cached so that subsequent API calls don't have
     to be re-authenticated.
     """
-
-    cache_client = "_internal_keystoneclient_token"
-    cache_token = "_internal_keystoneclient"
-    
-    token = cache.get(cache_client, None)
-    oldclient = cache.get(cache_token, None)
+    token = cache.get(CACHE_CLIENT, None)
+    old_client = cache.get(CACHE_TOKEN, None)
     if not token:
         #LOG.debug('There is no token cached -> New Password Session')
         idm_password_session = _password_session(request)
         keystoneclient = client.Client(session=idm_password_session)
-        cache.set(cache_client, keystoneclient.session.get_token(), INTERNAL_CLIENT_CACHE_TIME)
-        cache.set(cache_token, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
+        cache.set(CACHE_CLIENT, keystoneclient.session.get_token(), INTERNAL_CLIENT_CACHE_TIME)
+        cache.set(CACHE_TOKEN, keystoneclient, INTERNAL_CLIENT_CACHE_TIME)
         #LOG.debug('Saved token: %s',keystoneclient.session.get_token())
     else:
         #LOG.debug('There is a cached token! (%s)',token)
-        oldclient._auth_token = token
-        keystoneclient=oldclient
+        old_client._auth_token = token
+        keystoneclient = old_client
 
     #LOG.debug('Using token: %s',keystoneclient.session.get_token())
     return keystoneclient

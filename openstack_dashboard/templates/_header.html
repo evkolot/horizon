@@ -19,11 +19,11 @@
 
       <div id="user_info" class="col-md-pull-3 nav navbar-nav navbar-right">
 
-        <div id="profile_editor_switcher" class="dropdown switcher_bar" tabindex='1'> 
+        <div id="profile_editor_switcher" class="dropdown switcher_bar" tabindex='1'>
           {% if request.user.is_authenticated %}
             {% if request.organization.id != request.user.default_project_id %}
               <a  href="{% url 'horizon:idm:organizations:detail' request.organization.id %}">
-                {% if request.organization.img_small %} 
+                {% if request.organization.img_small %}
                   <img alt="Org" src="{{ MEDIA_URL }}{{ request.organization.img_small }}">
                 {% else %}
                   <img alt="Org" src="{{ STATIC_URL }}dashboard/img/logos/small/group.png">
@@ -32,7 +32,7 @@
               </a>
             {% else %}
               <a  href="{% url 'horizon:idm:users:detail' request.user.id %}">
-                {% if request.user.img_small %} 
+                {% if request.user.img_small %}
                   <img alt="User" src="{{ MEDIA_URL }}{{ request.user.img_small }}">
                 {% else %}
                   <img alt="User" src="{{ STATIC_URL }}dashboard/img/logos/small/user.png">
@@ -88,7 +88,7 @@
               </li>
             {% endif %}
           </ul>
-        </div>        
+        </div>
       </div>
 
 

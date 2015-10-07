@@ -155,14 +155,6 @@ div#update_owners_members{
     margin-bottom: 10px;
   }
 }
-//#members,
-//#applications-table  {
-//  max-height: 232px;
-//  overflow-x: hidden;
-//  overflow-y: scroll;
-//  margin: 0 -15px;
-//  padding: 0 15px;
-//}
 
 #detailApplication {
   margin-top: 2px;
@@ -251,6 +243,15 @@ div#update_owners_members{
         float: right;
         height: 29px;
         padding: 0px 5px;
+      }
+      .filtering-spinner-inline{
+        width: 10px;
+        float: right;
+        margin: 4px 10px;
+        display: none;
+        i{
+          color: #5B5B5F;
+        }
       }
     }
     li.list-group-item{
