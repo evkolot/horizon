@@ -18,17 +18,17 @@ horizon.datatables.remove_no_results_row = function (table) {
   table.find("p.empty").hide();
 };
 
-horizon.datatables.ajax_paginate = function(table, page_num, register_event) {
-  page_num = page_num || 1;
-  if (register_event === undefined) {
-    register_event = true;
-  }
+horizon.datatables.ajax_paginate = function(params) {
+  var page_num = params.page_num || 1;
+  var table = params.table;
 
   if (!table.attr('data-pagination-url')) {
     horizon.datatables.remove_no_results_row(table);
     return;
   }
   var table_selector = table.attr('id');
+  var id_for_spinner = params.tab_group_id || table_selector;
+
   horizon.ajax.queue({
     type: 'GET',
     url: table.attr('data-pagination-url'),
@@ -42,11 +42,11 @@ horizon.datatables.ajax_paginate = function(table, page_num, register_event) {
       name__startswith: table.find('div.table_search.client input').val() || undefined,
     },
     beforeSend: function () {
-      $('#spinner_' + table.attr('id')).show();
+      $('#spinner_' + id_for_spinner).show();
       horizon.datatables.remove_no_results_row(table);
     },
     complete: function () {
-      $('#spinner_' + table.attr('id')).hide();
+      $('#spinner_' + id_for_spinner).hide();
     },
     error: function(jqXHR, status, errorThrown) {
     },
@@ -67,7 +67,7 @@ horizon.datatables.ajax_paginate = function(table, page_num, register_event) {
       }
 
       // reinitialize pagination
-      horizon.datatables.init_pagination(table, data['pages'], register_event);
+      horizon.datatables.init_pagination(table, data['pages'], params.register_event);
     }
   });
 }
@@ -76,6 +76,11 @@ horizon.datatables.init_pagination = function (table, total_pages, register_even
     // to force pagination clearing, we set page to 1
     total_pages = 1;
   }
+
+  if (register_event === undefined) {
+    register_event = true;
+  }
+
   // init bootpag
   var pagination = $('#'+table.attr('id')+'_pagination_container');
   pagination.bootpag({
@@ -89,14 +94,20 @@ horizon.datatables.init_pagination = function (table, total_pages, register_even
   })
   if (register_event == true) {
     pagination.on("page", function(event, page_num){
-      horizon.datatables.ajax_paginate(table, page_num, false);
+      horizon.datatables.ajax_paginate({
+        table: table, 
+        page_num: page_num, 
+        register_event: false
+      });
     });
   }
 };
 
-horizon.datatables.set_pagination_filter = function(table) {
+horizon.datatables.set_pagination_filter = function(params) {
   var MIN_TIME_BETWEEN_QUERIES = 600; // ms
   var MIN_LETTERS_TO_QUERY = -1;
+
+  var table = params.table;
 
   table.find('div.table_search.client input').on('input', function() {
     var $input = $(this);
@@ -117,7 +128,11 @@ horizon.datatables.set_pagination_filter = function(table) {
     horizon.datatables.timestamp_query = performance.now();
 
     horizon.datatables.pending_request = window.setTimeout(function() {
-        horizon.datatables.ajax_paginate(table, 1, false);
+        horizon.datatables.ajax_paginate({
+          table: table, 
+          page_num: 1, 
+          register_event: false
+        });
       }, MIN_TIME_BETWEEN_QUERIES);
   });
 
@@ -175,12 +190,23 @@ horizon.datatables.set_table_query_filter = function (parent) {
 
 horizon.addInitFunction(function() {
   $('div.datatable').each(function (idx, el) {
+    var tab_group_id;
+    var tab_content = $(el).parents('div.tab-content').attr('id');
+
+    if (tab_content) {
+      tab_group_id = tab_content.replace('body_', '');
+    }
 
     // load intial elements
-    horizon.datatables.ajax_paginate($(el), 1, true);
+    horizon.datatables.ajax_paginate({
+      table: $(el), 
+      page_num: 1, 
+      register_event: true, 
+      tab_group_id: tab_group_id
+    });
 
     // set up filter
-    horizon.datatables.set_pagination_filter($(el))
+    horizon.datatables.set_pagination_filter({table: $(el)})
   });
 
   // Trigger run-once setup scripts for tables.
