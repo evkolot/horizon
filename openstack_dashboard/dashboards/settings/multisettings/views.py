@@ -62,9 +62,9 @@ class MultiFormView(views.APIView):
             if r.id in user_roles), None)
 
         account_info = {
-            'account_type': account_type,
-            'started_at': getattr(user, account_type + '_started_at', None),
-            'duration': getattr(user, account_type + '_duration', None),
+            'account_type': str(account_type),
+            'started_at': getattr(user, str(account_type) + '_started_at', None),
+            'duration': getattr(user, str(account_type) + '_duration', None),
             #'regions': self._current_regions(self.user.cloud_project_id)
         }
 
