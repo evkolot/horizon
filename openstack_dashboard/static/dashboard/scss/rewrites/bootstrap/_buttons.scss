@@ -38,5 +38,6 @@
 .add-members .members-list li.list-group-item{
 	&:last-child{
 	  @include border-top-radius (0);
+    @include border-bottom-radius (0);
 	}
 }

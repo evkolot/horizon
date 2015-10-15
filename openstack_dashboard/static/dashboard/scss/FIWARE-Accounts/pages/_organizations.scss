@@ -101,7 +101,8 @@
       clear: both;
       margin: 0 -15px;
       min-height: 45px;
-      border-top: 1px solid #A9A9A9;
+      //border-top: 1px solid #A9A9A9;
+      border-top: none;
       ul.pagination{
         float: right;
         margin: 0;
@@ -258,7 +259,7 @@ div#update_owners_members{
       border-bottom: 0px solid #DDD;
       margin-right: 10px;
       &:last-child{
-        border-bottom: none;
+        //border-bottom: none;
       }
       .member{
         display: inline; width: 87%;
