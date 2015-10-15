@@ -1376,6 +1376,7 @@ class DataTable(object):
         bound_actions = self.get_table_actions()
         extra_context = {"table_actions": bound_actions,
                          "table_actions_buttons": [],
+                         "slug": self.slugify_name(),
                          "table_actions_menu": []}
         if self._meta.filter and (
                 self._filter_action(self._meta._filter_action, self.request)):

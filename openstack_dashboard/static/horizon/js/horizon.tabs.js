@@ -7,8 +7,10 @@ horizon.tabs.addTabLoadFunction = function (f) {
 };
 
 horizon.tabs.initTabLoad = function (tab) {
+  var tab_group_id = tab.parent().attr('id').replace('body_', '');
+  var table = tab.children('.datatable');
   $(horizon.tabs._init_load_functions).each(function (index, f) {
-    f(tab.children('.datatable'));
+    f({table: table, tab_group_id: tab_group_id});
   });
 };
 

@@ -19,11 +19,13 @@ def is_current_user_administrator(request):
     """ Checks if the current user is an administrator. In other words, if he
     has any roles in the idm_admin application.
     """
+    return is_user_administrator(request, request.user.id)
+    
+def is_user_administrator(request, user_id):
     idm_admin = fiware_api.keystone.get_idm_admin_app(request)
     if not idm_admin:
         return False
     user_apps = [a.application_id for a
                  in fiware_api.keystone.user_role_assignments(
-                     request, user=request.user.id)]
+                     request, user=user_id)]
     return idm_admin.id in user_apps
-
