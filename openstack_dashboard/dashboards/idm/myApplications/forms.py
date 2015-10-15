@@ -76,7 +76,7 @@ class CreateApplicationForm(forms.SelfHandlingForm):
                         role=provider,
                         organization=organization,
                         application=application.id,
-                        use_idm_account=False)
+                        use_idm_account=True)
 
                 LOG.debug('Application %s created', application.name)
             except Exception:
