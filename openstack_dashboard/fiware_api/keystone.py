@@ -42,6 +42,12 @@ INTERNAL_CLIENT_CACHE_TIME = 60 * 60
 CACHE_CLIENT = "_internal_keystoneclient_token"
 CACHE_TOKEN = "_internal_keystoneclient"
 
+# NOTE(garcianavalon) prevent MemCache Warnings because we use
+# LocMemCache
+import warnings
+from django.core.cache import CacheKeyWarning
+warnings.simplefilter("ignore", CacheKeyWarning)
+
 def internal_keystoneclient(request):
     """Creates a connection with keystone using the IdM account.
 
