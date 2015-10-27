@@ -147,10 +147,7 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
             return http.HttpResponse('Unauthorized', status=401)
 
         try:
-            access_info = fiware_api.keystone.validate_keystone_token(request, token)
-            user_id = access_info['user']['name']
-            if not idm_admin_utils.is_user_administrator(request,user_id):
-                raise Exception('The authenticated user is not admin.')
+            idm_admin_utils.is_user_administrator_from_token(request, token=token)
             
         except Exception:
             return http.HttpResponse('Unauthorized', status=401)
@@ -226,10 +223,7 @@ class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
             return http.HttpResponse('Unauthorized', status=401)
 
         try:
-            access_info = fiware_api.keystone.validate_keystone_token(request, token)
-            user_id = access_info['user']['name']
-            if not idm_admin_utils.is_user_administrator(request,user_id):
-                raise Exception('The authenticated user is not admin.')
+            idm_admin_utils.is_user_administrator_from_token(request, token=token)
 
         except Exception:
             return http.HttpResponse('Unauthorized', status=401)
