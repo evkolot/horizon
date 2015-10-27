@@ -156,15 +156,17 @@ class RegistrationForm(ConfirmPasswordForm):
 
 class EmailForm(forms.Form):
     email = forms.EmailField(label=("E-mail"),
-                            required=True)
- 
+                             required=True)
+
+
 class ChangePasswordForm(ConfirmPasswordForm):
     pass
 
+
 class LoginWithEmailForm(openstack_auth_forms.Login):
-    """Change the label for username field to email and remove 
+    """Change the label for username field to email and remove
     translations.
-        """
+    """
     username = forms.CharField(
         label=("Email"),
         widget=forms.TextInput(attrs={"autofocus": "autofocus"}))

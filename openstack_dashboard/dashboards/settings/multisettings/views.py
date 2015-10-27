@@ -29,6 +29,8 @@ from openstack_dashboard.dashboards.settings.password \
     import forms as password_forms
 from openstack_dashboard.dashboards.settings.useremail \
     import forms as useremail_forms
+from openstack_dashboard.dashboards.settings.two_factor \
+    import forms as two_factor_forms
 
 
 LOG = logging.getLogger('idm_logger')
@@ -88,6 +90,7 @@ class MultiFormView(views.APIView):
         cancel = cancelaccount_forms.BasicCancelForm(self.request)
         password = password_forms.PasswordForm(self.request)
         email = useremail_forms.EmailForm(self.request, initial=initial_email)
+        two_factor = two_factor_forms.EnableTwoFactorForm(self.request)
 
         #Actions and titles
         # TODO(garcianavalon) move all of this to each form
@@ -95,15 +98,19 @@ class MultiFormView(views.APIView):
         email.action = 'useremail/'
         password.action = "password/"
         cancel.action = "cancelaccount/"
+        two_factor.action = 'two_factor/'
+
         status.description = 'Account status'
-        email.description = ('Change your email')
-        password.description = ('Change your password')
-        cancel.description = ('Cancel account')
+        email.description = 'Change your email'
+        password.description = 'Change your password'
+        cancel.description = 'Cancel account'
+        two_factor.description = 'Manage two factor authentication'
 
         status.template = 'settings/accountstatus/_status.html'
         email.template = 'settings/multisettings/_collapse_form.html'
         password.template = 'settings/multisettings/_collapse_form.html'
         cancel.template = 'settings/multisettings/_collapse_form.html'
+        two_factor.template = 'settings/multisettings/_collapse_form.html'
 
-        context['forms'] = [status, password, email, cancel]
+        context['forms'] = [status, password, email, two_factor, cancel]
         return context

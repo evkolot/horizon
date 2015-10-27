@@ -19,7 +19,8 @@ class Settings(horizon.Dashboard):
     name = ("Settings")
     slug = "settings"
     panels = ('multisettings', 'accountstatus', 
-              'password', 'useremail', 'cancelaccount')
+              'password', 'useremail', 'two_factor',
+              'cancelaccount')
     default_panel = 'multisettings'
 
     def nav(self, context):
