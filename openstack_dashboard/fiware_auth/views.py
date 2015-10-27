@@ -20,9 +20,6 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
-from django.views.decorators.cache import never_cache  # noqa
-from django.views.decorators.csrf import csrf_protect  # noqa
-from django.views.decorators.debug import sensitive_post_parameters  # noqa
 
 from keystoneclient import exceptions as ks_exceptions
 
@@ -477,13 +474,3 @@ def switch(request, tenant_id, **kwargs):
         messages.info(request, msg)
     return response
 
-
-@sensitive_post_parameters()
-@csrf_protect
-@never_cache
-def check_two_factor_enabled(request, template_name=None, extra_context=None, 
-                             form_class=fiware_auth_forms.LoginWithEmailForm, **kwargs):
-    """Check if the user has two factor authentication enabled.
-    If true, render the insert code form.
-    If false, redirect to login view and authenticate.
-    """
