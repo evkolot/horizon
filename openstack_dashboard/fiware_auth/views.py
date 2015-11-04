@@ -31,6 +31,7 @@ from openstack_auth import views as openstack_auth_views
 from openstack_dashboard import fiware_api
 from openstack_dashboard.fiware_auth import forms as fiware_forms
 
+from openstack_dashboard.local import local_settings
 
 LOG = logging.getLogger('idm_logger')
 EMAIL_HTML_TEMPLATE = 'email/base_email.html'
@@ -176,11 +177,11 @@ class RegistrationView(_RequestPassingFormView):
 
                 if default_cloud_role:
                     fiware_api.keystone.add_role_to_user(
-                        request, 
-                        role=default_cloud_role.id, 
+                        request,
+                        role=default_cloud_role.id,
                         user=new_user.id,
-                        organization=new_user.cloud_project_id, 
-                        application=cloud_app.id, 
+                        organization=new_user.cloud_project_id,
+                        application=cloud_app.id,
                         use_idm_account=True)
                     LOG.debug('granted default cloud role')
                 else:
@@ -190,14 +191,16 @@ class RegistrationView(_RequestPassingFormView):
                 region_id = 'Spain2'
                 endpoint_groups = fiware_api.keystone.endpoint_group_list(
                     request, use_idm_account=True)
-                region_group = next(group for group in endpoint_groups
-                    if group.filters.get('region_id', None) == region_id)
+                region_group = next(
+                    group for group in endpoint_groups
+                    if group.filters.get('region_id', None) == region_id
+                )
 
                 if not region_group:
                     messages.error(
                         request, 'There is no endpoint group defined for that region')
                     return
-        
+
                 fiware_api.keystone.add_endpoint_group_to_project(
                     request,
                     project=new_user.cloud_project_id,
@@ -206,8 +209,10 @@ class RegistrationView(_RequestPassingFormView):
 
             self.send_activation_email(new_user)
 
-            msg = ('Account created succesfully, check your email for'
-                ' the confirmation link.')
+            msg = (
+                'Account created succesfully, check your email for'
+                ' the confirmation link.'
+            )
             messages.success(request, msg)
             return new_user
 
@@ -223,13 +228,14 @@ class RegistrationView(_RequestPassingFormView):
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         context = {
-            'activation_url':('activate/?activation_key={0}&user={1}'
-                '').format(user.activation_key, user.id),
+            'activation_url': (
+                '{0}/activate/?activation_key={1}&user={2}'
+                '').format(_get_current_domain(), user.activation_key, user.id),
             'user_name':user.username,
         }
-        text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, 
+        text_content = render_to_string(ACTIVATION_TXT_TEMPLATE,
                                         dictionary=context)
-        html_content = render_to_string(ACTIVATION_HTML_TEMPLATE, 
+        html_content = render_to_string(ACTIVATION_HTML_TEMPLATE,
                                         dictionary=context)
         #send a mail for activation
         self.send_html_email(
@@ -329,8 +335,8 @@ class RequestPasswordResetView(_RequestPassingFormView):
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         context = {
-            'reset_url':('password/reset/?token={0}&email={1}'
-                '').format(token, email),
+            'reset_url':('{0}/password/reset/?token={1}&email={2}'
+                '').format(_get_current_domain(),token, email),
             'user_name':user['username'],
         }
         text_content = render_to_string(RESET_PASSWORD_TXT_TEMPLATE, 
@@ -442,8 +448,8 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         context = {
-            'activation_url':('activate/?activation_key={0}&user={1}'
-                '').format(activation_key.id, user.id),
+            'activation_url':('{0}/activate/?activation_key={1}&user={2}'
+                '').format(_get_current_domain(),activation_key.id, user.id),
             'user_name':user.username,
         }
         text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, 
@@ -474,3 +480,8 @@ def switch(request, tenant_id, **kwargs):
         messages.info(request, msg)
     return response
 
+def _get_current_domain():
+    if getattr(local_settings, 'ALLOWED_HOSTS', None):
+        return 'http://'+ local_settings.ALLOWED_HOSTS[0]
+    else: 
+        return 'http://0.0.0.0:8000'

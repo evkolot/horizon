@@ -109,7 +109,8 @@ class CreateOrganizationForm(forms.SelfHandlingForm):
                     self.request, 
                     purchaser_role.id, 
                     organization_id, 
-                    app.id)
+                    app.id,
+                    use_idm_account=True)
                 LOG.debug('Granted role %s in app %s', purchaser_role.name, app.name)
         except Exception as e:
             exceptions.handle(self.request,
