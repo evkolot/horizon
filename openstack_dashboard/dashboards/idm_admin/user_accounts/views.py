@@ -201,7 +201,6 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
 
                 self.send_html_email(
                     to=[user.name],
-                    from_email='no-reply@account.lab.fiware.org',
                     subject='[FIWARE Lab] Changed account status',
                     content={'text': text_content, 'html': html_content})
 
@@ -267,7 +266,6 @@ class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
 
                 self.send_html_email(
                     to=[user.name],
-                    from_email='no-reply@account.lab.fiware.org',
                     subject='[FIWARE Lab] Current Acount Status about to expire',
                     content={'text': text_content, 'html': html_content})
 
