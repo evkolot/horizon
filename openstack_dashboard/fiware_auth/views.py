@@ -476,7 +476,7 @@ def switch(request, tenant_id, **kwargs):
     return response
 
 def _get_current_domain():
-    if getattr(local_settings, 'EMAIL_ACTIVATION_URL', None):
-        return 'https://'+local_settings.EMAIL_ACTIVATION_URL
+    if getattr(local_settings, 'EMAIL_URL', None):
+        return 'https://'+local_settings.EMAIL_URL
     else: 
         return 'http://localhost:8000'
