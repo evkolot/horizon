@@ -235,7 +235,7 @@ class RegistrationView(_RequestPassingFormView):
         #send a mail for activation
         self.send_html_email(
             to=[user.name],
-            from_email='no-reply@account.lab.fiware.org',
+            from_email=local_settings.FROM_EMAIL,
             subject=subject,
             content={'text': text_content, 'html': html_content})
 
@@ -341,7 +341,7 @@ class RequestPasswordResetView(_RequestPassingFormView):
         #send a mail for activation
         self.send_html_email(
             to=[email], 
-            from_email='no-reply@account.lab.fiware.org',
+            from_email=local_settings.FROM_EMAIL,
             subject=subject, 
             content={'text': text_content, 'html': html_content})
 
@@ -438,7 +438,7 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         return False
 
     def send_reactivation_email(self, user, activation_key):
-        # TODO(garcianavalon) subject, message and from_email as settings/files
+        # TODO(garcianavalon) subject and message as settings/files
         subject = '[FIWARE Lab] Welcome to FIWARE'
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
@@ -454,7 +454,7 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         #send a mail for activation
         self.send_html_email(
             to=[user.name],
-            from_email='no-reply@account.lab.fiware.org',
+            from_email=local_settings.FROM_EMAIL,
             subject=subject, 
             content={'text': text_content, 'html': html_content})
 
@@ -476,7 +476,7 @@ def switch(request, tenant_id, **kwargs):
     return response
 
 def _get_current_domain():
-    if getattr(local_settings, 'ALLOWED_HOSTS', None):
-        return 'https://'+local_settings.ALLOWED_HOSTS[0]
+    if getattr(local_settings, 'EMAIL_ACTIVATION_URL', None):
+        return 'https://'+local_settings.EMAIL_ACTIVATION_URL
     else: 
-        return 'http://0.0.0.0:8000'
+        return 'http://localhost:8000'
