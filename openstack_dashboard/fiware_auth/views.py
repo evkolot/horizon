@@ -47,12 +47,11 @@ ACTIVATION_TXT_TEMPLATE = 'email/activation.txt'
 class TemplatedEmailMixin(object):
     # TODO(garcianavalon) as settings
     
-    def send_html_email(self, to, subject, **kwargs):
+    def send_html_email(self, to, subject, from_email=None, **kwargs):
         LOG.debug('Sending email to %s with subject %s', to, subject)
         text_content = render_to_string(EMAIL_TEXT_TEMPLATE, dictionary=kwargs)
         html_content = render_to_string(EMAIL_HTML_TEMPLATE, dictionary=kwargs)
         
-        from_email = getattr(local_settings, 'EMAIL_URL', None)
         msg = EmailMultiAlternatives(subject, text_content, from_email, to)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
