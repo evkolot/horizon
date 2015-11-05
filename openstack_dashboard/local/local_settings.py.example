@@ -117,7 +117,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # Or send them to /dev/null
 #EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
-# Params for activation sent emails
+# Custom email address and web domain
 DEFAULT_FROM_EMAIL = 'no-reply@account.lab.fiware.org'
 EMAIL_URL = 'my-company.com'
 
