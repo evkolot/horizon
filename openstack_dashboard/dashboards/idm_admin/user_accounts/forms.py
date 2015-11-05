@@ -314,7 +314,6 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin, fiware_a
 
                 self.send_html_email(
                     to=[user.name],
-                    from_email='no-reply@account.lab.fiware.org',
                     subject='[FIWARE Lab] Changed account status',
                     content={'text': text_content, 'html': html_content})
 

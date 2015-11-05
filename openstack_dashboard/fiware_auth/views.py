@@ -47,10 +47,12 @@ ACTIVATION_TXT_TEMPLATE = 'email/activation.txt'
 class TemplatedEmailMixin(object):
     # TODO(garcianavalon) as settings
     
-    def send_html_email(self, to, from_email, subject, **kwargs):
+    def send_html_email(self, to, subject, **kwargs):
         LOG.debug('Sending email to %s with subject %s', to, subject)
         text_content = render_to_string(EMAIL_TEXT_TEMPLATE, dictionary=kwargs)
         html_content = render_to_string(EMAIL_HTML_TEMPLATE, dictionary=kwargs)
+        
+        from_email = getattr(local_settings, 'EMAIL_URL', None)
         msg = EmailMultiAlternatives(subject, text_content, from_email, to)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
@@ -228,8 +230,7 @@ class RegistrationView(_RequestPassingFormView):
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         context = {
-            'activation_url': (
-                '{0}/activate/?activation_key={1}&user={2}'
+            'activation_url':('{0}/activate/?activation_key={1}&user={2}'
                 '').format(_get_current_domain(), user.activation_key, user.id),
             'user_name':user.username,
         }
@@ -240,7 +241,6 @@ class RegistrationView(_RequestPassingFormView):
         #send a mail for activation
         self.send_html_email(
             to=[user.name],
-            from_email='no-reply@account.lab.fiware.org',
             subject=subject,
             content={'text': text_content, 'html': html_content})
 
@@ -346,7 +346,6 @@ class RequestPasswordResetView(_RequestPassingFormView):
         #send a mail for activation
         self.send_html_email(
             to=[email], 
-            from_email='no-reply@account.lab.fiware.org',
             subject=subject, 
             content={'text': text_content, 'html': html_content})
 
@@ -443,13 +442,13 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         return False
 
     def send_reactivation_email(self, user, activation_key):
-        # TODO(garcianavalon) subject, message and from_email as settings/files
+        # TODO(garcianavalon) subject and message as settings/files
         subject = '[FIWARE Lab] Welcome to FIWARE'
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         context = {
             'activation_url':('{0}/activate/?activation_key={1}&user={2}'
-                '').format(_get_current_domain(),activation_key.id, user.id),
+                '').format(_get_current_domain(), activation_key.id, user.id),
             'user_name':user.username,
         }
         text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, 
@@ -459,7 +458,6 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         #send a mail for activation
         self.send_html_email(
             to=[user.name],
-            from_email='no-reply@account.lab.fiware.org',
             subject=subject, 
             content={'text': text_content, 'html': html_content})
 
@@ -481,7 +479,7 @@ def switch(request, tenant_id, **kwargs):
     return response
 
 def _get_current_domain():
-    if getattr(local_settings, 'ALLOWED_HOSTS', None):
-        return 'http://'+ local_settings.ALLOWED_HOSTS[0]
+    if getattr(local_settings, 'EMAIL_URL', None):
+        return 'https://'+ local_settings.EMAIL_URL
     else: 
-        return 'http://0.0.0.0:8000'
+        return 'http://localhost:8000'
