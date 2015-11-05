@@ -5,7 +5,7 @@
   {% block modal-header %}Verification Code{% endblock %}
   {% block modal_class %}login {% if hide %}modal hide{% endif %}{% endblock %}
 
-  {% block form_action %}{% url 'two_factor_login' %}{% endblock %}
+  {% block form_action %}{% url 'two_factor_login' %}?k={{ request.GET.k }}{% endblock %}
   {% block autocomplete %}{{ HORIZON_CONFIG.password_autocomplete }}{% endblock %}
 
   {% block modal-body %}
