@@ -25,7 +25,7 @@ from openstack_dashboard import fiware_api
 
 LOG = logging.getLogger('idm_logger')
 
-class EnableTwoFactorForm(forms.SelfHandlingForm):
+class ManageTwoFactorForm(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         try:

@@ -15,6 +15,6 @@
 from horizon import forms
 from openstack_dashboard.dashboards.settings.two_factor import forms as two_factor_forms
 
-class EnableTwoFactorView(forms.ModalFormView):
-    form_class = two_factor_forms.EnableTwoFactorForm
+class ManageTwoFactorView(forms.ModalFormView):
+    form_class = two_factor_forms.ManageTwoFactorForm
     template_name = 'settings/two_factor/two_factor.html'

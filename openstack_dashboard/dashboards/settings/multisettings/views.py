@@ -84,13 +84,16 @@ class MultiFormView(views.APIView):
             and len(fiware_api.keystone.get_trial_role_assignments(self.request)) 
                 < getattr(settings, 'MAX_TRIAL_USERS', 0)):
             context['show_trial_request'] = True
-        
+
+        if fiware_api.keystone.two_factor_is_enabled(self.request, user):
+            context['two_factor_enabled'] = True
+
         #Create forms
         status = status_forms.UpgradeForm(self.request)
         cancel = cancelaccount_forms.BasicCancelForm(self.request)
         password = password_forms.PasswordForm(self.request)
         email = useremail_forms.EmailForm(self.request, initial=initial_email)
-        two_factor = two_factor_forms.EnableTwoFactorForm(self.request)
+        two_factor = two_factor_forms.ManageTwoFactorForm(self.request)
 
         #Actions and titles
         # TODO(garcianavalon) move all of this to each form

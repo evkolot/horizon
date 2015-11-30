@@ -1,26 +1,19 @@
-{% extends "horizon/common/_modal_form.html" %}
-{% load i18n %}
-{% load url from future %}
-
-{% block form_id %}two_factor_modal{% endblock %}
-{% block form_action %}{% url 'horizon:settings:two_factor:index' %}{% endblock %}
-
-{% block modal_id %}two_factor_modal{% endblock %}
-{% block modal-header %}Two factor authentication{% endblock %}
-
-{% block modal-body %}
-<div class="left">
-    <fieldset>
+<form accept-charset="UTF-8" action="{{ form.action }}" method="post">{% csrf_token %}
+  {% if two_factor_enabled %}
+  	<div>This option is enabled. You can regenerate the code if you lost it.</div>
+  {% else %}
+    <div>Two factor is cool. Just enable it!</div>
+  {% endif %}
+  <fieldset>
+    <legend></legend>
     {% include "horizon/common/_form_fields.html" %}
-    </fieldset>
-</div>
-<div class="right">
-    <p>Two factor authentication is cool. Do you want to enable it?</p>
-</div>
-{% endblock %}
-
-{% block modal-footer %}
-    <button type="submit" class="btn btn-primary">Two factor authentication</button>
-    {% if hide %}<a href="{% url 'horizon:settings:two_factor:index' %}" class="btn btn-default secondary cancel close">{% trans "Cancel" %}</a>{% endif %}
-{% endblock %}
-
+  </fieldset>
+  <div class="btn-group-vertical" role="group">
+    {% if two_factor_enabled %}
+      <button type="submit" class="btn btn-default">Get new key</button> 
+      <button type="submit" class="btn btn-default">Disable</button>
+    {% else %}
+      <button href="#" id="myCustomTrigger" class="btn btn-primary">Enable</button>
+    {% endif %}
+  </div>
+</form>

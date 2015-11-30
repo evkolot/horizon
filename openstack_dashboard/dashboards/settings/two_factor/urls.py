@@ -15,9 +15,9 @@
 from django.conf.urls import patterns
 from django.conf.urls import url
 
-from .views import EnableTwoFactorView
+from .views import ManageTwoFactorView
 
 
 urlpatterns = patterns('',
-    url(r'^$', EnableTwoFactorView.as_view(), name='index'),
+    url(r'^$', ManageTwoFactorView.as_view(), name='index'),
 )
