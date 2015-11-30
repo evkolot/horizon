@@ -551,6 +551,20 @@ def forward_validate_token_request(request):
     response = requests.get(url)
     return response
 
+# TWO FACTOR AUTHENTICATION
+def two_factor_is_enabled(request, user):
+    manager = internal_keystoneclient(request).two_factor.keys
+    return manager.check_activated_two_factor(user_id=user.id)
+
+def two_factor_new_key(request, user, security_question, security_answer):
+    manager = internal_keystoneclient(request).two_factor.keys
+    res = manager.generate_new_key(user, security_question, security_answer)
+    return res.two_factor_key
+
+def two_factor_disable(request, user):
+    manager = internal_keystoneclient(request).two_factor.keys
+    return manager.deactivate_two_factor(user)
+
 # CALLS FORBIDDEN FOR THE USER THAT NEED TO USE THE IDM ACCOUNT
 # USERS
 def user_get(request, user_id):
