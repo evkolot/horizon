@@ -24,14 +24,6 @@ from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.settings.multisettings \
     import forms as settings_forms
-from openstack_dashboard.dashboards.settings.cancelaccount \
-    import forms as cancelaccount_forms
-from openstack_dashboard.dashboards.settings.password \
-    import forms as password_forms
-from openstack_dashboard.dashboards.settings.useremail \
-    import forms as useremail_forms
-from openstack_dashboard.dashboards.settings.two_factor \
-    import forms as two_factor_forms
 
 
 LOG = logging.getLogger('idm_logger')
@@ -91,13 +83,11 @@ class MultiFormView(views.APIView):
 
         #Create forms
         status = settings_forms.UpgradeForm(self.request)
-        cancel = cancelaccount_forms.BasicCancelForm(self.request)
-        password = password_forms.PasswordForm(self.request)
-        email = useremail_forms.EmailForm(self.request, initial=initial_email)
-        two_factor = two_factor_forms.ManageTwoFactorForm(self.request)
+        cancel = settings_forms.BasicCancelForm(self.request)
+        password = settings_forms.PasswordForm(self.request)
+        email = settings_forms.EmailForm(self.request, initial=initial_email)
+        two_factor = settings_forms.ManageTwoFactorForm(self.request)
 
-        #Actions and titles
-        # TODO(garcianavalon) move all of this to each form
         context['forms'] = [status, password, email, two_factor, cancel]
         return context
 
@@ -106,3 +96,27 @@ class MultiFormView(views.APIView):
 class AccountStatusView(forms.ModalFormView):
     form_class = settings_forms.UpgradeForm
     template_name = 'settings/multisettings/status.html'
+
+class PasswordView(forms.ModalFormView):
+    form_class = settings_forms.PasswordForm
+    template_name = 'settings/multisettings/change.html'
+
+class EmailView(forms.ModalFormView):
+
+    form_class = settings_forms.EmailForm
+    template_name = 'settings/useremail/change.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(EmailView, self).get_form_kwargs()
+        user_id = self.request.user.id
+        user = fiware_api.keystone.user_get(self.request, user_id)
+        kwargs['initial']['email'] = getattr(user, 'name', '')
+        return kwargs
+
+class CancelView(forms.ModalFormView):
+    form_class = settings_forms.BasicCancelForm
+    template_name = 'settings/cancelaccount/cancel.html'
+
+class ManageTwoFactorView(forms.ModalFormView):
+    form_class = settings_forms.ManageTwoFactorForm
+    template_name = 'settings/two_factor/two_factor.html'

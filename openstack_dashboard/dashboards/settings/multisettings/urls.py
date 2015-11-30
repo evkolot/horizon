@@ -8,4 +8,8 @@ from openstack_dashboard.dashboards.settings.multisettings \
 urlpatterns = patterns('',
     url(r'^$', settings_views.MultiFormView.as_view(), name='index'),
     url(r'^accountstatus/$', settings_views.AccountStatusView.as_view(), name='status'),
+    url(r'^password/$', settings_views.PasswordView.as_view(), name='password'),
+    url(r'^email/$', settings_views.EmailView.as_view(), name='useremail'),
+    url(r'^cancel/$', settings_views.CancelView.as_view(), name='cancelaccount'),
+    url(r'^twofactor/$', settings_views.ManageTwoFactorView.as_view(), name='twofactor'),
 )
