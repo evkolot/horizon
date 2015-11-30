@@ -31,17 +31,21 @@ LOG = logging.getLogger('idm_logger')
 
 
 class PasswordForm(forms.SelfHandlingForm):
+    action = 'password/'
+    description = 'Change your password'
+    template = 'settings/multisettings/_collapse_form.html'
+
     current_password = forms.CharField(
-        label=("Current password"),
+        label=('Current password'),
         widget=forms.PasswordInput(render_value=False))
     new_password = forms.RegexField(
-        label=("New password"),
+        label=('New password'),
         widget=forms.PasswordInput(render_value=False),
         regex=validators.password_validator(),
         error_messages={'invalid':
                         validators.password_validator_msg()})
     confirm_password = forms.CharField(
-        label=("Confirm new password"),
+        label=('Confirm new password'),
         widget=forms.PasswordInput(render_value=False))
     no_autocomplete = True
 
@@ -53,7 +57,7 @@ class PasswordForm(forms.SelfHandlingForm):
                 raise ValidationError(('Passwords do not match.'))
         return data
 
-    # We have to protect the entire "data" dict because it contains the
+    # We have to protect the entire 'data' dict because it contains the
     # oldpassword and newpassword strings.
     @sensitive_variables('data')
     def handle(self, request, data):
@@ -65,7 +69,7 @@ class PasswordForm(forms.SelfHandlingForm):
                                                       data['current_password'],
                                                       data['new_password'])
                 response = http.HttpResponseRedirect(settings.LOGOUT_URL)
-                msg = ("Password changed. Please log in again to continue.")
+                msg = ('Password changed. Please log in again to continue.')
                 LOG.info(msg)
                 utils.add_logout_reason(request, response, msg)
                 return response

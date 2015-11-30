@@ -32,6 +32,10 @@ from openstack_auth import exceptions as auth_exceptions
 LOG = logging.getLogger('idm_logger')
 
 class EmailForm(forms.SelfHandlingForm):
+    action = 'useremail/'
+    description = 'Change your email'
+    template = 'settings/multisettings/_collapse_form.html'
+    
     email = forms.EmailField(
             label=("Email"),
             required=True)

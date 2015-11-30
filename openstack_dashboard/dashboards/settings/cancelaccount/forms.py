@@ -26,6 +26,9 @@ from openstack_dashboard import fiware_api
 LOG = logging.getLogger('idm_logger')
 
 class BasicCancelForm(forms.SelfHandlingForm):
+    action = "cancelaccount/"
+    description = 'Cancel account'
+    template = 'settings/multisettings/_collapse_form.html'
 
     def handle(self, request, data):
         try:

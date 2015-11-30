@@ -17,12 +17,13 @@ import datetime
 
 from django.conf import settings
 
+from horizon import forms
 from horizon import views
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
-from openstack_dashboard.dashboards.settings.accountstatus \
-    import forms as status_forms
+from openstack_dashboard.dashboards.settings.multisettings \
+    import forms as settings_forms
 from openstack_dashboard.dashboards.settings.cancelaccount \
     import forms as cancelaccount_forms
 from openstack_dashboard.dashboards.settings.password \
@@ -89,7 +90,7 @@ class MultiFormView(views.APIView):
             context['two_factor_enabled'] = True
 
         #Create forms
-        status = status_forms.UpgradeForm(self.request)
+        status = settings_forms.UpgradeForm(self.request)
         cancel = cancelaccount_forms.BasicCancelForm(self.request)
         password = password_forms.PasswordForm(self.request)
         email = useremail_forms.EmailForm(self.request, initial=initial_email)
@@ -97,23 +98,11 @@ class MultiFormView(views.APIView):
 
         #Actions and titles
         # TODO(garcianavalon) move all of this to each form
-        status.action = 'accountstatus/'
-        email.action = 'useremail/'
-        password.action = "password/"
-        cancel.action = "cancelaccount/"
-        two_factor.action = 'two_factor/'
-
-        status.description = 'Account status'
-        email.description = 'Change your email'
-        password.description = 'Change your password'
-        cancel.description = 'Cancel account'
-        two_factor.description = 'Manage two factor authentication'
-
-        status.template = 'settings/accountstatus/_status.html'
-        email.template = 'settings/multisettings/_collapse_form.html'
-        password.template = 'settings/multisettings/_collapse_form.html'
-        cancel.template = 'settings/multisettings/_collapse_form.html'
-        two_factor.template = 'settings/multisettings/_collapse_form.html'
-
         context['forms'] = [status, password, email, two_factor, cancel]
         return context
+
+
+# Handeling views
+class AccountStatusView(forms.ModalFormView):
+    form_class = settings_forms.UpgradeForm
+    template_name = 'settings/multisettings/status.html'

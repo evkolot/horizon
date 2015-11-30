@@ -26,6 +26,9 @@ from openstack_dashboard import fiware_api
 LOG = logging.getLogger('idm_logger')
 
 class ManageTwoFactorForm(forms.SelfHandlingForm):
+    action = 'two_factor/'
+    description = 'Manage two factor authentication'
+    template = 'settings/multisettings/_collapse_form.html'
 
     def handle(self, request, data):
         try:
