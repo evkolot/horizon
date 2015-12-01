@@ -99,12 +99,12 @@ class AccountStatusView(forms.ModalFormView):
 
 class PasswordView(forms.ModalFormView):
     form_class = settings_forms.PasswordForm
-    template_name = 'settings/multisettings/change.html'
+    template_name = 'settings/multisettings/change_email.html'
 
 class EmailView(forms.ModalFormView):
 
     form_class = settings_forms.EmailForm
-    template_name = 'settings/useremail/change.html'
+    template_name = 'settings/useremail/change_password.html'
 
     def get_form_kwargs(self):
         kwargs = super(EmailView, self).get_form_kwargs()
