@@ -20,6 +20,7 @@ from django.forms import ValidationError  # noqa
 from django import http
 from django.contrib import auth as django_auth
 from django.views.decorators.debug import sensitive_variables  # noqa
+from django.core.urlresolvers import reverse
 
 from openstack_auth import exceptions as auth_exceptions
 
@@ -39,7 +40,7 @@ from openstack_dashboard.dashboards.idm_admin.user_accounts \
 LOG = logging.getLogger('idm_logger')
 
 class UpgradeForm(forms.SelfHandlingForm, user_accounts_forms.UserAccountsLogicMixin):
-    action = 'accountstatus/'
+    action = 'status/'
     description = 'Account status'
     template = 'settings/multisettings/_status.html'
 
@@ -183,7 +184,7 @@ class EmailForm(forms.SelfHandlingForm):
 
 
 class BasicCancelForm(forms.SelfHandlingForm):
-    action = "cancelaccount/"
+    action = 'cancelaccount/'
     description = 'Cancel account'
     template = 'settings/multisettings/_collapse_form.html'
 
@@ -272,16 +273,42 @@ class BasicCancelForm(forms.SelfHandlingForm):
         return delete_apps
 
 class ManageTwoFactorForm(forms.SelfHandlingForm):
-    action = 'two_factor/'
+    action = 'twofactor/'
     description = 'Manage two factor authentication'
-    template = 'settings/multisettings/_collapse_form.html'
+    template = 'settings/multisettings/_two_factor.html'
+
+    security_question = forms.CharField(
+        label=('Security question'),
+        required=False)
+
+    security_answer = forms.CharField(
+        label=('Security answer'),
+        required=False)
+
+    def clean(self):
+        data = super(ManageTwoFactorForm, self).clean()
+        if self.request.POST.get('enable', None) or self.request.POST.get('new_key', None):
+            if not data.get('security_question', None) or not data.get('security_answer', None): 
+                raise ValidationError(('You need to provide a security question to enable two factor authentication.'))
+        return data
 
     def handle(self, request, data):
-        try:
-            LOG.info('enabled two factor authentication')
-
-            messages.success(request, "success")
-            return True
+        try: 
+            user = fiware_api.keystone.user_get(request, request.user.id)
+            if request.POST.get('enable', None) or request.POST.get('new_key', None):
+                security_question = data['security_question']
+                security_answer = data['security_answer']
+                key = fiware_api.keystone.two_factor_new_key(request=request,
+                                                             user=user,
+                                                             security_question=security_question,
+                                                             security_answer=security_answer)
+                LOG.info('Enabled two factor authentication or new key requested')
+            elif request.POST.get('disable', None):
+                fiware_api.keystone.two_factor_disable(request=request, user=user)
+                response = shortcuts.redirect('horizon:settings:multisettings:index')
+                messages.success(request, "Two factor authentication was successfully disabled for your account.")
+                LOG.info('Disabled two factor authentication')
+            return response
 
         except Exception as e:   
             exceptions.handle(request, 'error')

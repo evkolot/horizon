@@ -1,19 +1,16 @@
 <form accept-charset="UTF-8" action="{{ form.action }}" method="post">{% csrf_token %}
-  {% if two_factor_enabled %}
-  	<div>This option is enabled. You can regenerate the code if you lost it.</div>
-  {% else %}
-    <div>Two factor is cool. Just enable it!</div>
-  {% endif %}
-  <fieldset>
-    <legend></legend>
-    {% include "horizon/common/_form_fields.html" %}
-  </fieldset>
-  <div class="btn-group-vertical" role="group">
     {% if two_factor_enabled %}
-      <button type="submit" class="btn btn-default">Get new key</button> 
-      <button type="submit" class="btn btn-default">Disable</button>
+    <p>You have this option <b>enabled</b>.</p>
+    <p>Now, whenever you want to access your account, you need to provide both your password and a code, which you can get from an authentication mobile app. You can regenerate the key needed for the app here, in case you lost it.</p>
+    <input class="btn btn-secondary always-enabled" name="disable" type="submit" value="Disable">
+    <input class="btn btn-primary always-enabled" name="new_key" type="submit" value="Get new key">
     {% else %}
-      <button href="#" id="myCustomTrigger" class="btn btn-primary">Enable</button>
+    <p>You have this option <b>disabled</b>.</p>
+    <p>We highly recommend you enable it, since it provides a higher level of security to access your account.</p>
+    <p>If you want to give two factor authentication a try, you need to provide a security question, just in case you happen to lose access to your authentication app.</p>
+    <fieldset>
+      {% include "horizon/common/_form_fields.html" %}
+    </fieldset>
+    <input class="btn btn-primary always-enabled" name="enable" type="submit" value="Enable">
     {% endif %}
-  </div>
 </form>

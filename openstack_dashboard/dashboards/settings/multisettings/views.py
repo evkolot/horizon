@@ -99,12 +99,12 @@ class AccountStatusView(forms.ModalFormView):
 
 class PasswordView(forms.ModalFormView):
     form_class = settings_forms.PasswordForm
-    template_name = 'settings/multisettings/change_email.html'
+    template_name = 'settings/multisettings/change_password.html'
 
 class EmailView(forms.ModalFormView):
 
     form_class = settings_forms.EmailForm
-    template_name = 'settings/useremail/change_password.html'
+    template_name = 'settings/multisettings/change_email.html'
 
     def get_form_kwargs(self):
         kwargs = super(EmailView, self).get_form_kwargs()
@@ -115,8 +115,8 @@ class EmailView(forms.ModalFormView):
 
 class CancelView(forms.ModalFormView):
     form_class = settings_forms.BasicCancelForm
-    template_name = 'settings/cancelaccount/cancel.html'
+    template_name = 'settings/multisettings/cancel.html'
 
 class ManageTwoFactorView(forms.ModalFormView):
     form_class = settings_forms.ManageTwoFactorForm
-    template_name = 'settings/two_factor/two_factor.html'
+    template_name = 'settings/multisettings/two_factor.html'
