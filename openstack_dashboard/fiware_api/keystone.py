@@ -559,7 +559,7 @@ def two_factor_is_enabled(request, user):
 def two_factor_new_key(request, user, security_question, security_answer):
     manager = internal_keystoneclient(request).two_factor.keys
     res = manager.generate_new_key(user, security_question, security_answer)
-    return res.two_factor_key
+    return (res.two_factor_key, res.uri)
 
 def two_factor_disable(request, user):
     manager = internal_keystoneclient(request).two_factor.keys
