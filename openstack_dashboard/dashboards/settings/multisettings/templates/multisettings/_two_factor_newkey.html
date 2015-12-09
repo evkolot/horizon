@@ -1,0 +1,20 @@
+<div>
+    <h3>Get your app set</h3>
+    <ol>
+        <li>Download and open an authentication app, e.g.: <b>Google Authenticator</b></li>
+        <li>Configure a new account using any of the following:
+            <ul>
+                <li><p>Insert this key manually:</p>
+                    <p>{{ two_factor_key }}</p>
+                </li>
+                <li><p>Scan this QR code:</p>
+                    <p><img src="data:image/svg+xml;base64,{{ two_factor_qr_encoded }}" /></p>
+                </li>
+            </ul>
+        </li>
+    </ol>
+</div>
+<div>
+    <h3>Access your account</h3>
+    <p>Every time you want to access your account, you will be asked for a verification code, which you can get from the authentication app you just configured.</p>
+</div>

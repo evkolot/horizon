@@ -14,13 +14,17 @@
 
 import logging
 
+import io
+import base64
+import pyqrcode
+
 from django import shortcuts
 from django.conf import settings
 from django.forms import ValidationError  # noqa
 from django import http
 from django.contrib import auth as django_auth
 from django.views.decorators.debug import sensitive_variables  # noqa
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse_lazy
 
 from openstack_auth import exceptions as auth_exceptions
 
@@ -40,7 +44,7 @@ from openstack_dashboard.dashboards.idm_admin.user_accounts \
 LOG = logging.getLogger('idm_logger')
 
 class UpgradeForm(forms.SelfHandlingForm, user_accounts_forms.UserAccountsLogicMixin):
-    action = 'status/'
+    action = reverse_lazy('horizon:settings:multisettings:status')
     description = 'Account status'
     template = 'settings/multisettings/_status.html'
 
@@ -65,7 +69,7 @@ class UpgradeForm(forms.SelfHandlingForm, user_accounts_forms.UserAccountsLogicM
 
 
 class PasswordForm(forms.SelfHandlingForm):
-    action = 'password/'
+    action = reverse_lazy('horizon:settings:multisettings:password')
     description = 'Change your password'
     template = 'settings/multisettings/_collapse_form.html'
 
@@ -116,7 +120,7 @@ class PasswordForm(forms.SelfHandlingForm):
             return False
 
 class EmailForm(forms.SelfHandlingForm):
-    action = 'useremail/'
+    action = reverse_lazy('horizon:settings:multisettings:useremail')
     description = 'Change your email'
     template = 'settings/multisettings/_collapse_form.html'
     
@@ -184,7 +188,7 @@ class EmailForm(forms.SelfHandlingForm):
 
 
 class BasicCancelForm(forms.SelfHandlingForm):
-    action = 'cancelaccount/'
+    action = reverse_lazy('horizon:settings:multisettings:cancelaccount')
     description = 'Cancel account'
     template = 'settings/multisettings/_collapse_form.html'
 
@@ -273,7 +277,7 @@ class BasicCancelForm(forms.SelfHandlingForm):
         return delete_apps
 
 class ManageTwoFactorForm(forms.SelfHandlingForm):
-    action = 'twofactor/'
+    action = reverse_lazy('horizon:settings:multisettings:twofactor')
     description = 'Manage two factor authentication'
     template = 'settings/multisettings/_two_factor.html'
 
@@ -298,11 +302,19 @@ class ManageTwoFactorForm(forms.SelfHandlingForm):
             if request.POST.get('enable', None) or request.POST.get('new_key', None):
                 security_question = data['security_question']
                 security_answer = data['security_answer']
-                key = fiware_api.keystone.two_factor_new_key(request=request,
-                                                             user=user,
-                                                             security_question=security_question,
-                                                             security_answer=security_answer)
+                (key, uri) = fiware_api.keystone.two_factor_new_key(request=request,
+                                                                    user=user,
+                                                                    security_question=security_question,
+                                                                    security_answer=security_answer)
+                context = {}
+                context['two_factor_key'] = key
+                qr = pyqrcode.create(uri, error='L', version=5, mode='binary')
+                qr_buffer = io.BytesIO()
+                qr.svg(qr_buffer, scale=3)
+                context['two_factor_qr_encoded'] = base64.b64encode(qr_buffer.getvalue())
                 LOG.info('Enabled two factor authentication or new key requested')
+                return shortcuts.render(request, 'settings/multisettings/_two_factor_newkey.html', context)
+                
             elif request.POST.get('disable', None):
                 fiware_api.keystone.two_factor_disable(request=request, user=user)
                 response = shortcuts.redirect('horizon:settings:multisettings:index')
