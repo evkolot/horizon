@@ -1,3 +1,8 @@
+{% extends "horizon/common/_modal.html" %}
+{% block modal_id %}two_factor_enable_modal{% endblock %}
+{% block modal-header %}Setting up Two Factor Authentication{% endblock %}
+
+{% block modal-body %}
 <div>
     <h3>Get your app set</h3>
     <ol>
@@ -5,10 +10,14 @@
         <li>Configure a new account using any of the following:
             <ul>
                 <li><p>Insert this key manually:</p>
+                    {% if two_factor_key %}
                     <p>{{ two_factor_key }}</p>
+                    {% endif %}
                 </li>
                 <li><p>Scan this QR code:</p>
+                    {% if two_factor_qr_encoded %}
                     <p><img src="data:image/svg+xml;base64,{{ two_factor_qr_encoded }}" /></p>
+                    {% endif %}
                 </li>
             </ul>
         </li>
@@ -18,3 +27,8 @@
     <h3>Access your account</h3>
     <p>Every time you want to access your account, you will be asked for a verification code, which you can get from the authentication app you just configured.</p>
 </div>
+{% endblock %}
+
+{% block modal-footer %}
+    <button href="/settings/" class="btn btn-primary">OK</button>
+{% endblock %}

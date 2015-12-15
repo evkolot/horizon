@@ -14,12 +14,14 @@
 
 import logging
 
+import uuid
 import io
 import base64
 import pyqrcode
 
 from django import shortcuts
 from django.conf import settings
+from django.core.cache import cache
 from django.forms import ValidationError  # noqa
 from django import http
 from django.contrib import auth as django_auth
@@ -299,28 +301,35 @@ class ManageTwoFactorForm(forms.SelfHandlingForm):
     def handle(self, request, data):
         try: 
             user = fiware_api.keystone.user_get(request, request.user.id)
-            if request.POST.get('enable', None) or request.POST.get('new_key', None):
+            if request.POST.get(u'enable', None) or request.POST.get(u'new_key', None):
                 security_question = data['security_question']
                 security_answer = data['security_answer']
                 (key, uri) = fiware_api.keystone.two_factor_new_key(request=request,
                                                                     user=user,
                                                                     security_question=security_question,
                                                                     security_answer=security_answer)
-                context = {}
-                context['two_factor_key'] = key
-                qr = pyqrcode.create(uri, error='L', version=5, mode='binary')
-                qr_buffer = io.BytesIO()
-                qr.svg(qr_buffer, scale=3)
-                context['two_factor_qr_encoded'] = base64.b64encode(qr_buffer.getvalue())
+                cache_key = uuid.uuid4().hex
+                cache.set(cache_key, (key, uri))
+                request.session['two_factor_data'] = cache_key
                 LOG.info('Enabled two factor authentication or new key requested')
-                return shortcuts.render(request, 'settings/multisettings/_two_factor_newkey.html', context)
+                #return shortcuts.redirect('horizon:settings:multisettings:newkey')
+                if request.is_ajax():
+                    context = {}
+                    context['two_factor_key'] = key
+                    qr = pyqrcode.create(uri, error='L')
+                    qr_buffer = io.BytesIO()
+                    qr.svg(qr_buffer, scale=3)
+                    context['two_factor_qr_encoded'] = base64.b64encode(qr_buffer.getvalue())
+                    context['hide'] = True
+                    return shortcuts.render(request, 'settings/multisettings/_two_factor_newkey.html', context)
+                else:
+                    return shortcuts.redirect('horizon:settings:multisettings:newkey')
                 
-            elif request.POST.get('disable', None):
+            elif request.POST.get(u'disable', None):
                 fiware_api.keystone.two_factor_disable(request=request, user=user)
-                response = shortcuts.redirect('horizon:settings:multisettings:index')
                 messages.success(request, "Two factor authentication was successfully disabled for your account.")
                 LOG.info('Disabled two factor authentication')
-            return response
+                return shortcuts.redirect('horizon:settings:multisettings:index')
 
         except Exception as e:   
             exceptions.handle(request, 'error')

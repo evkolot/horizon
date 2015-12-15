@@ -17,6 +17,13 @@ import datetime
 
 from django.conf import settings
 
+from django.core.cache import cache
+
+import os
+import io
+import base64
+import pyqrcode
+
 from horizon import forms
 from horizon import views
 
@@ -120,3 +127,38 @@ class CancelView(forms.ModalFormView):
 class ManageTwoFactorView(forms.ModalFormView):
     form_class = settings_forms.ManageTwoFactorForm
     template_name = 'settings/multisettings/two_factor.html'
+
+class TwoFactorNewKeyView(views.APIView):
+    template_name = 'settings/multisettings/two_factor_newkey.html'
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            if not hasattr(self, "ajax_template_name"):
+                # Transform standard template name to ajax name (leading "_")
+                bits = list(os.path.split(self.template_name))
+                bits[1] = "".join(("_", bits[1]))
+                self.ajax_template_name = os.path.join(*bits)
+            template = self.ajax_template_name
+        else:
+            template = self.template_name
+        return template
+
+    def get_context_data(self, **kwargs):
+        context = super(TwoFactorNewKeyView, self).get_context_data(**kwargs)
+
+        cache_key = self.request.session['two_factor_data']
+        del self.request.session['two_factor_data']
+
+        (key, uri) = cache.get(cache_key)
+        cache.delete(cache_key)
+        
+        context['two_factor_key'] = key
+        qr = pyqrcode.create(uri, error='L')
+        qr_buffer = io.BytesIO()
+        qr.svg(qr_buffer, scale=3)
+        context['two_factor_qr_encoded'] = base64.b64encode(qr_buffer.getvalue())
+        
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        return super(TwoFactorNewKeyView, self).dispatch(request, args, kwargs)
