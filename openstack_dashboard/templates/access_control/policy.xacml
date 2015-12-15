@@ -14,7 +14,7 @@
   </Target>
   {% for permission in permissions %}
     {% if permission.xml %}
-      {{ permission.xml }}
+      {{ permission.xml | safe}}
     {% else %}
       {% include 'access_control/rule.xacml' with role=role app_id=app_id %}
     {% endif %}

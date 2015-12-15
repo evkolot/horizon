@@ -46,7 +46,10 @@ def policyset_update(app_id, role_permissions):
         'X-Auth-Token': settings.ACCESS_CONTROL_MAGIC_KEY
     }
     response = requests.put(
-        settings.ACCESS_CONTROL_URL, data=xml, headers=headers)
+        settings.ACCESS_CONTROL_URL,
+        data=xml,
+        headers=headers,
+        verify=False)
 
     LOG.debug('Response code from the AC GE: %s', response.status_code)
 
