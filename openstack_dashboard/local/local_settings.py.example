@@ -119,7 +119,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Custom email address and web domain
 DEFAULT_FROM_EMAIL = 'no-reply@account.lab.fiware.org'
-EMAIL_URL = 'account.lab.fiware.org'
+EMAIL_URL = 'https://account.lab.fiware.org'
 
 # Configure these for your outgoing email host
 # EMAIL_HOST = 'smtp.my-company.com'
