@@ -158,6 +158,29 @@ class EmailForm(forms.Form):
     email = forms.EmailField(label=("E-mail"),
                              required=True)
 
+class SecurityQuestionForm(forms.Form):
+    email = forms.CharField(widget = forms.HiddenInput)
+    security_answer = forms.CharField(label=("Answer"),
+                                 required=True)
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        email = kwargs.pop('email', None)
+        super(SecurityQuestionForm, self).__init__(*args, **kwargs)
+        self.fields['email'].initial = email
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+
+        security_answer = cleaned_data['security_answer']
+        email = cleaned_data['email']
+
+        user = fiware_api.keystone.check_email(self.request, email)
+        if fiware_api.keystone.two_factor_check_security_question(self.request, user, security_answer):
+            fiware_api.keystone.two_factor_disable(self.request, user)
+            return cleaned_data
+        else:
+            raise forms.ValidationError("The answer provided is wrong")
 
 class ChangePasswordForm(ConfirmPasswordForm):
     pass

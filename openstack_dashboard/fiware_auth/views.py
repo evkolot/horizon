@@ -13,6 +13,7 @@
 
 import logging
 
+from django import forms
 from django.core.mail import EmailMultiAlternatives
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required  # noqa
@@ -460,6 +461,72 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
             to=[user.name],
             subject=subject, 
             content={'text': text_content, 'html': html_content})
+
+class TwoFactorLostAppView(_RequestPassingFormView):
+    form_class = fiware_forms.EmailForm
+    template_name = 'auth/two_factor/lost_app.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.username:
+            return redirect('horizon:user_home')
+        return super(TwoFactorLostAppView, self).dispatch(
+            request, *args, **kwargs)
+
+    def get_success_url(self):
+        succ_url = reverse_lazy('fiware_two_factor_sec_question') + '?email=' + self.email
+        return succ_url
+
+    def form_valid(self, request, form):
+        self.email = form.cleaned_data['email']
+        return super(TwoFactorLostAppView, self).form_valid(form)
+
+class TwoFactorSecurityQuestionView(_RequestPassingFormView):
+    form_class = fiware_forms.SecurityQuestionForm
+    template_name = 'auth/two_factor/security_question.html'
+    success_url = reverse_lazy('login')
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.GET:
+            try:
+                email = request.GET.get('email')
+                self.user = fiware_api.keystone.check_email(request, email)
+                if fiware_api.keystone.two_factor_is_enabled(request, self.user):
+                    return super(TwoFactorSecurityQuestionView, self).dispatch(request, *args, **kwargs)
+                else:
+                    LOG.debug('email address %s has not two factor enabled', email)
+                    msg = ('Sorry. You have specified an email address that has not two '
+                        'factor enabled. If your problem '
+                        'persits, please contact: fiware-lab-help@lists.fiware.org')
+                    messages.error(request, msg)
+                    return redirect(self.success_url)
+            except ks_exceptions.NotFound:
+                LOG.debug('email address %s is not registered', email)
+                msg = ('Sorry. You have specified an email address that is not '
+                    'registered to any of our user accounts. If your problem '
+                    'persits, please contact: fiware-lab-help@lists.fiware.org')
+                messages.error(request, msg)
+                return redirect(self.success_url)
+        else:
+            self.user = fiware_api.keystone.check_email(request, request.POST.get('email', None))
+            return super(TwoFactorSecurityQuestionView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(TwoFactorSecurityQuestionView, self).get_context_data(**kwargs)
+        context['security_question'] = fiware_api.keystone.\
+                                       two_factor_get_security_question(self.request, self.user)
+
+        return context
+
+    def get_form_kwargs(self, request=None, form_class=None):
+        kwargs = super(TwoFactorSecurityQuestionView, self).get_form_kwargs()
+        kwargs['request'] = request
+        kwargs['email'] = self.request.GET.get('email', None)
+        return kwargs
+
+    def form_valid(self, request, form):
+        msg = ("Two factor has been disabled for your account. Now you can log in with your password again.")
+        messages.success(self.request, msg)
+        return super(TwoFactorSecurityQuestionView, self).form_valid(form)
 
 @login_required
 def switch(request, tenant_id, **kwargs):

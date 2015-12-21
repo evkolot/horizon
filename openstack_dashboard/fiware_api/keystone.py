@@ -556,7 +556,7 @@ def two_factor_is_enabled(request, user):
     manager = internal_keystoneclient(request).two_factor.keys
     return manager.check_activated_two_factor(user_id=user.id)
 
-def two_factor_new_key(request, user, security_question, security_answer):
+def two_factor_new_key(request, user, security_question=None, security_answer=None):
     manager = internal_keystoneclient(request).two_factor.keys
     res = manager.generate_new_key(user, security_question, security_answer)
     return (res.two_factor_key, res.uri)
@@ -564,6 +564,19 @@ def two_factor_new_key(request, user, security_question, security_answer):
 def two_factor_disable(request, user):
     manager = internal_keystoneclient(request).two_factor.keys
     return manager.deactivate_two_factor(user)
+
+def two_factor_get_security_question(request, user):
+    manager = internal_keystoneclient(request).two_factor.keys
+    data = manager.get_two_factor_data(user)
+    return data.security_question
+
+def two_factor_check_security_question(request, user, security_answer):
+    manager = internal_keystoneclient(request).two_factor.keys
+    try:
+        manager.check_security_question(user, security_answer)
+        return True
+    except ks_exceptions.HttpError:
+        return False
 
 # CALLS FORBIDDEN FOR THE USER THAT NEED TO USE THE IDM ACCOUNT
 # USERS
