@@ -18,6 +18,7 @@ import datetime
 from django.conf import settings
 
 from django.core.cache import cache
+from django.shortcuts import redirect
 
 import os
 import io
@@ -128,6 +129,14 @@ class ManageTwoFactorView(forms.ModalFormView):
     form_class = settings_forms.ManageTwoFactorForm
     template_name = 'settings/multisettings/two_factor.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(ManageTwoFactorView, self).get_context_data(**kwargs)
+        
+        user = fiware_api.keystone.user_get(self.request, self.request.user.id)
+        if fiware_api.keystone.two_factor_is_enabled(self.request, user):
+            context['two_factor_enabled'] = True
+        return context
+
 class TwoFactorNewKeyView(views.APIView):
     template_name = 'settings/multisettings/two_factor_newkey.html'
 
@@ -145,7 +154,6 @@ class TwoFactorNewKeyView(views.APIView):
 
     def get_context_data(self, **kwargs):
         context = super(TwoFactorNewKeyView, self).get_context_data(**kwargs)
-
         cache_key = self.request.session['two_factor_data']
         del self.request.session['two_factor_data']
 
@@ -161,4 +169,6 @@ class TwoFactorNewKeyView(views.APIView):
         return context
 
     def dispatch(self, request, *args, **kwargs):
+        if 'two_factor_data' not in self.request.session:
+            return redirect('horizon:settings:multisettings:index')
         return super(TwoFactorNewKeyView, self).dispatch(request, args, kwargs)

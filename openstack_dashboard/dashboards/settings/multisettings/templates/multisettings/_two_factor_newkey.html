@@ -30,5 +30,5 @@
 {% endblock %}
 
 {% block modal-footer %}
-    <button href="/settings/" class="btn btn-primary">OK</button>
+    {% if hide %}<a href="{% url 'horizon:settings:multisettings:index' %}" class="btn btn-primary">Ok</a>{% endif %}
 {% endblock %}

@@ -293,7 +293,7 @@ class ManageTwoFactorForm(forms.SelfHandlingForm):
 
     def clean(self):
         data = super(ManageTwoFactorForm, self).clean()
-        if self.request.POST.get('enable', None) or self.request.POST.get('new_key', None):
+        if self.request.POST.get('enable', None):
             if not data.get('security_question', None) or not data.get('security_answer', None): 
                 raise ValidationError(('You need to provide a security question to enable two factor authentication.'))
         return data
@@ -302,17 +302,18 @@ class ManageTwoFactorForm(forms.SelfHandlingForm):
         try: 
             user = fiware_api.keystone.user_get(request, request.user.id)
             if request.POST.get(u'enable', None) or request.POST.get(u'new_key', None):
-                security_question = data['security_question']
-                security_answer = data['security_answer']
+                if request.POST.get(u'enable', None):
+                    security_question = data['security_question']
+                    security_answer = data['security_answer']
+                else:
+                    security_question = security_answer = None
                 (key, uri) = fiware_api.keystone.two_factor_new_key(request=request,
                                                                     user=user,
                                                                     security_question=security_question,
                                                                     security_answer=security_answer)
-                cache_key = uuid.uuid4().hex
-                cache.set(cache_key, (key, uri))
-                request.session['two_factor_data'] = cache_key
+
                 LOG.info('Enabled two factor authentication or new key requested')
-                #return shortcuts.redirect('horizon:settings:multisettings:newkey')
+                # NOTE(@federicofdez) Fix this to always use redirect
                 if request.is_ajax():
                     context = {}
                     context['two_factor_key'] = key
@@ -323,6 +324,9 @@ class ManageTwoFactorForm(forms.SelfHandlingForm):
                     context['hide'] = True
                     return shortcuts.render(request, 'settings/multisettings/_two_factor_newkey.html', context)
                 else:
+                    cache_key = uuid.uuid4().hex
+                    cache.set(cache_key, (key, uri))
+                    request.session['two_factor_data'] = cache_key
                     return shortcuts.redirect('horizon:settings:multisettings:newkey')
                 
             elif request.POST.get(u'disable', None):

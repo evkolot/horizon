@@ -71,7 +71,7 @@
         }
     });
 
-    $("[name='enable'], [name='newkey']").click(function(e){
+    $("[name='enable'], [name='new_key']").click(function(e){
         e.preventDefault();
 
         // If there's an existing modal request open, cancel it out.
@@ -81,18 +81,11 @@
 
         var $form = $("#two_factor_form"),
             data = $form.serialize() +
-                "&" + $(this).val().toLowerCase() +
-                "=" + $(this).val().toLowerCase();
+                "&" + $(this).attr("name").toLowerCase() +
+                "=" + $(this).attr("name").toLowerCase();
 
         console.log(data)
         horizon.modals._request = $.post($form.attr('action'), data, function(data, textStatus, jqXHR){
-            console.log(jqXHR.getResponseHeader("X-Horizon-Location"));
-            console.log(jqXHR.status);
-            console.log(data==="");
-            console.log(textStatus);
-            console.log(jqXHR.getResponseHeader("content-type"));
-            //$("#result").append(data);
-            //window.location = jqXHR.getResponseHeader("X-Horizon-Location");
             $form.closest(".modal").modal("hide");
             modal = horizon.modals.success(data, textStatus, jqXHR);
         }, 'html');
