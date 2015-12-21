@@ -1,3 +1,4 @@
+# Copyright (C) 2015 Universidad Politecnica de Madrid
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -28,6 +29,7 @@ from openstack_auth import views as openstack_auth_views
 
 from openstack_dashboard import fiware_api
 from openstack_dashboard.fiware_auth import forms as fiware_forms
+from openstack_dashboard.utils import email
 
 
 LOG = logging.getLogger('idm_logger')
@@ -183,7 +185,7 @@ class RegistrationView(_RequestPassingFormView):
                     endpoint_group=region_group,
                     use_idm_account=True)
 
-            self.send_activation_email(new_user)
+            email.send_activation_email(new_user, new_user.activation_key)
 
             msg = ('Account created succesfully, check your email for'
                 ' the confirmation link.')
@@ -265,7 +267,7 @@ class RequestPasswordResetView(_RequestPassingFormView):
             reset_password_token = fiware_api.keystone.get_reset_token(request, user)
             token = reset_password_token.id
             user = reset_password_token.user
-            self.send_reset_email(email, token, user)
+            email.send_reset_email(email, token, user)
             messages.success(request, ('Reset email send to %s') % email)
             return True
 
@@ -356,7 +358,7 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
 
             activation_key = fiware_api.keystone.new_activation_key(request, user)
 
-            self.send_reactivation_email(user, activation_key)
+            email.send_activation_email(user, activation_key.id)
             msg = ('Resended confirmation instructions to %s') %email
             messages.success(request, msg)
             return True
