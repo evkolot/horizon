@@ -16,8 +16,6 @@ import csv
 import logging
 
 from django import forms
-from django.core import mail
-from django.template.loader import render_to_string
 
 from django_summernote.widgets import SummernoteWidget
 
@@ -29,6 +27,7 @@ from keystoneclient import exceptions as keystoneclient_exceptions
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.utils import email
 
 
 LOG = logging.getLogger('idm_logger')
@@ -68,10 +67,6 @@ class EmailForm(forms.SelfHandlingForm):
         widget=SummernoteWidget(),
         label=("Body"),
         required=True)
-    
-    # TODO(garcianavalon) as settings
-    EMAIL_HTML_TEMPLATE = 'email/base_email.html'
-    EMAIL_TEXT_TEMPLATE = 'email/base_email.txt'
 
     def _clean_organization(self, cleaned_data):
         organization_id = cleaned_data.get('organization', None)
@@ -95,8 +90,6 @@ class EmailForm(forms.SelfHandlingForm):
 
     def _clean_role(self, cleaned_data):
         selected_role = cleaned_data.get('role', None)
-        import pdb
-        pdb.set_trace()
         if not selected_role:
             raise forms.ValidationError(
                 'A role must be specified', code='invalid')
@@ -128,11 +121,9 @@ class EmailForm(forms.SelfHandlingForm):
             return self._clean_users_id(cleaned_data)
 
         return cleaned_data
-
         
 
     def handle(self, request, data):
-        # TODO(garcianavalon) better email architecture...
         try:
             recipients = []
             if data['notify'] == 'all_users':
@@ -183,27 +174,7 @@ class EmailForm(forms.SelfHandlingForm):
                 messages.error(request, msg)
                 return
 
-            text_content = render_to_string(self.EMAIL_TEXT_TEMPLATE, 
-                dictionary={
-                    'massive_footer':True,
-                    'content': {'text':data['body']},
-                })
-            
-            html_content = render_to_string(self.EMAIL_HTML_TEMPLATE, 
-                dictionary={
-                    'massive_footer':True,
-                    'content': {'html':data['body']},
-                })
-
-            connection = mail.get_connection(fail_silently=True)
-
-            msg = mail.EmailMultiAlternatives(
-                subject='[FIWARE Lab] ' + data['subject'], 
-                body=text_content, 
-                bcc=recipients, 
-                connection=connection)
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
+            email.send_massive_email(recipients, data)
 
             messages.success(request, ('Message sent succesfully.'))
 

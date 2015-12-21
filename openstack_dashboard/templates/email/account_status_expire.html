@@ -1,7 +1,7 @@
 {% extends "email/base_email.html" %}
 
 {% block content %}
-  <p>Hello {{ user_name }}!</p>
+  <p>Hello {{ user.name }}!</p>
 
   <p>Your current FIWARE Lab <b>{{ account_type }} account</b> will expire at {{ end_date }}.</p>
 

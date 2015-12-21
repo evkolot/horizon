@@ -1,9 +1,7 @@
 
-{{ content.txt }}
 
-{% if massive_footer == True %}
-	{% include "email/_massive_email_footer.html" %}
-{% endif %}
+{% block content %}
+{% endblock %}
 
 2015 © FIWARE
 https://www.fiware.org/

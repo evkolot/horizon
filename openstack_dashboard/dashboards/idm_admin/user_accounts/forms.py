@@ -26,12 +26,11 @@ from horizon import messages
 
 from openstack_dashboard import fiware_api
 from openstack_dashboard.fiware_auth import views as fiware_auth
+from openstack_dashboard.utils import email
 
 
 LOG = logging.getLogger('idm_logger')
 
-NOTIFY_ACCOUNT_CHANGE_HTML_TEMPLATE = 'email/account_status_change.html'
-NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE = 'email/account_status_change.txt'
 
 class UserAccountsLogicMixin():
 
@@ -45,8 +44,6 @@ class UserAccountsLogicMixin():
         activate_cloud = role_id != fiware_api.keystone.get_basic_role(
             request, use_idm_account=True).id
         
-        
-
         # clean previous status
         self._clean_roles(request, user.id)
         self._clean_endpoint_groups(request, user.cloud_project_id)
@@ -293,29 +290,21 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin, fiware_a
 
                 account_type = next(role[1] for role in get_account_choices()
                                     if role[0] == role_id)
-                context = {
+                content = {
                     'regions': regions,
-                    'user_name':user.username,
+                    'user':user,
                     'account_type': account_type,
                     'started_at': getattr(user, account_type + '_started_at', None),
                     'duration': getattr(user, account_type + '_duration', None),
                     'show_cloud_info': account_type in ['trial', 'community'],
                 }
 
-                if context.get('started_at') and context.get('duration'):
-                    start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
-                    end_date = start_date + datetime.timedelta(days=context['duration'])
-                    context['end_date'] = end_date.strftime('%Y-%m-%d')
+                if content.get('started_at') and content.get('duration'):
+                    start_date = datetime.datetime.strptime(content['started_at'], '%Y-%m-%d')
+                    end_date = start_date + datetime.timedelta(days=content['duration'])
+                    content['end_date'] = end_date.strftime('%Y-%m-%d')
 
-                text_content = render_to_string(NOTIFY_ACCOUNT_CHANGE_TXT_TEMPLATE,
-                                                dictionary=context)
-                html_content = render_to_string(NOTIFY_ACCOUNT_CHANGE_HTML_TEMPLATE,
-                                                dictionary=context)
-
-                self.send_html_email(
-                    to=[user.name],
-                    subject='[FIWARE Lab] Changed account status',
-                    content={'text': text_content, 'html': html_content})
+            email.send_account_status_change_email(user, content)
 
             messages.success(request,
                 'User account upgraded succesfully')
