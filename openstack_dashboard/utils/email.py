@@ -14,10 +14,8 @@
 
 import logging
 
-from django.core.mail import EmailMultiAlternatives
+from django.core import mail
 from django.template.loader import render_to_string
-
-from horizon import exceptions
 
 from openstack_dashboard.local import local_settings
 
@@ -26,25 +24,25 @@ LOG = logging.getLogger('idm_logger')
 
 
 def send_html_email(recipients, subject, text_template, html_template,
-                    from_email=None, **kwargs):
+                    from_email=None, content=None):
     LOG.debug('Sending email to %s with subject %s', recipients, subject)
-    text_content = render_to_string(text_template, dictionary=kwargs)
-    html_content = render_to_string(html_template, dictionary=kwargs)
+    text_content = render_to_string(text_template, dictionary=content)
+    html_content = render_to_string(html_template, dictionary=content)
     
-    msg = EmailMultiAlternatives(
+    msg = mail.EmailMultiAlternatives(
         subject=subject,
         body=text_content,
         from_email=from_email,
         bcc=recipients,
-        connection = mail.get_connection(fail_silently=True))
+        connection=mail.get_connection(fail_silently=True))
 
     msg.attach_alternative(html_content, "text/html")
     msg.send()
     
-def send_account_status_change_email(user, content):
+def send_account_status_expire_email(user, content):
     send_html_email(
         subject='Current Acount Status about to expire',
-        to=[user.name],
+        recipients=[user.name],
         text_template='email/account_status_expire.txt',
         html_template='email/account_status_expire.html',
         content=content)
@@ -52,7 +50,7 @@ def send_account_status_change_email(user, content):
 def send_account_status_change_email(user, content):
     send_html_email(
         subject='Changed account status',
-        to=[user.name],
+        recipients=[user.name],
         text_template='email/account_status_change.txt',
         html_template='email/account_status_change.html',
         content=content)
@@ -60,7 +58,7 @@ def send_account_status_change_email(user, content):
 def send_massive_email(recipients, data):
     send_html_email(
         subject=data['subject'], 
-        to=recipients, 
+        recipients=recipients, 
         text_template='email/massive_email.txt',
         html_template='email/massive_email.html',
         content={
@@ -72,11 +70,11 @@ def send_activation_email(user, activation_key):
     content = {
         'activation_url':('{0}/activate/?activation_key={1}&user={2}'
             '').format(_get_current_domain(), activation_key, user.id),
-        'user':user.username,
+        'user':user,
     }
 
     send_html_email(
-        to=[user.name],
+        recipients=[user.name],
         subject='Welcome to FIWARE',
         text_template='email/activation.txt',
         html_template='email/activation.html',
@@ -86,11 +84,11 @@ def send_reset_email(email, token, user):
     content = {
         'reset_url':('{0}/password/reset/?token={1}&email={2}'
             '').format(_get_current_domain(), token, email),
-        'user':user['username'],
+        'user':user,
     }
 
     send_html_email(
-        to=[email], 
+        recipients=[email], 
         subject='Reset password instructions',
         text_template='email/reset_password.txt',
         html_template='email/reset_password.html',

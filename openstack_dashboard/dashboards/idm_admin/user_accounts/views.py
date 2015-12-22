@@ -30,7 +30,7 @@ from openstack_dashboard.dashboards.idm_admin.user_accounts \
 from openstack_dashboard.dashboards.idm_admin \
     import utils as idm_admin_utils
 from openstack_dashboard.fiware_auth import views as fiware_auth
-from openstack_dashboard.utils import email
+from openstack_dashboard.utils import email as email_utils
 
 
 LOG = logging.getLogger('idm_logger')
@@ -130,8 +130,7 @@ class UpdateAccountView(forms.ModalFormView):
         return initial
 
 
-class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin,
-                                fiware_auth.TemplatedEmailMixin):
+class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin):
     """ Upgrade account logic without the form"""
     http_method_names = ['post']
     use_idm_account = True
@@ -180,7 +179,7 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
 
                 content = {
                     'regions': _current_regions(self.request, user.cloud_project_id),
-                    'user':user.username,
+                    'user':user,
                     'account_type': account_type,
                     'started_at': getattr(user, account_type + '_started_at', None),
                     'duration': getattr(user, account_type + '_duration',
@@ -193,8 +192,8 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
                     end_date = start_date + datetime.timedelta(days=content['duration'])
                     content['end_date'] = end_date.strftime('%Y-%m-%d')
 
-                email.send_account_status_change_email(
-                    to=user,
+                email_utils.send_account_status_change_email(
+                    user=user,
                     content=content)
 
             return http.HttpResponse()
@@ -203,7 +202,7 @@ class UpdateAccountEndpointView(View, user_accounts_forms.UserAccountsLogicMixin
             return http.HttpResponseServerError(str(exception), content_type="text/plain")
 
 
-class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
+class NotifyUsersEndpointView(View):
     """Notify a list of users that their resources are about to be deleted."""
     http_method_names = ['post']
     
@@ -239,9 +238,9 @@ class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
                     errors.append((user_id, 'User is basic.'))
                     continue
 
-                context = {
+                content = {
                     'regions': _current_regions(self.request, user.cloud_project_id),
-                    'user':user.username,
+                    'user':user,
                     'account_type': account_type,
                     'started_at': getattr(user, account_type + '_started_at'),
                     'duration': getattr(user, account_type + '_duration',
@@ -249,16 +248,13 @@ class NotifyUsersEndpointView(View, fiware_auth.TemplatedEmailMixin):
                     'show_cloud_info': account_type in ['trial', 'community'],
                 }
                 # NOTE(garcianavalon) there should always be an end date in this email
-                # if context.get('started_at') and context.get('duration'):
-                start_date = datetime.datetime.strptime(context['started_at'], '%Y-%m-%d')
-                end_date = start_date + datetime.timedelta(days=context['duration'])
-                context['end_date'] = end_date.strftime('%Y-%m-%d')
+                # if content.get('started_at') and content.get('duration'):
+                start_date = datetime.datetime.strptime(content['started_at'], '%Y-%m-%d')
+                end_date = start_date + datetime.timedelta(days=content['duration'])
+                content['end_date'] = end_date.strftime('%Y-%m-%d')
 
-                text_content = render_to_string(NOTIFY_ACCOUNT_EXPIRE_TXT_TEMPLATE, dictionary=context)
-                html_content = render_to_string(NOTIFY_ACCOUNT_EXPIRE_HTML_TEMPLATE, dictionary=context)
-
-                email.send_account_status_change_email(
-                    to=user,
+                email_utils.send_account_status_expire_email(
+                    user=user,
                     content=content)
 
             except Exception as exception:

@@ -1,4 +1,4 @@
-Hello {{ user.name }}!
+Hello {{ user.username }}!
 
 Your current FIWARE Lab {{ account_type }} account will expire at {{ end_date }}.
 

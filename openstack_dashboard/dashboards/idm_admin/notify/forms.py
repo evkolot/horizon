@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import csv
 import logging
 
 from django import forms
@@ -27,7 +26,7 @@ from keystoneclient import exceptions as keystoneclient_exceptions
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
-from openstack_dashboard.utils import email
+from openstack_dashboard.utils import email as email_utils
 
 
 LOG = logging.getLogger('idm_logger')
@@ -174,7 +173,7 @@ class EmailForm(forms.SelfHandlingForm):
                 messages.error(request, msg)
                 return
 
-            email.send_massive_email(recipients, data)
+            email_utils.send_massive_email(recipients, data)
 
             messages.success(request, ('Message sent succesfully.'))
 

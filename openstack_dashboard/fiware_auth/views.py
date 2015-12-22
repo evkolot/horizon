@@ -29,7 +29,7 @@ from openstack_auth import views as openstack_auth_views
 
 from openstack_dashboard import fiware_api
 from openstack_dashboard.fiware_auth import forms as fiware_forms
-from openstack_dashboard.utils import email
+from openstack_dashboard.utils import email as email_utils
 
 
 LOG = logging.getLogger('idm_logger')
@@ -99,8 +99,8 @@ class RegistrationView(_RequestPassingFormView):
             success_url = self.get_success_url(request, new_user)
             # success_url must be a simple string, no tuples
             return redirect(success_url)
-        # TODO(garcianavalon) do something if new_user is None like
-        # redirect to login or to sign_up
+        
+        return redirect('signup')
 
     # We have to protect the entire "cleaned_data" dict because it contains the
     # password and confirm_password strings.
@@ -185,19 +185,16 @@ class RegistrationView(_RequestPassingFormView):
                     endpoint_group=region_group,
                     use_idm_account=True)
 
-            email.send_activation_email(new_user, new_user.activation_key)
+            email_utils.send_activation_email(new_user, new_user.activation_key)
 
             msg = ('Account created succesfully, check your email for'
                 ' the confirmation link.')
             messages.success(request, msg)
             return new_user
 
-        except Exception:
-            msg = ('Unable to create user.')
-            LOG.warning(msg)
-            messages.error(request, msg)
-            exceptions.handle(request, msg)
-
+        except Exception as e:
+            LOG.warning(e)
+            messages.error(request, 'Unable to create user, please try again later.')
     
 class ActivationView(TemplateView):
     http_method_names = ['get']
@@ -253,32 +250,33 @@ class RequestPasswordResetView(_RequestPassingFormView):
             return self.get(request) # redirect to itself
 
     def _create_reset_password_token(self, request, email):
-        LOG.info('Creating reset token for {0}.'.format(email))
+        LOG.info('Creating reset token for %s.', email)
         try:
             user = fiware_api.keystone.check_email(request, email)
 
             if not user.enabled:
-                msg = ('The email address you have specific is registered but not '
+                msg = ('The email address you have specified is registered but not '
                     'activated. Please check your email for the activation link '
                     'or request a new one. If your problem '
-                    'persits, please contact: fiware-lab-help@lists.fiware.org')
-                raise messages.error(request, msg)
-
+                    'persits, please contact fiware-lab-help@lists.fiware.org')
+                messages.error(request, msg)
+                return False
+                
             reset_password_token = fiware_api.keystone.get_reset_token(request, user)
             token = reset_password_token.id
             user = reset_password_token.user
-            email.send_reset_email(email, token, user)
+            email_utils.send_reset_email(email, token, user)
             messages.success(request, ('Reset email send to %s') % email)
             return True
 
         except ks_exceptions.NotFound:
             LOG.debug('email address %s is not registered', email)
             msg = ('Sorry. You have specified an email address that is not '
-                'registered to any our our user accounts. If your problem '
+                'registered to any of our user accounts. If your problem '
                 'persits, please contact: fiware-lab-help@lists.fiware.org')
             messages.error(request, msg)
 
-        except Exception:
+        except Exception as e:
             msg = ('An error occurred, try again later.')
             messages.error(request, msg)
             
@@ -358,7 +356,7 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
 
             activation_key = fiware_api.keystone.new_activation_key(request, user)
 
-            email.send_activation_email(user, activation_key.id)
+            email_utils.send_activation_email(user, activation_key.id)
             msg = ('Resended confirmation instructions to %s') %email
             messages.success(request, msg)
             return True

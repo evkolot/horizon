@@ -18,7 +18,6 @@ import logging
 from django import forms
 from django import shortcuts
 from django.conf import settings
-from django.template.loader import render_to_string
 
 from horizon import exceptions
 from horizon import forms
@@ -26,7 +25,7 @@ from horizon import messages
 
 from openstack_dashboard import fiware_api
 from openstack_dashboard.fiware_auth import views as fiware_auth
-from openstack_dashboard.utils import email
+from openstack_dashboard.utils import email as email_utils
 
 
 LOG = logging.getLogger('idm_logger')
@@ -193,7 +192,7 @@ def get_regions():
         choices.append((region.id, region.id))
     return choices
 
-class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin, fiware_auth.TemplatedEmailMixin):
+class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
     user_id = forms.CharField(
         widget=forms.HiddenInput(), required=True)
 
@@ -304,7 +303,7 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin, fiware_a
                     end_date = start_date + datetime.timedelta(days=content['duration'])
                     content['end_date'] = end_date.strftime('%Y-%m-%d')
 
-            email.send_account_status_change_email(user, content)
+                email_utils.send_account_status_change_email(user, content)
 
             messages.success(request,
                 'User account upgraded succesfully')

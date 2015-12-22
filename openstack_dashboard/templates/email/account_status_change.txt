@@ -1,4 +1,4 @@
-Hello {{ user.name }}!
+Hello {{ user.username }}!
 
 Your FIWARE Lab account status has changed. Your new account status details are:
 
