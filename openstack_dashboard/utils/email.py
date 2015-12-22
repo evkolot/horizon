@@ -30,7 +30,7 @@ def send_html_email(recipients, subject, text_template, html_template,
     html_content = render_to_string(html_template, dictionary=content)
     
     msg = mail.EmailMultiAlternatives(
-        subject=subject,
+        subject=getattr(local_settings, 'EMAIL_SUBJECT_PREFIX', '') + ' ' + subject,
         body=text_content,
         from_email=from_email,
         bcc=recipients,
