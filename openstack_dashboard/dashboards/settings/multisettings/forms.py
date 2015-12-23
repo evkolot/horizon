@@ -327,6 +327,7 @@ class ManageTwoFactorForm(forms.SelfHandlingForm):
                     cache_key = uuid.uuid4().hex
                     cache.set(cache_key, (key, uri))
                     request.session['two_factor_data'] = cache_key
+                    messages.success(request, "Two factor authentication was successfully enabled.")
                     return shortcuts.redirect('horizon:settings:multisettings:newkey')
                 
             elif request.POST.get(u'disable', None):
