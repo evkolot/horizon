@@ -528,6 +528,12 @@ class TwoFactorSecurityQuestionView(_RequestPassingFormView):
         messages.success(self.request, msg)
         return super(TwoFactorSecurityQuestionView, self).form_valid(form)
 
+class TwoFactorForgotAnswerView(TemplateView):
+    template_name = 'auth/two_factor/_forgot_answer.html'
+
+    def get_context_data(self, **kwargs):
+        return {'hide': True}
+
 @login_required
 def switch(request, tenant_id, **kwargs):
     """Wrapper for ``openstack_auth.views.switch`` to add a message
