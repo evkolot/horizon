@@ -10,9 +10,9 @@
 
   {% block modal-body %}
     <div>
-      <p>You have two factor authentication enabled. Please insert the code generated
-      by your configured app to verify your identity.</p>
-      <i class="fa fa-mobile fa-4x"></i>
+      <p>Two factor authentication enabled</p>
+      <i class="fa fa-mobile fa-4x tf_icon"></i><p class="tf_text">Please insert the code generated
+      by your configured app to verify your identity</p>
     </div>
     {% if next %}<input type="hidden" name="{{ redirect_field_name }}" value="{{ next }}" />{% endif %}
     {% include "horizon/common/_form_fields.html" %}
@@ -21,7 +21,7 @@
   {% block modal-footer %}
     <div class="checkbox">
       <label>
-        <input type="checkbox"> 
+        <input type="checkbox">
         <span class="lbl padding-0">
           Don't ask again codes for this computer
         </span>
