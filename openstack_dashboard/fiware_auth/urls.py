@@ -32,6 +32,12 @@ urlpatterns = patterns(
                             name='fiware_auth_reset'),
     url(r'^confirmation/$', views.ResendConfirmationInstructionsView.as_view(),
                             name='fiware_auth_confirmation'),
+    url(r'^two_factor/lost_app/$', views.TwoFactorLostAppView.as_view(),
+                            name='fiware_two_factor_lost_app'),
+    url(r'^two_factor/security_question/$', views.TwoFactorSecurityQuestionView.as_view(),
+                            name='fiware_two_factor_sec_question'),
+    url(r'^two_factor/forgot_answer/$', views.TwoFactorForgotAnswerView.as_view(),
+                            name='fiware_two_factor_forgot_answer'),
     # NOTE(garcianavalon) override to use our form
     url(r'^auth/login/$', openstack_auth_views.login, 
         {'form_class': fiware_auth_forms.LoginWithEmailForm}, name='login'),

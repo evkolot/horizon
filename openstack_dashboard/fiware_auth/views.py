@@ -157,11 +157,11 @@ class RegistrationView(_RequestPassingFormView):
 
                 if default_cloud_role:
                     fiware_api.keystone.add_role_to_user(
-                        request, 
-                        role=default_cloud_role.id, 
+                        request,
+                        role=default_cloud_role.id,
                         user=new_user.id,
-                        organization=new_user.cloud_project_id, 
-                        application=cloud_app.id, 
+                        organization=new_user.cloud_project_id,
+                        application=cloud_app.id,
                         use_idm_account=True)
                     LOG.debug('granted default cloud role')
                 else:
@@ -171,14 +171,16 @@ class RegistrationView(_RequestPassingFormView):
                 region_id = 'Spain2'
                 endpoint_groups = fiware_api.keystone.endpoint_group_list(
                     request, use_idm_account=True)
-                region_group = next(group for group in endpoint_groups
-                    if group.filters.get('region_id', None) == region_id)
+                region_group = next(
+                    group for group in endpoint_groups
+                    if group.filters.get('region_id', None) == region_id
+                )
 
                 if not region_group:
                     messages.error(
                         request, 'There is no endpoint group defined for that region')
                     return
-        
+
                 fiware_api.keystone.add_endpoint_group_to_project(
                     request,
                     project=new_user.cloud_project_id,
@@ -187,8 +189,10 @@ class RegistrationView(_RequestPassingFormView):
 
             email_utils.send_activation_email(new_user, new_user.activation_key)
 
-            msg = ('Account created succesfully, check your email for'
-                ' the confirmation link.')
+            msg = (
+                'Account created succesfully, check your email for'
+                ' the confirmation link.'
+            )
             messages.success(request, msg)
             return new_user
 
@@ -375,6 +379,78 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         return False
 
 
+class TwoFactorLostAppView(_RequestPassingFormView):
+    form_class = fiware_forms.EmailForm
+    template_name = 'auth/two_factor/lost_app.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.username:
+            return redirect('horizon:user_home')
+        return super(TwoFactorLostAppView, self).dispatch(
+            request, *args, **kwargs)
+
+    def get_success_url(self):
+        succ_url = reverse_lazy('fiware_two_factor_sec_question') + '?email=' + self.email
+        return succ_url
+
+    def form_valid(self, request, form):
+        self.email = form.cleaned_data['email']
+        return super(TwoFactorLostAppView, self).form_valid(form)
+
+class TwoFactorSecurityQuestionView(_RequestPassingFormView):
+    form_class = fiware_forms.SecurityQuestionForm
+    template_name = 'auth/two_factor/security_question.html'
+    success_url = reverse_lazy('login')
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.GET:
+            try:
+                email = request.GET.get('email')
+                self.user = fiware_api.keystone.check_email(request, email)
+                if fiware_api.keystone.two_factor_is_enabled(request, self.user):
+                    return super(TwoFactorSecurityQuestionView, self).dispatch(request, *args, **kwargs)
+                else:
+                    LOG.debug('email address %s has not two factor enabled', email)
+                    msg = ('Sorry. You have specified an email address that has not two '
+                        'factor enabled. If your problem '
+                        'persits, please contact: fiware-lab-help@lists.fiware.org')
+                    messages.error(request, msg)
+                    return redirect(self.success_url)
+            except ks_exceptions.NotFound:
+                LOG.debug('email address %s is not registered', email)
+                msg = ('Sorry. You have specified an email address that is not '
+                    'registered to any of our user accounts. If your problem '
+                    'persits, please contact: fiware-lab-help@lists.fiware.org')
+                messages.error(request, msg)
+                return redirect(self.success_url)
+        else:
+            self.user = fiware_api.keystone.check_email(request, request.POST.get('email', None))
+            return super(TwoFactorSecurityQuestionView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(TwoFactorSecurityQuestionView, self).get_context_data(**kwargs)
+        context['security_question'] = fiware_api.keystone.\
+                                       two_factor_get_security_question(self.request, self.user)
+
+        return context
+
+    def get_form_kwargs(self, request=None, form_class=None):
+        kwargs = super(TwoFactorSecurityQuestionView, self).get_form_kwargs()
+        kwargs['request'] = request
+        kwargs['email'] = self.request.GET.get('email', None)
+        return kwargs
+
+    def form_valid(self, request, form):
+        msg = ("Two factor has been disabled for your account. Now you can log in with your password again.")
+        messages.success(self.request, msg)
+        return super(TwoFactorSecurityQuestionView, self).form_valid(form)
+
+class TwoFactorForgotAnswerView(TemplateView):
+    template_name = 'auth/two_factor/_forgot_answer.html'
+
+    def get_context_data(self, **kwargs):
+        return {'hide': True}
+
 @login_required
 def switch(request, tenant_id, **kwargs):
     """Wrapper for ``openstack_auth.views.switch`` to add a message
@@ -391,3 +467,4 @@ def switch(request, tenant_id, **kwargs):
                organization_name)
         messages.info(request, msg)
     return response
+

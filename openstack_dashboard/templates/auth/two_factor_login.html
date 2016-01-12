@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Two Factor Verification{% endblock %}
+
+{% block body_id %}base{% endblock %}
+
+{% block content %}
+  {% include '_header.html' %}
+  <div id="frontpage" class="container-fluid wrap">
+    <div class="row">
+
+      {% include 'auth/_two_factor_login.html' %}
+      {% include 'auth/_presentation.html' %}
+      
+    </div>
+  </div>
+  {% include "horizon/_messages.html" %}
+{% endblock %}

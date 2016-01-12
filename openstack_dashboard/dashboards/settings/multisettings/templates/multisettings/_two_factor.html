@@ -1,0 +1,94 @@
+<form accept-charset="UTF-8" action="{{ form.action }}" id="two_factor_form" method="post">{% csrf_token %}
+    {% if two_factor_enabled %}
+    <p>You have this option <b>enabled</b>.</p>
+    <p>Now, whenever you want to access your account, you need to provide both your password and a code, which you can get from an authentication mobile app. You can regenerate the key needed for the app here, in case you lost it.</p>
+    <input class="btn btn-secondary always-enabled" name="disable" type="submit" value="Disable">
+    <input class="btn btn-primary always-enabled" name="new_key" type="submit" value="Get new key">
+    {% else %}
+    <p>You have this option <b>disabled</b>.</p>
+    <p>We highly recommend you enable it, since it provides a higher level of security to access your account.</p>
+    <p>If you want to give two factor authentication a try, you need to provide a security question, just in case you happen to lose access to your authentication app.</p>
+    <fieldset>
+      {% include "horizon/common/_form_fields.html" %}
+    </fieldset>
+    <input class="btn btn-primary always-enabled" name="enable" type="submit" value="Enable">
+    {% endif %}
+</form>
+<div id="result">
+</div>
+
+<script type="text/javascript">
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    var csrftoken = getCookie('csrftoken');
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+            horizon.modals.modal_spinner(gettext("Loading"));
+        },
+        complete: function () {
+            // Clear the global storage;
+            horizon.modals._request = null;
+            horizon.modals.spinner.modal('hide');
+        },
+        error: function(jqXHR, status, errorThrown) {
+            if (jqXHR.status === 401){
+                var redir_url = jqXHR.getResponseHeader("X-Horizon-Location");
+                if (redir_url){
+                    location.href = redir_url;
+                } else {
+                    location.reload(true);
+                }
+            }
+            else {
+                if (!horizon.ajax.get_messages(jqXHR)) {
+                    // Generic error handler. Really generic.
+                    horizon.alert("danger", gettext("An error occurred. Please try again later."));
+                }
+            }
+        }
+    });
+
+    $("[name='enable'], [name='new_key']").click(function(e){
+        e.preventDefault();
+
+        // If there's an existing modal request open, cancel it out.
+        if (horizon.modals._request && typeof(horizon.modals._request.abort) !== undefined) {
+            horizon.modals._request.abort();
+        }
+
+        var $form = $("#two_factor_form"),
+            data = $form.serialize() +
+                "&" + $(this).attr("name").toLowerCase() +
+                "=" + $(this).attr("name").toLowerCase();
+
+        console.log(data)
+        horizon.modals._request = $.post($form.attr('action'), data, function(data, textStatus, jqXHR){
+            $form.closest(".modal").modal("hide");
+            modal = horizon.modals.success(data, textStatus, jqXHR);
+        }, 'html');
+
+    });
+</script>

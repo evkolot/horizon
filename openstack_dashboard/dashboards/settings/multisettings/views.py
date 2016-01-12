@@ -17,18 +17,21 @@ import datetime
 
 from django.conf import settings
 
+from django.core.cache import cache
+from django.shortcuts import redirect
+
+import os
+import io
+import base64
+import pyqrcode
+
+from horizon import forms
 from horizon import views
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
-from openstack_dashboard.dashboards.settings.accountstatus \
-    import forms as status_forms
-from openstack_dashboard.dashboards.settings.cancelaccount \
-    import forms as cancelaccount_forms
-from openstack_dashboard.dashboards.settings.password \
-    import forms as password_forms
-from openstack_dashboard.dashboards.settings.useremail \
-    import forms as useremail_forms
+from openstack_dashboard.dashboards.settings.multisettings \
+    import forms as settings_forms
 
 
 LOG = logging.getLogger('idm_logger')
@@ -82,28 +85,90 @@ class MultiFormView(views.APIView):
             and len(fiware_api.keystone.get_trial_role_assignments(self.request)) 
                 < getattr(settings, 'MAX_TRIAL_USERS', 0)):
             context['show_trial_request'] = True
-        
+
+        if fiware_api.keystone.two_factor_is_enabled(self.request, user):
+            context['two_factor_enabled'] = True
+
         #Create forms
-        status = status_forms.UpgradeForm(self.request)
-        cancel = cancelaccount_forms.BasicCancelForm(self.request)
-        password = password_forms.PasswordForm(self.request)
-        email = useremail_forms.EmailForm(self.request, initial=initial_email)
+        status = settings_forms.UpgradeForm(self.request)
+        cancel = settings_forms.BasicCancelForm(self.request)
+        password = settings_forms.PasswordForm(self.request)
+        email = settings_forms.EmailForm(self.request, initial=initial_email)
+        two_factor = settings_forms.ManageTwoFactorForm(self.request)
 
-        #Actions and titles
-        # TODO(garcianavalon) move all of this to each form
-        status.action = 'accountstatus/'
-        email.action = 'useremail/'
-        password.action = "password/"
-        cancel.action = "cancelaccount/"
-        status.description = 'Account status'
-        email.description = ('Change your email')
-        password.description = ('Change your password')
-        cancel.description = ('Cancel account')
-
-        status.template = 'settings/accountstatus/_status.html'
-        email.template = 'settings/multisettings/_collapse_form.html'
-        password.template = 'settings/multisettings/_collapse_form.html'
-        cancel.template = 'settings/multisettings/_collapse_form.html'
-
-        context['forms'] = [status, password, email, cancel]
+        context['forms'] = [status, password, email, two_factor, cancel]
         return context
+
+
+# Handeling views
+class AccountStatusView(forms.ModalFormView):
+    form_class = settings_forms.UpgradeForm
+    template_name = 'settings/multisettings/status.html'
+
+class PasswordView(forms.ModalFormView):
+    form_class = settings_forms.PasswordForm
+    template_name = 'settings/multisettings/change_password.html'
+
+class EmailView(forms.ModalFormView):
+
+    form_class = settings_forms.EmailForm
+    template_name = 'settings/multisettings/change_email.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(EmailView, self).get_form_kwargs()
+        user_id = self.request.user.id
+        user = fiware_api.keystone.user_get(self.request, user_id)
+        kwargs['initial']['email'] = getattr(user, 'name', '')
+        return kwargs
+
+class CancelView(forms.ModalFormView):
+    form_class = settings_forms.BasicCancelForm
+    template_name = 'settings/multisettings/cancel.html'
+
+class ManageTwoFactorView(forms.ModalFormView):
+    form_class = settings_forms.ManageTwoFactorForm
+    template_name = 'settings/multisettings/two_factor.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(ManageTwoFactorView, self).get_context_data(**kwargs)
+        
+        user = fiware_api.keystone.user_get(self.request, self.request.user.id)
+        if fiware_api.keystone.two_factor_is_enabled(self.request, user):
+            context['two_factor_enabled'] = True
+        return context
+
+class TwoFactorNewKeyView(views.APIView):
+    template_name = 'settings/multisettings/two_factor_newkey.html'
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            if not hasattr(self, "ajax_template_name"):
+                # Transform standard template name to ajax name (leading "_")
+                bits = list(os.path.split(self.template_name))
+                bits[1] = "".join(("_", bits[1]))
+                self.ajax_template_name = os.path.join(*bits)
+            template = self.ajax_template_name
+        else:
+            template = self.template_name
+        return template
+
+    def get_context_data(self, **kwargs):
+        context = super(TwoFactorNewKeyView, self).get_context_data(**kwargs)
+        cache_key = self.request.session['two_factor_data']
+        del self.request.session['two_factor_data']
+
+        (key, uri) = cache.get(cache_key)
+        cache.delete(cache_key)
+        
+        context['two_factor_key'] = key
+        qr = pyqrcode.create(uri, error='L')
+        qr_buffer = io.BytesIO()
+        qr.svg(qr_buffer, scale=3)
+        context['two_factor_qr_encoded'] = base64.b64encode(qr_buffer.getvalue())
+        
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        if 'two_factor_data' not in self.request.session:
+            return redirect('horizon:settings:multisettings:index')
+        return super(TwoFactorNewKeyView, self).dispatch(request, args, kwargs)

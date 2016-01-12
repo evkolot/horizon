@@ -1,0 +1,37 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load url from future %}
+
+<div class="login">
+  {% block modal-header %}Verification Code{% endblock %}
+  {% block modal_class %}login {% if hide %}modal hide{% endif %}{% endblock %}
+
+  {% block form_action %}{% url 'two_factor_login' %}?k={{ request.GET.k }}{% endblock %}
+  {% block autocomplete %}{{ HORIZON_CONFIG.password_autocomplete }}{% endblock %}
+
+  {% block modal-body %}
+    <div>
+      <p>You have two factor authentication enabled. Please insert the code generated
+      by your configured app to verify your identity.</p>
+      <i class="fa fa-mobile fa-4x"></i>
+    </div>
+    {% if next %}<input type="hidden" name="{{ redirect_field_name }}" value="{{ next }}" />{% endif %}
+    {% include "horizon/common/_form_fields.html" %}
+  {% endblock %}
+
+  {% block modal-footer %}
+    <div class="checkbox">
+      <label>
+        <input type="checkbox"> 
+        <span class="lbl padding-0">
+          Don't ask again codes for this computer
+        </span>
+      </label>
+    </div>
+    <button type="submit" class="btn btn-primary pull-right">Verify</button>
+    <div class="actions">
+      <a href="{% url 'fiware_two_factor_lost_app' %}">
+        Lost access to your authentication app?
+      </a>
+    </div>
+  {% endblock %}
+</div>
