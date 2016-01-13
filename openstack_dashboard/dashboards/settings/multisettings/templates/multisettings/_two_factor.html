@@ -86,8 +86,13 @@
 
         console.log(data)
         horizon.modals._request = $.post($form.attr('action'), data, function(data, textStatus, jqXHR){
-            $form.closest(".modal").modal("hide");
-            modal = horizon.modals.success(data, textStatus, jqXHR);
+            if (data.search("<div class=\"alert alert-message alert-danger\">") === -1){
+                $form.closest(".modal").modal("hide");
+                modal = horizon.modals.success(data, textStatus, jqXHR);
+            } else {
+                $form.closest(".modal").modal("hide");
+                $form.replaceWith(data)
+            }
         }, 'html');
 
     });
