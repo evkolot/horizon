@@ -84,7 +84,6 @@
                 "&" + $(this).attr("name").toLowerCase() +
                 "=" + $(this).attr("name").toLowerCase();
 
-        console.log(data)
         horizon.modals._request = $.post($form.attr('action'), data, function(data, textStatus, jqXHR){
             if (data.search("<div class=\"alert alert-message alert-danger\">") === -1){
                 $form.closest(".modal").modal("hide");
@@ -96,4 +95,24 @@
         }, 'html');
 
     });
+
+    $("body").on("click", ".cancel", function(e){
+        e.preventDefault();
+
+        var $form = $("#two_factor_form"),
+            data = "disable=disable";
+
+        $.post($form.attr('action'), data, function(data, textStatus, jqXHR){
+            location.reload(true);
+        });
+    });
+
+    $(document).on("click", "#two_factor_enable_modal, [data-dismiss='modal']", function(e) {
+        location.reload(true);
+    });
+
+    $(document).on("click", "#two_factor_enable_modal > .modal-dialog", function(e) {
+        e.stopPropagation();
+    });
+
 </script>

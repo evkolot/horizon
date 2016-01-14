@@ -41,5 +41,8 @@
 {% endblock %}
 
 {% block modal-footer %}
-    {% if hide %}<a href="{% url 'horizon:settings:multisettings:index' %}" class="btn btn-primary">Ok</a>{% endif %}
+    {% if hide %}
+      <a href="{% url 'horizon:settings:multisettings:index' %}" class="btn btn-primary">Ok</a>
+      <a href="#" class="btn btn-default secondary cancel">Cancel</a>
+      {% endif %}
 {% endblock %}
