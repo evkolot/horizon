@@ -96,6 +96,9 @@
           position: relative;
           z-index: 2;
           float: left;
+          @media (max-width: $screen-md-min){
+            margin-right: 10px;
+          }
         }
         .verification_img{
           width: 100%;
