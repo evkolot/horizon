@@ -272,7 +272,7 @@ def remove_role_from_user(request, role, user, organization, application,
     return manager.remove_from_user(role, user, organization, application)
 
 def user_role_assignments(request, user=None, organization=None,
-                          application=None, use_idm_account=False):
+                          application=None, use_idm_account=True):
     if use_idm_account:
         manager = internal_keystoneclient(request)
     else:
@@ -301,9 +301,12 @@ def remove_role_from_organization(request, role, organization, application,
     return manager.remove_from_organization(role, organization, application)
 
 def organization_role_assignments(request, organization=None,
-                                  application=None):    
-    manager = api.keystone.keystoneclient(
-        request, admin=True).fiware_roles.role_assignments
+                                  application=None, use_idm_account=True):
+    if use_idm_account:
+        manager = internal_keystoneclient(request)
+    else:
+        manager = api.keystone.keystoneclient(request, admin=True)   
+    manager = manager.fiware_roles.role_assignments
     return manager.list_organization_role_assignments(
         organization=organization, application=application)
 

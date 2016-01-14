@@ -1,3 +1,4 @@
+# Copyright (C) 2015 Universidad Politecnica de Madrid
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,12 +14,9 @@
 
 import logging
 
-from django import forms
-from django.core.mail import EmailMultiAlternatives
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required  # noqa
 from django.shortcuts import redirect
-from django.template.loader import render_to_string
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 
@@ -31,34 +29,13 @@ from openstack_auth import views as openstack_auth_views
 
 from openstack_dashboard import fiware_api
 from openstack_dashboard.fiware_auth import forms as fiware_forms
+from openstack_dashboard.utils import email as email_utils
 
-from openstack_dashboard.local import local_settings
 
 LOG = logging.getLogger('idm_logger')
-EMAIL_HTML_TEMPLATE = 'email/base_email.html'
-EMAIL_TEXT_TEMPLATE = 'email/base_email.txt'
-
-RESET_PASSWORD_HTML_TEMPLATE = 'email/reset_password.html'
-RESET_PASSWORD_TXT_TEMPLATE = 'email/reset_password.txt'
-
-ACTIVATION_HTML_TEMPLATE = 'email/activation.html'
-ACTIVATION_TXT_TEMPLATE = 'email/activation.txt'
 
 
-class TemplatedEmailMixin(object):
-    # TODO(garcianavalon) as settings
-    
-    def send_html_email(self, to, subject, **kwargs):
-        LOG.debug('Sending email to %s with subject %s', to, subject)
-        text_content = render_to_string(EMAIL_TEXT_TEMPLATE, dictionary=kwargs)
-        html_content = render_to_string(EMAIL_HTML_TEMPLATE, dictionary=kwargs)
-        
-        from_email = getattr(local_settings, 'EMAIL_URL', None)
-        msg = EmailMultiAlternatives(subject, text_content, from_email, to)
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
-
-class _RequestPassingFormView(FormView, TemplatedEmailMixin):
+class _RequestPassingFormView(FormView):
     """
     A version of FormView which passes extra arguments to certain
     methods, notably passing the HTTP request nearly everywhere, to
@@ -122,8 +99,8 @@ class RegistrationView(_RequestPassingFormView):
             success_url = self.get_success_url(request, new_user)
             # success_url must be a simple string, no tuples
             return redirect(success_url)
-        # TODO(garcianavalon) do something if new_user is None like
-        # redirect to login or to sign_up
+        
+        return redirect('signup')
 
     # We have to protect the entire "cleaned_data" dict because it contains the
     # password and confirm_password strings.
@@ -210,7 +187,7 @@ class RegistrationView(_RequestPassingFormView):
                     endpoint_group=region_group,
                     use_idm_account=True)
 
-            self.send_activation_email(new_user)
+            email_utils.send_activation_email(new_user, new_user.activation_key)
 
             msg = (
                 'Account created succesfully, check your email for'
@@ -219,32 +196,10 @@ class RegistrationView(_RequestPassingFormView):
             messages.success(request, msg)
             return new_user
 
-        except Exception:
-            msg = ('Unable to create user.')
-            LOG.warning(msg)
-            messages.error(request, msg)
-            exceptions.handle(request, msg)
-
-    def send_activation_email(self, user):
-        # TODO(garcianavalon) subject, message and from_email as settings/files
-        subject = '[FIWARE Lab] Welcome to FIWARE'
-        # Email subject *must not* contain newlines
-        subject = ''.join(subject.splitlines())
-        context = {
-            'activation_url':('{0}/activate/?activation_key={1}&user={2}'
-                '').format(_get_current_domain(), user.activation_key, user.id),
-            'user_name':user.username,
-        }
-        text_content = render_to_string(ACTIVATION_TXT_TEMPLATE,
-                                        dictionary=context)
-        html_content = render_to_string(ACTIVATION_HTML_TEMPLATE,
-                                        dictionary=context)
-        #send a mail for activation
-        self.send_html_email(
-            to=[user.name],
-            subject=subject,
-            content={'text': text_content, 'html': html_content})
-
+        except Exception as e:
+            LOG.warning(e)
+            messages.error(request, 'Unable to create user, please try again later.')
+    
 class ActivationView(TemplateView):
     http_method_names = ['get']
     template_name = 'auth/activation/activate.html'
@@ -299,56 +254,37 @@ class RequestPasswordResetView(_RequestPassingFormView):
             return self.get(request) # redirect to itself
 
     def _create_reset_password_token(self, request, email):
-        LOG.info('Creating reset token for {0}.'.format(email))
+        LOG.info('Creating reset token for %s.', email)
         try:
             user = fiware_api.keystone.check_email(request, email)
 
             if not user.enabled:
-                msg = ('The email address you have specific is registered but not '
+                msg = ('The email address you have specified is registered but not '
                     'activated. Please check your email for the activation link '
                     'or request a new one. If your problem '
-                    'persits, please contact: fiware-lab-help@lists.fiware.org')
-                raise messages.error(request, msg)
-
+                    'persits, please contact fiware-lab-help@lists.fiware.org')
+                messages.error(request, msg)
+                return False
+                
             reset_password_token = fiware_api.keystone.get_reset_token(request, user)
             token = reset_password_token.id
             user = reset_password_token.user
-            self.send_reset_email(email, token, user)
+            email_utils.send_reset_email(email, token, user)
             messages.success(request, ('Reset email send to %s') % email)
             return True
 
         except ks_exceptions.NotFound:
             LOG.debug('email address %s is not registered', email)
             msg = ('Sorry. You have specified an email address that is not '
-                'registered to any our our user accounts. If your problem '
+                'registered to any of our user accounts. If your problem '
                 'persits, please contact: fiware-lab-help@lists.fiware.org')
             messages.error(request, msg)
 
-        except Exception:
+        except Exception as e:
             msg = ('An error occurred, try again later.')
             messages.error(request, msg)
             
         return False
-
-    def send_reset_email(self, email, token, user):
-        # TODO(garcianavalon) subject, message and from_email as settings/files
-        subject = '[FIWARE Lab] Reset password instructions'
-        # Email subject *must not* contain newlines
-        subject = ''.join(subject.splitlines())
-        context = {
-            'reset_url':('{0}/password/reset/?token={1}&email={2}'
-                '').format(_get_current_domain(),token, email),
-            'user_name':user['username'],
-        }
-        text_content = render_to_string(RESET_PASSWORD_TXT_TEMPLATE, 
-                                        dictionary=context)
-        html_content = render_to_string(RESET_PASSWORD_HTML_TEMPLATE, 
-                                        dictionary=context)
-        #send a mail for activation
-        self.send_html_email(
-            to=[email], 
-            subject=subject, 
-            content={'text': text_content, 'html': html_content})
 
 
 class ResetPasswordView(_RequestPassingFormView):
@@ -424,7 +360,7 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
 
             activation_key = fiware_api.keystone.new_activation_key(request, user)
 
-            self.send_reactivation_email(user, activation_key)
+            email_utils.send_activation_email(user, activation_key.id)
             msg = ('Resended confirmation instructions to %s') %email
             messages.success(request, msg)
             return True
@@ -442,25 +378,6 @@ class ResendConfirmationInstructionsView(_RequestPassingFormView):
         
         return False
 
-    def send_reactivation_email(self, user, activation_key):
-        # TODO(garcianavalon) subject and message as settings/files
-        subject = '[FIWARE Lab] Welcome to FIWARE'
-        # Email subject *must not* contain newlines
-        subject = ''.join(subject.splitlines())
-        context = {
-            'activation_url':('{0}/activate/?activation_key={1}&user={2}'
-                '').format(_get_current_domain(), activation_key.id, user.id),
-            'user_name':user.username,
-        }
-        text_content = render_to_string(ACTIVATION_TXT_TEMPLATE, 
-                                        dictionary=context)
-        html_content = render_to_string(ACTIVATION_HTML_TEMPLATE, 
-                                        dictionary=context)
-        #send a mail for activation
-        self.send_html_email(
-            to=[user.name],
-            subject=subject, 
-            content={'text': text_content, 'html': html_content})
 
 class TwoFactorLostAppView(_RequestPassingFormView):
     form_class = fiware_forms.EmailForm
@@ -551,8 +468,3 @@ def switch(request, tenant_id, **kwargs):
         messages.info(request, msg)
     return response
 
-def _get_current_domain():
-    if getattr(local_settings, 'EMAIL_URL', None):
-        return 'https://'+ local_settings.EMAIL_URL
-    else: 
-        return 'http://localhost:8000'

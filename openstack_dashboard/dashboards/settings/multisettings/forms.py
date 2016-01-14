@@ -125,7 +125,7 @@ class EmailForm(forms.SelfHandlingForm):
     action = reverse_lazy('horizon:settings:multisettings:useremail')
     description = 'Change your email'
     template = 'settings/multisettings/_collapse_form.html'
-    
+
     email = forms.EmailField(
             label=("Email"),
             required=True)
@@ -160,11 +160,11 @@ class EmailForm(forms.SelfHandlingForm):
                 # now update email
                 user_id = request.user.id
                 #user = api.keystone.user_get(request, user_id, admin=False)
-                
+
                 # if we dont set password to None we get a dict-key error in api/keystone
                 api.keystone.user_update(request, user_id, name=data['email'],
                                         password=None)
-                
+
                 # redirect user to settings home
                 response = shortcuts.redirect('horizon:settings:multisettings:index')
                 #response = shortcuts.redirect(request.build_absolute_uri())
@@ -200,7 +200,7 @@ class BasicCancelForm(forms.SelfHandlingForm):
             delete_orgs = self._get_orgs_to_delete(request, user)
             delete_apps = self._get_apps_to_delete(request, user)
 
-            
+
             # NOTE(garcianavalon) here we need to use the idm
             # account to delete all the stuff to avoid problems
             # with user rights, tokens, etc.
@@ -209,7 +209,7 @@ class BasicCancelForm(forms.SelfHandlingForm):
                 fiware_api.keystone.project_delete(request, org_id)
 
             for app_id in delete_apps:
-                fiware_api.keystone.application_delete(request, 
+                fiware_api.keystone.application_delete(request,
                     app_id, use_idm_account=True)
 
             # finally delete the user
@@ -218,7 +218,7 @@ class BasicCancelForm(forms.SelfHandlingForm):
             messages.success(request, ("Account canceled succesfully"))
             return shortcuts.redirect('logout')
 
-        except Exception as e:   
+        except Exception as e:
             exceptions.handle(request,
                               ('Unable to cancel account.'))
             LOG.error(e)
@@ -239,7 +239,7 @@ class BasicCancelForm(forms.SelfHandlingForm):
                 continue
 
             owners = set([
-                a.user['id'] for a 
+                a.user['id'] for a
                 in api.keystone.role_assignments_list(
                     request,
                     role=owner_role.id,
@@ -259,14 +259,14 @@ class BasicCancelForm(forms.SelfHandlingForm):
 
         provided_apps = [
             a.application_id for a
-            in fiware_api.keystone.user_role_assignments(request, 
+            in fiware_api.keystone.user_role_assignments(request,
                                                          user=user.id)
             if a.role_id == provider_role.id
         ]
 
         for app_id in provided_apps:
             providers = set([
-                a.user_id for a 
+                a.user_id for a
                 in fiware_api.keystone.user_role_assignments(
                     request,
                     application=app_id)
@@ -280,7 +280,7 @@ class BasicCancelForm(forms.SelfHandlingForm):
 
 class ManageTwoFactorForm(forms.SelfHandlingForm):
     action = reverse_lazy('horizon:settings:multisettings:twofactor')
-    description = 'Manage two factor authentication'
+    description = 'Manage two-factor authentication'
     template = 'settings/multisettings/_two_factor.html'
 
     security_question = forms.CharField(
@@ -294,12 +294,12 @@ class ManageTwoFactorForm(forms.SelfHandlingForm):
     def clean(self):
         data = super(ManageTwoFactorForm, self).clean()
         if self.request.POST.get('enable', None):
-            if not data.get('security_question', None) or not data.get('security_answer', None): 
+            if not data.get('security_question', None) or not data.get('security_answer', None):
                 raise ValidationError(('You need to provide a security question to enable two factor authentication.'))
         return data
 
     def handle(self, request, data):
-        try: 
+        try:
             user = fiware_api.keystone.user_get(request, request.user.id)
             if request.POST.get(u'enable', None) or request.POST.get(u'new_key', None):
                 if request.POST.get(u'enable', None):
@@ -329,14 +329,14 @@ class ManageTwoFactorForm(forms.SelfHandlingForm):
                     request.session['two_factor_data'] = cache_key
                     messages.success(request, "Two factor authentication was successfully enabled.")
                     return shortcuts.redirect('horizon:settings:multisettings:newkey')
-                
+
             elif request.POST.get(u'disable', None):
                 fiware_api.keystone.two_factor_disable(request=request, user=user)
                 messages.success(request, "Two factor authentication was successfully disabled for your account.")
                 LOG.info('Disabled two factor authentication')
                 return shortcuts.redirect('horizon:settings:multisettings:index')
 
-        except Exception as e:   
+        except Exception as e:
             exceptions.handle(request, 'error')
             LOG.error(e)
             return False

@@ -169,10 +169,12 @@
     .checkbox{
       label{
         margin-top: -4px;
+        margin-bottom: 10px;
       }
     }
   }
 }
+
 
 .registration{
   .form-group{
@@ -267,6 +269,15 @@
 .resend-confirmation-instructions{
   .modal-body{
     padding: 0;
+    .tf_text{
+      float: left;
+      color: $gray;
+      width: 80%;
+      padding: 0 0 20px 20px;
+    }
+    .tf_icon{
+      float: left;
+    }
   }
 }
 

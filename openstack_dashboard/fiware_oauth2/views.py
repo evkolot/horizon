@@ -189,7 +189,12 @@ class AuthorizeView(FormView):
                 # redirect resource owner to client with the authorization code
                 LOG.debug('OAUTH2: Redirecting user back to %s', 
                     authorization_code.redirect_uri)
-                return redirect(authorization_code.redirect_uri, permanent=True)
+                
+                # NOTE(garcianavalon) to support custom schemes for mobile apps
+                # Create custom response to avoid security check in protocol
+                res = http.HttpResponse(authorization_code.redirect_uri, status=302)
+                res['Location'] = authorization_code.redirect_uri
+                return res
 
             elif self.application_credentials.get('response_type', None) == 'token':
                 # Implicit grant
@@ -197,10 +202,14 @@ class AuthorizeView(FormView):
                     request,
                     application_id=self.application_credentials['application_id'])
 
-                return http.HttpResponseRedirect(
+                # NOTE(garcianavalon) to support custom schemes for mobile apps
+                # Create custom response to avoid security check in protocol
+                res = http.HttpResponse(
                     response.headers['location'],
-                    status=response.status_code, 
-                    reason=response.reason)
+                    status=response.status_code)
+                res['Location'] = response.headers['location']
+                res.reason_phrase = response.reason
+                return res
 
         except Exception as e:
             LOG.error('OAUTH2: exception when authorizing %s', e)
