@@ -41,36 +41,36 @@
 
     var csrftoken = getCookie('csrftoken');
 
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
-            }
-            horizon.modals.modal_spinner(gettext("Loading"));
-        },
-        complete: function () {
-            // Clear the global storage;
-            horizon.modals._request = null;
-            horizon.modals.spinner.modal('hide');
-        },
-        error: function(jqXHR, status, errorThrown) {
-            if (jqXHR.status === 401){
-                var redir_url = jqXHR.getResponseHeader("X-Horizon-Location");
-                if (redir_url){
-                    location.href = redir_url;
-                } else {
-                    location.reload(true);
-                }
-            }
-            else {
-                if (!horizon.ajax.get_messages(jqXHR)) {
-                    // Generic error handler. Really generic.
-                    horizon.alert("danger", gettext("An error occurred. Please try again later."));
-                }
+    // AJAX setup functions
+    var beforeSend = function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+        horizon.modals.modal_spinner(gettext("Loading"));
+    };
+    var complete = function(){
+        // Clear the global storage;
+        horizon.modals._request = null;
+        horizon.modals.spinner.modal('hide');
+    };
+    var error = function(jqXHR, status, errorThrown) {
+        if (jqXHR.status === 401){
+            var redir_url = jqXHR.getResponseHeader("X-Horizon-Location");
+            if (redir_url){
+                location.href = redir_url;
+            } else {
+                location.reload(true);
             }
         }
-    });
+        else {
+            if (!horizon.ajax.get_messages(jqXHR)) {
+                // Generic error handler. Really generic.
+                horizon.alert("danger", gettext("An error occurred. Please try again later."));
+            }
+        }
+    };
 
+    // Perform AJAX requests
     $("[name='enable'], [name='new_key']").click(function(e){
         e.preventDefault();
 
@@ -84,15 +84,24 @@
                 "&" + $(this).attr("name").toLowerCase() +
                 "=" + $(this).attr("name").toLowerCase();
 
-        horizon.modals._request = $.post($form.attr('action'), data, function(data, textStatus, jqXHR){
-            if (data.search("<div class=\"alert alert-message alert-danger\">") === -1){
-                $form.closest(".modal").modal("hide");
-                modal = horizon.modals.success(data, textStatus, jqXHR);
-            } else {
-                $form.closest(".modal").modal("hide");
-                $form.replaceWith(data)
-            }
-        }, 'html');
+        horizon.modals._request = $.ajax({
+            type: "POST",
+            url: $form.attr('action'),
+            data: data,
+            dataType: 'html',
+            beforeSend: beforeSend,
+            complete: complete,
+            success: function(data, textStatus, jqXHR){
+                if (data.search("<div class=\"alert alert-message alert-danger\">") === -1){
+                    $form.closest(".modal").modal("hide");
+                    modal = horizon.modals.success(data, textStatus, jqXHR);
+                } else {
+                    $form.closest(".modal").modal("hide");
+                    $form.replaceWith(data)
+                }
+            },
+            error: error
+        });
 
     });
 
@@ -102,8 +111,17 @@
         var $form = $("#two_factor_form"),
             data = "disable=disable";
 
-        $.post($form.attr('action'), data, function(data, textStatus, jqXHR){
-            location.reload(true);
+        $.ajax({
+            type: "POST",
+            url: $form.attr('action'),
+            data: data,
+            dataType: 'html',
+            beforeSend: beforeSend,
+            complete: complete,
+            success: function(data, textStatus, jqXHR){
+                location.reload(true);
+            },
+            error: error
         });
     });
 
