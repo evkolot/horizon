@@ -12,20 +12,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import logging
+
+import base64
 import datetime
+import io
+import logging
+import os
+
+import pyqrcode
 
 from django.conf import settings
 
 from django.core.cache import cache
+from django.core.signing import Signer
 from django.shortcuts import redirect
 
-import os
-import io
-import base64
-import pyqrcode
-
 from horizon import forms
+from horizon import messages
 from horizon import views
 
 from openstack_dashboard import api
@@ -172,3 +175,34 @@ class TwoFactorNewKeyView(views.APIView):
         if 'two_factor_data' not in self.request.session:
             return redirect('horizon:settings:multisettings:index')
         return super(TwoFactorNewKeyView, self).dispatch(request, args, kwargs)
+
+
+def email_verify_and_update(request):
+    """If the verification_key is correct, change the user email."""
+    # check the verification_key
+    name = request.user.name
+    new_email = request.GET.get('new_email')
+    signer = Signer()
+    expected_verification_key = signer.sign(name + new_email).split(':')[1]
+
+    if expected_verification_key == request.GET.get('verification_key'):
+
+        # now update email
+        user_id = request.user.id
+
+        # if we dont set password to None we get a dict-key error in api/keystone
+        api.keystone.user_update(
+            request,
+            user_id,
+            name=new_email,
+            password=None)
+
+        msg = 'Email changed succesfully.'
+        messages.success(request, msg)
+    else:
+        msg = 'Invalid verification key. Email not updated.'
+        messages.error(request, msg)
+
+    # redirect user to settings home
+    response = redirect('horizon:settings:multisettings:index')
+    return response
