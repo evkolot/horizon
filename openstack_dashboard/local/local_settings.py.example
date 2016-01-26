@@ -562,7 +562,7 @@ IDM_USER_CREDENTIALS = {
 # IdM ADMIN
 # Application name of the idm in the backend. Used for the administrator
 # dashboard
-FIWARE_IDM_ADMIN_APP = 'idm'
+FIWARE_IDM_ADMIN_APP = 'idm_admin_app'
 # Application name of all the default apps for organizations
 FIWARE_DEFAULT_APPS = [
     'Store',
@@ -619,8 +619,8 @@ FIWARE_DEFAULT_DURATION = {
 MAX_TRIAL_USERS = 100
 
 # Default FIWARE roles
-FIWARE_PURCHASER_ROLE_ID = '191'
-FIWARE_PROVIDER_ROLE_ID = '106'
+FIWARE_PURCHASER_ROLE_ID = 'purchaser_role'
+FIWARE_PROVIDER_ROLE_ID = 'provider_role'
 
 # Table Pagination
 PAGE_SIZE = 5
