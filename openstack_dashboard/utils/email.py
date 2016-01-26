@@ -15,6 +15,7 @@
 import logging
 
 from django.core import mail
+from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
 
 from openstack_dashboard.local import local_settings
@@ -92,6 +93,22 @@ def send_reset_email(email, token, user):
         subject='Reset password instructions',
         text_template='email/reset_password.txt',
         html_template='email/reset_password.html',
+        content=content)
+
+
+def send_verification_email(user, key, new_email):
+    query_string = '?verification_key={0}&new_email={1}'.format(key, new_email)
+    url = _get_current_domain() + reverse('horizon:settings:multisettings:useremail_verify') + query_string
+    content = {
+        'url': url,
+        'user':user,
+    }
+
+    send_html_email(
+        recipients=[new_email], 
+        subject='Account email change requested',
+        text_template='email/verify_email.txt',
+        html_template='email/verify_email.html',
         content=content)
 
         

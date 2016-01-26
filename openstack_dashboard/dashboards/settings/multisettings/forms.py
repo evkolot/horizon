@@ -12,16 +12,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import logging
 
-import uuid
-import io
 import base64
+import io
+import logging
+import uuid
+
 import pyqrcode
 
 from django import shortcuts
 from django.conf import settings
 from django.core.cache import cache
+from django.core.signing import Signer
 from django.forms import ValidationError  # noqa
 from django import http
 from django.contrib import auth as django_auth
@@ -38,6 +40,7 @@ from horizon.utils import validators
 
 from openstack_dashboard import api
 from openstack_dashboard import fiware_api
+from openstack_dashboard.utils import email as email_utils
 
 from openstack_dashboard.dashboards.idm_admin.user_accounts \
     import forms as user_accounts_forms
@@ -139,53 +142,46 @@ class EmailForm(forms.SelfHandlingForm):
     @sensitive_variables('data')
     def handle(self, request, data):
         # the user's password to change the email, only to update the password
-        user_is_editable = api.keystone.keystone_can_edit_user()
-        if user_is_editable:
-            try:
-                # check if the password is correct
-                password = data['password']
-                domain = getattr(settings,
-                                'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN',
-                                'Default')
-                default_region = (settings.OPENSTACK_KEYSTONE_URL, "Default Region")
-                region = getattr(settings, 'AVAILABLE_REGIONS', [default_region])[0][0]
+        try:
+            # check if the password is correct
+            password = data['password']
+            domain = getattr(settings,
+                            'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN',
+                            'Default')
+            default_region = (settings.OPENSTACK_KEYSTONE_URL, "Default Region")
+            region = getattr(settings, 'AVAILABLE_REGIONS', [default_region])[0][0]
 
-                name = request.user.name
-                result = django_auth.authenticate(request=request,
-                                    username=name,
-                                    password=password,
-                                    user_domain_name=domain,
-                                    auth_url=region)
+            name = request.user.name
+            result = django_auth.authenticate(request=request,
+                                username=name,
+                                password=password,
+                                user_domain_name=domain,
+                                auth_url=region)
 
-                # now update email
-                user_id = request.user.id
-                #user = api.keystone.user_get(request, user_id, admin=False)
+            # send a verification email
+            email = data['email']
+            signer = Signer()
+            verification_key = signer.sign(name + email).split(':')[1]
 
-                # if we dont set password to None we get a dict-key error in api/keystone
-                api.keystone.user_update(request, user_id, name=data['email'],
-                                        password=None)
+            email_utils.send_verification_email(request.user, verification_key, email)
 
-                # redirect user to settings home
-                response = shortcuts.redirect('horizon:settings:multisettings:index')
-                #response = shortcuts.redirect(request.build_absolute_uri())
-                #response = shortcuts.redirect(horizon.get_user_home(request.user))
-                msg = ("Email changed succesfully")
-                LOG.debug(msg)
-                messages.success(request, msg)
-                return response
+            # redirect user to settings home
+            response = shortcuts.redirect('horizon:settings:multisettings:index')
+            msg = (
+                "An email has been sent to verify your account."
+                " Follow the provided link to change your email."
+            )
+            messages.success(request, msg)
+            return response
 
-            except auth_exceptions.KeystoneAuthException as exc:
-                messages.error(request, ('Invalid password'))
-                LOG.error(exc)
-                return False
-            except Exception as e:
-                exceptions.handle(request,
-                                  ('Unable to change email.'))
-                LOG.error(e)
-                return False
-        else:
-            messages.error(request, ('Changing email is not supported.'))
-            LOG.debug("Changing email is not supported")
+        except auth_exceptions.KeystoneAuthException as exc:
+            messages.error(request, ('Invalid password'))
+            LOG.error(exc)
+            return False
+        except Exception as e:
+            exceptions.handle(request,
+                              ('Unable to change email.'))
+            LOG.error(e)
             return False
 
 
