@@ -33,7 +33,7 @@ python-cinderclient==1.1.1
 python-glanceclient==0.15.0
 python-heatclient==0.2.12
 #python-keystoneclient>=0.10.0,<=1.1.0
--e git+https://github.com/ging/python-keystoneclient.git@development#egg=python-keystoneclient
+-e git+https://github.com/ging/python-keystoneclient.git#egg=python-keystoneclient
 python-neutronclient==2.6.0
 python-novaclient==2.26.0
 python-saharaclient==0.7.6
