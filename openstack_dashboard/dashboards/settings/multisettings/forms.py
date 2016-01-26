@@ -291,7 +291,7 @@ class ManageTwoFactorForm(forms.SelfHandlingForm):
         data = super(ManageTwoFactorForm, self).clean()
         if self.request.POST.get('enable', None):
             if not data.get('security_question', None) or not data.get('security_answer', None):
-                raise ValidationError(('You need to provide a security question to enable two factor authentication.'))
+                raise ValidationError(('You need to provide a security question & an answer to enable two factor authentication.'))
         return data
 
     def handle(self, request, data):
