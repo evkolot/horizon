@@ -7,14 +7,14 @@
 # be installed in a specific order.
 #
 # PBR should always appear first
-pbr>=0.6,!=0.7,<1.0
+pbr==0.11.0
 # Horizon Core Requirements
 Babel==2.1.1
 Django==1.6.11
 django-nocaptcha-recaptcha==0.0.18
 django-compressor==1.4
 #django_openstack_auth>=1.1.7,!=1.1.8,<=1.1.9
--e git+https://github.com/ging/django_openstack_auth.git@twofactor#egg=openstack_auth
+-e git+https://github.com/ging/django_openstack_auth.git#egg=openstack_auth
 django-pyscss==1.0.6 # BSD License (2 clause)
 django-summernote==0.6.16
 eventlet==0.15.2
