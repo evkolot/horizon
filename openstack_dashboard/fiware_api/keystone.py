@@ -581,6 +581,10 @@ def two_factor_check_security_question(request, user, security_answer):
     except ks_exceptions.HttpError:
         return False
 
+def two_factor_forget_all_devices(request, user):
+    manager = internal_keystoneclient(request).two_factor.keys
+    return manager.delete_all_devices(user)
+
 # CALLS FORBIDDEN FOR THE USER THAT NEED TO USE THE IDM ACCOUNT
 # USERS
 def user_get(request, user_id):
