@@ -136,6 +136,7 @@ class ManageApplicationRoles(idm_workflows.RelationshipWorkflow):
     def handle(self, request, data):
         success = super(ManageApplicationRoles, self).handle(request, data)
         app_id = data['superset_id']
+        application = fiware_api.keystone.application_get(request, app_id)
         try:
             role_permissions = {}
             public_roles = [
@@ -154,7 +155,8 @@ class ManageApplicationRoles(idm_workflows.RelationshipWorkflow):
                     role_permissions[role.id] = public_permissions
 
             fiware_api.access_control_ge.policyset_update(
-                app_id=app_id, 
+                request,
+                application=application, 
                 role_permissions=role_permissions)
 
         except Exception:
