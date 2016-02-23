@@ -332,6 +332,12 @@ class ManageTwoFactorForm(forms.SelfHandlingForm):
                 LOG.info('Disabled two factor authentication')
                 return shortcuts.redirect('horizon:settings:multisettings:index')
 
+            elif request.POST.get(u'forget_devices', None):
+                fiware_api.keystone.two_factor_forget_all_devices(request=request, user=user)
+                messages.success(request, "All devices were deleted.")
+                LOG.info('Devices for two factor were deleted')
+                return shortcuts.redirect('horizon:settings:multisettings:index')
+
         except Exception as e:
             exceptions.handle(request, 'error')
             LOG.error(e)

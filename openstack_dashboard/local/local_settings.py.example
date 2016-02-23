@@ -134,8 +134,8 @@ EMAIL_SUBJECT_PREFIX = '[FIWARE Lab]'
 #     ('http://cluster2.example.com:5000/v2.0', 'cluster2'),
 # ]
 
-OPENSTACK_HOST = "$$KEYSTONE_ADDRESS"
-OPENSTACK_KEYSTONE_URL = "http://%s:$$KEYSTONE_PUBLIC_PORT/v3" % OPENSTACK_HOST
+OPENSTACK_HOST = "127.0.0.1"
+OPENSTACK_KEYSTONE_URL = "http://%s:5000/v3" % OPENSTACK_HOST
 # NOTE(garcianavalon) this role is created whith all the other initial
 # data. Don't confuse it with keystone v2 API default role
 # (member_role_name=_member_)
@@ -550,9 +550,9 @@ SECURITY_GROUP_RULES = {
 # USER REGISTRATION
 # KEYSTONE ADMIN ACCOUNT FOR THE IdM
 IDM_USER_CREDENTIALS = {
-    'username': '$$IDM_NAME',
+    'username': 'idm',
     'password': '$$IDM_PASS',
-    'project': '$$IDM_PROJECT',
+    'project': 'idm',
 }
 
 # if you want to use domain filtering you can set this to whitelist or
@@ -562,7 +562,7 @@ IDM_USER_CREDENTIALS = {
 # IdM ADMIN
 # Application name of the idm in the backend. Used for the administrator
 # dashboard
-FIWARE_IDM_ADMIN_APP = 'idm'
+FIWARE_IDM_ADMIN_APP = 'idm_admin_app'
 # Application name of all the default apps for organizations
 FIWARE_DEFAULT_APPS = [
     'Store',
@@ -619,8 +619,8 @@ FIWARE_DEFAULT_DURATION = {
 MAX_TRIAL_USERS = 100
 
 # Default FIWARE roles
-FIWARE_PURCHASER_ROLE_ID = '191'
-FIWARE_PROVIDER_ROLE_ID = '106'
+FIWARE_PURCHASER_ROLE_ID = 'purchaser'
+FIWARE_PROVIDER_ROLE_ID = 'provider'
 
 # Table Pagination
 PAGE_SIZE = 5

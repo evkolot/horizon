@@ -99,7 +99,12 @@ class MultiFormView(views.APIView):
         email = settings_forms.EmailForm(self.request, initial=initial_email)
         two_factor = settings_forms.ManageTwoFactorForm(self.request)
 
-        context['forms'] = [status, password, email, two_factor, cancel]
+        idm_username = getattr(settings, 'IDM_USER_CREDENTIALS')['username']
+
+        if idm_username == user.name:
+            context['forms'] = [status, password, email, cancel]
+        else:
+            context['forms'] = [status, password, email, two_factor, cancel]
         return context
 
 
