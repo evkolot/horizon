@@ -619,8 +619,8 @@ FIWARE_DEFAULT_DURATION = {
 MAX_TRIAL_USERS = 100
 
 # Default FIWARE roles
-FIWARE_PURCHASER_ROLE_ID = 'purchaser_role'
-FIWARE_PROVIDER_ROLE_ID = 'provider_role'
+FIWARE_PURCHASER_ROLE_ID = 'purchaser'
+FIWARE_PROVIDER_ROLE_ID = 'provider'
 
 # Table Pagination
 PAGE_SIZE = 5
