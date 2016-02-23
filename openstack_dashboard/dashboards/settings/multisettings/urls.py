@@ -13,5 +13,7 @@ urlpatterns = patterns('',
     url(r'^email/verify$', settings_views.email_verify_and_update, name='useremail_verify'),
     url(r'^cancel/$', settings_views.CancelView.as_view(), name='cancelaccount'),
     url(r'^twofactor/$', settings_views.ManageTwoFactorView.as_view(), name='twofactor'),
-    url(r'^twofactor/newkey/$', settings_views.TwoFactorNewKeyView.as_view(), name='newkey')
+    url(r'^twofactor/newkey/$', settings_views.TwoFactorNewKeyView.as_view(), name='newkey'),
+    url(r'^twofactor/disable/$', settings_views.DisableTwoFactorView.as_view(), name='twofactor_disable'),
+    url(r'^twofactor/forgetdevices/$', settings_views.ForgetTwoFactorDevicesView.as_view(), name='forgetdevices')
 )

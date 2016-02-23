@@ -2,9 +2,11 @@
     {% if two_factor_enabled %}
     <p>You have this option <b>enabled</b>.</p>
     <p>Now, whenever you want to access your account, you need to provide both your password and a code, which you can get from an authentication mobile app. You can regenerate the key needed for the app here, in case you lost it.</p>
-    <input class="btn btn-secondary always-enabled" name="disable" type="submit" value="Disable">
-    <input class="btn btn-secondary always-enabled" name="forget_devices" type="submit" value="Forget devices">
+    <button class="btn btn-secondary always-enabled ajax-modal" href="{% url 'horizon:settings:multisettings:twofactor_disable' %}">Disable</button>
     <input class="btn btn-primary always-enabled" name="new_key" type="submit" value="Get new key">
+    <hr>
+    <p>When signing in to your account, you can remember devices so as not to be asked for verification codes any more. You can always forget all the remembered devices in this section.</p>
+    <button class="btn btn-secondary always-enabled ajax-modal" href="{% url 'horizon:settings:multisettings:forgetdevices' %}">Forget devices</button>
     {% else %}
     <p>You have this option <b>disabled</b>.</p>
     <p>We highly recommend you enable it, since it provides a higher level of security to access your account.</p>
@@ -106,16 +108,11 @@
 
     });
 
-    $("body").on("click", ".cancel", function(e){
+    $("body").on("click", ".cancel_newkey", function(e){
         e.preventDefault();
-
-        var $form = $("#two_factor_form"),
-            data = "disable=disable";
-
         $.ajax({
             type: "POST",
-            url: $form.attr('action'),
-            data: data,
+            url: "{% url 'horizon:settings:multisettings:twofactor_disable' %}",
             dataType: 'html',
             beforeSend: beforeSend,
             complete: complete,
@@ -127,10 +124,12 @@
     });
 
     $(document).on("click", "#two_factor_enable_modal, [data-dismiss='modal']", function(e) {
+        console.log("HOLA");
         location.reload(true);
     });
 
     $(document).on("click", "#two_factor_enable_modal > .modal-dialog", function(e) {
+        console.log("ADIOS");
         e.stopPropagation();
     });
 

@@ -297,48 +297,71 @@ class ManageTwoFactorForm(forms.SelfHandlingForm):
     def handle(self, request, data):
         try:
             user = fiware_api.keystone.user_get(request, request.user.id)
-            if request.POST.get(u'enable', None) or request.POST.get(u'new_key', None):
-                if request.POST.get(u'enable', None):
-                    security_question = data['security_question']
-                    security_answer = data['security_answer']
-                else:
-                    security_question = security_answer = None
-                (key, uri) = fiware_api.keystone.two_factor_new_key(request=request,
-                                                                    user=user,
-                                                                    security_question=security_question,
-                                                                    security_answer=security_answer)
+            if request.POST.get(u'enable', None):
+                security_question = data['security_question']
+                security_answer = data['security_answer']
+            else:
+                security_question = security_answer = None
+            (key, uri) = fiware_api.keystone.two_factor_new_key(request=request,
+                                                                user=user,
+                                                                security_question=security_question,
+                                                                security_answer=security_answer)
 
-                LOG.info('Enabled two factor authentication or new key requested')
-                # NOTE(@federicofdez) Fix this to always use redirect
-                if request.is_ajax():
-                    context = {}
-                    context['two_factor_key'] = key
-                    qr = pyqrcode.create(uri, error='L')
-                    qr_buffer = io.BytesIO()
-                    qr.svg(qr_buffer, scale=3)
-                    context['two_factor_qr_encoded'] = base64.b64encode(qr_buffer.getvalue())
-                    context['hide'] = True
-                    return shortcuts.render(request, 'settings/multisettings/_two_factor_newkey.html', context)
-                else:
-                    cache_key = uuid.uuid4().hex
-                    cache.set(cache_key, (key, uri))
-                    request.session['two_factor_data'] = cache_key
-                    messages.success(request, "Two factor authentication was successfully enabled.")
-                    return shortcuts.redirect('horizon:settings:multisettings:newkey')
-
-            elif request.POST.get(u'disable', None):
-                fiware_api.keystone.two_factor_disable(request=request, user=user)
-                messages.success(request, "Two factor authentication was successfully disabled for your account.")
-                LOG.info('Disabled two factor authentication')
-                return shortcuts.redirect('horizon:settings:multisettings:index')
-
-            elif request.POST.get(u'forget_devices', None):
-                fiware_api.keystone.two_factor_forget_all_devices(request=request, user=user)
-                messages.success(request, "All devices were deleted.")
-                LOG.info('Devices for two factor were deleted')
-                return shortcuts.redirect('horizon:settings:multisettings:index')
+            LOG.info('Enabled two factor authentication or new key requested')
+            # NOTE(@federicofdez) Fix this to always use redirect
+            if request.is_ajax():
+                context = {}
+                context['two_factor_key'] = key
+                qr = pyqrcode.create(uri, error='L')
+                qr_buffer = io.BytesIO()
+                qr.svg(qr_buffer, scale=3)
+                context['two_factor_qr_encoded'] = base64.b64encode(qr_buffer.getvalue())
+                context['hide'] = True
+                return shortcuts.render(request, 'settings/multisettings/_two_factor_newkey.html', context)
+            else:
+                cache_key = uuid.uuid4().hex
+                cache.set(cache_key, (key, uri))
+                request.session['two_factor_data'] = cache_key
+                messages.success(request, "Two factor authentication was successfully enabled.")
+                return shortcuts.redirect('horizon:settings:multisettings:newkey')
 
         except Exception as e:
             exceptions.handle(request, 'error')
             LOG.error(e)
             return False
+
+class DisableTwoFactorForm(forms.SelfHandlingForm):
+    action = reverse_lazy('horizon:settings:multisettings:twofactor_disable')
+    description = 'Disable two factor authentication'
+    template = 'settings/multisettings/_two_factor_disable.html'
+
+    def handle(self, request, data):
+            try:
+                user = fiware_api.keystone.user_get(request, request.user.id)
+                fiware_api.keystone.two_factor_disable(request=request, user=user)
+                messages.success(request, "Two factor authentication was successfully disabled for your account.")
+                LOG.info('Disabled two factor authentication')
+                return shortcuts.redirect('horizon:settings:multisettings:index')
+
+            except Exception as e:
+                exceptions.handle(request, 'error')
+                LOG.error(e)
+                return False
+
+class ForgetTwoFactorDevicesForm(forms.SelfHandlingForm):
+    action = reverse_lazy('horizon:settings:multisettings:forgetdevices')
+    description = 'Forget two factor authentication devices'
+    template = 'settings/multisettings/_two_factor_forget_devices.html'
+
+    def handle(self, request, data):
+            try:
+                user = fiware_api.keystone.user_get(request, request.user.id)
+                fiware_api.keystone.two_factor_forget_all_devices(request=request, user=user)
+                messages.success(request, "All devices were deleted.")
+                LOG.info('Devices for two factor were deleted')
+                return shortcuts.redirect('horizon:settings:multisettings:index')
+
+            except Exception as e:
+                exceptions.handle(request, 'error')
+                LOG.error(e)
+                return False

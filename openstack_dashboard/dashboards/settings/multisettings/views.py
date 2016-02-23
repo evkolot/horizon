@@ -145,6 +145,28 @@ class ManageTwoFactorView(forms.ModalFormView):
             context['two_factor_enabled'] = True
         return context
 
+class DisableTwoFactorView(forms.ModalFormView):
+    form_class = settings_forms.DisableTwoFactorForm
+    template_name = 'settings/multisettings/two_factor_disable.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        user_id = self.request.user.id
+        user = fiware_api.keystone.user_get(self.request, user_id)
+        if not fiware_api.keystone.two_factor_is_enabled(self.request, user):
+            return redirect('horizon:settings:multisettings:index')
+        return super(DisableTwoFactorView, self).dispatch(request, args, kwargs)
+
+class ForgetTwoFactorDevicesView(forms.ModalFormView):
+    form_class = settings_forms.ForgetTwoFactorDevicesForm
+    template_name = 'settings/multisettings/two_factor_forget_devices.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        user_id = self.request.user.id
+        user = fiware_api.keystone.user_get(self.request, user_id)
+        if not fiware_api.keystone.two_factor_is_enabled(self.request, user):
+            return redirect('horizon:settings:multisettings:index')
+        return super(ForgetTwoFactorDevicesView, self).dispatch(request, args, kwargs)
+
 class TwoFactorNewKeyView(views.APIView):
     template_name = 'settings/multisettings/two_factor_newkey.html'
 
