@@ -60,6 +60,11 @@
 }
 
 #two_factor_enable_modal{
+  .modal-header{
+    .close{
+      display: none;
+    }
+  }
   .modal-body{
     .middle{
       border-right: 1px solid $gray-lighter;
