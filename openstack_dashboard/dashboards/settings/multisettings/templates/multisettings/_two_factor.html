@@ -4,6 +4,7 @@
     <p>Now, whenever you want to access your account, you need to provide both your password and a code, which you can get from an authentication mobile app. You can regenerate the key needed for the app here, in case you lost it.</p>
     <button class="btn btn-secondary always-enabled ajax-modal" href="{% url 'horizon:settings:multisettings:twofactor_disable' %}">Disable</button>
     <input class="btn btn-primary always-enabled" name="new_key" type="submit" value="Get new key">
+    <div class="clear"></div>
     <hr>
     <p>When signing in to your account, you can remember devices so as not to be asked for verification codes any more. You can always forget all the remembered devices in this section.</p>
     <button class="btn btn-secondary always-enabled ajax-modal" href="{% url 'horizon:settings:multisettings:forgetdevices' %}">Forget devices</button>
