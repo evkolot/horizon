@@ -110,17 +110,22 @@ class SwitchMiddleware(object):
             or not hasattr(request, 'organization')):
             return
 
-        # TODO(garcianavalon) lazyloading and caching
-        # TODO(garcianavalon) move to fiware_api
-        owner_role = fiware_api.keystone.get_owner_role(request)
-        assignments = api.keystone.role_assignments_list(
-            request, user=request.user.id, role=owner_role.id)
-        
-        switch_orgs = set([a.scope['project']['id'] for a in assignments 
-                       if a.scope['project']['id'] != request.organization.id])
-
         organizations = []
-        for org_id in switch_orgs:
-            organizations.append(fiware_api.keystone.project_get(request, org_id))
+        try:
+            # TODO(garcianavalon) lazyloading and caching
+            # TODO(garcianavalon) move to fiware_api
+            owner_role = fiware_api.keystone.get_owner_role(request)
+            assignments = api.keystone.role_assignments_list(
+                request, user=request.user.id, role=owner_role.id)
+            
+            switch_orgs = set([a.scope['project']['id'] for a in assignments 
+                           if a.scope['project']['id'] != request.organization.id])
+            
+            for org_id in switch_orgs:
+                organizations.append(fiware_api.keystone.project_get(request, org_id))
+
+        except (kc_exceptions.Unauthorized, exceptions.NotAuthorized) as e:
+            LOG.warning("Problem with Switch Middleware")
+            LOG.warning(e)
 
         request.organizations = organizations
