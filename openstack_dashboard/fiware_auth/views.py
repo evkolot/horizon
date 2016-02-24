@@ -95,12 +95,13 @@ class RegistrationView(_RequestPassingFormView):
         
     def form_valid(self, request, form):
         new_user = self.register(request, **form.cleaned_data)
+        
         if new_user:
             success_url = self.get_success_url(request, new_user)
             # success_url must be a simple string, no tuples
             return redirect(success_url)
         
-        return redirect('signup')
+        return redirect('fiware_auth_register')
 
     # We have to protect the entire "cleaned_data" dict because it contains the
     # password and confirm_password strings.
