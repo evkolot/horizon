@@ -17,9 +17,11 @@ import logging
 from django import http
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django import shortcuts
 
 from horizon import exceptions
 from horizon.utils import functions as utils
+from horizon import middleware
 
 from keystoneclient.openstack.common.apiclient \
     import exceptions as kc_exceptions
@@ -62,6 +64,7 @@ class UserInfoMiddleware(object):
 
         try:
             user_data = api.keystone.user_get(request, request.user.id)
+            LOG.debug(str(user_data) + 'for user %s', request.user.id)
             # setattr(user_data, 'username', user_data.name)
             for attr, value in user_data.__dict__.iteritems():
                 setattr(request.user, attr, value)
@@ -124,3 +127,36 @@ class SwitchMiddleware(object):
             organizations.append(fiware_api.keystone.project_get(request, org_id))
 
         request.organizations = organizations
+
+
+class CustomHorizonMiddleware(middleware.HorizonMiddleware):
+    """ Redirect to logout instead of login when user is not authenticated, to
+        make sure that session cookie is deleted """
+
+    def process_exception(self, request, exception):
+        """Catches internal Horizon exception classes such as NotAuthorized,
+        NotFound and Http302 and handles them gracefully.
+        """
+        if isinstance(exception, (exceptions.NotAuthorized,
+                                  exceptions.NotAuthenticated)):
+
+            response = http.HttpResponseRedirect(settings.LOGOUT_URL)
+            msg = ("Session expired")
+            LOG.debug(msg + 'for user %s', request.user.id)
+            utils.add_logout_reason(request, response, msg)
+
+            if request.is_ajax():
+                response_401 = http.HttpResponse(status=401)
+                response_401['X-Horizon-Location'] = response['location']
+                return response_401
+
+            return response
+
+        # If an internal "NotFound" error gets this far, return a real 404.
+        if isinstance(exception, exceptions.NotFound):
+            raise http.Http404(exception)
+
+        if isinstance(exception, exceptions.Http302):
+            # TODO(gabriel): Find a way to display an appropriate message to
+            # the user *on* the login form...
+            return shortcuts.redirect(exception.location)

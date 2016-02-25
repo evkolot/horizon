@@ -125,7 +125,7 @@ MIDDLEWARE_CLASSES = (
     'openstack_dashboard.fiware_middleware.middleware.OrganizationInfoMiddleware',
     'openstack_dashboard.fiware_middleware.middleware.SwitchMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'horizon.middleware.HorizonMiddleware',
+    'openstack_dashboard.fiware_middleware.middleware.CustomHorizonMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
