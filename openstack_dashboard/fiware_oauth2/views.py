@@ -50,7 +50,6 @@ class AuthorizeView(FormView):
         self.application_credentials = self.load_credentials(request)
 
         if not self.application_credentials['application_id']:
-
             # if no client_id was found, notify and progress no further
             messages.error(request, 'OUATH2 ERROR: client_id is missing in query_string')
             context = {
@@ -63,7 +62,7 @@ class AuthorizeView(FormView):
                 extra_context=context,
                 form_class=fiware_auth_forms.LoginWithEmailForm, 
                 **kwargs)
-            
+
         # Get the application details
         try:
             self.application = fiware_api.keystone.application_get(

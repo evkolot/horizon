@@ -98,7 +98,7 @@ def policyset_update(request, application, role_permissions):
         'X-Auth-Token': settings.ACCESS_CONTROL_MAGIC_KEY
     }
 
-    domain = get_application_domain(request, application);
+    domain = get_application_domain(request, application)
 
     url = settings.ACCESS_CONTROL_URL + '/authzforce/domains/' + domain + '/pap/policySet'
 
