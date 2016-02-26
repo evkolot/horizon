@@ -104,6 +104,11 @@ def register_pep_proxy(request, application_id, password=None):
         LOG.error('PEP_PROXIES_GROUP is not set in local_settings.py')
         return
 
+    pep_proxies_role = getattr(settings, 'PEP_PROXIES_ROLE', None)
+    if not pep_proxies_role:
+        LOG.error('PEP_PROXIES_ROLE is not set in local_settings.py')
+        return
+
     # create user with random password and unique name
     username = 'pep_proxy_' + uuid.uuid4().hex
     if not password:
@@ -119,6 +124,14 @@ def register_pep_proxy(request, application_id, password=None):
     except ks_exceptions.NotFound:
         LOG.debug('Creating PEP Proxies group in Keystone')
         pep_group = keystone.groups.create(name=pep_proxies_group, domain=domain)
+    
+    # asign a role in the domain to the group
+    try:
+        pep_role = keystone.roles.find(name=pep_proxies_role)
+    except ks_exceptions.NotFound:
+        LOG.debug('Creating PEP Proxies role in Keystone')
+        pep_role = keystone.roles.create(name=pep_proxies_role, domain=domain)
+        keystone.roles.grant(pep_role, group=pep_group, domain=domain)
 
     keystone.users.add_to_group(user=pep, group=pep_group)
 
