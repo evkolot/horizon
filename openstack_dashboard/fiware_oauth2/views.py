@@ -46,19 +46,36 @@ class AuthorizeView(FormView):
     oauth_data = {}
 
     def dispatch(self, request, *args, **kwargs):
+        # Load credentials from the request
+        self.application_credentials = self.load_credentials(request)
+
+        if not self.application_credentials['application_id']:
+
+            # if no client_id was found, notify and progress no further
+            messages.error(request, 'OUATH2 ERROR: client_id is missing in query_string')
+            context = {
+                'next':(reverse('fiware_oauth2_authorize') + '?' 
+                    + self.request.GET.urlencode()),
+                'redirect_field_name': auth.REDIRECT_FIELD_NAME,
+            }
+            return auth_views.login(
+                request, 
+                extra_context=context,
+                form_class=fiware_auth_forms.LoginWithEmailForm, 
+                **kwargs)
+            
+        # Get the application details
         try:
             self.application = fiware_api.keystone.application_get(
                 request,
-                request.GET.get('client_id'),
+                self.application_credentials['application_id'],
                 use_idm_account=True)
+
         except Exception:
             msg = ('Unable to retrieve application.')
-            LOG.error(msg)
+            LOG.exception(msg)
             messages.error(request, (msg))
             return redirect('horizon:user_home')
-
-        # Load credentials from the request
-        self.application_credentials = self.load_credentials(request)
 
         if request.user.is_authenticated():
             # continue
@@ -75,21 +92,22 @@ class AuthorizeView(FormView):
                 'show_application_details':True,
                 'application':self.application,
             }
+
             LOG.debug('OAUTH2: Login page with consumer details')
-        
-            
-            return auth_views.login(request, 
-                                extra_context=context,
-                                form_class=fiware_auth_forms.LoginWithEmailForm, 
-                                **kwargs)
+
+            return auth_views.login(
+                request, 
+                extra_context=context,
+                form_class=fiware_auth_forms.LoginWithEmailForm, 
+                **kwargs)
 
     def load_credentials(self, request):
         # TODO(garcianavalon) check it's set to code
         credentials = {     
-            'response_type':request.GET.get('response_type'),
-            'application_id':request.GET.get('client_id'),
-            'redirect_uri':request.GET.get('redirect_uri'),
-            'state':request.GET.get('state'),
+            'response_type': request.GET.get('response_type'),
+            'application_id': request.GET.get('client_id'),
+            'redirect_uri': request.GET.get('redirect_uri'),
+            'state': request.GET.get('state'),
         }
         return credentials
 
