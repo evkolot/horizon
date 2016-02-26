@@ -131,7 +131,9 @@ class SwitchMiddleware(object):
 
 class CustomHorizonMiddleware(middleware.HorizonMiddleware):
     """ Redirect to logout instead of login when user is not authenticated, to
-        make sure that session cookie is deleted """
+    make sure that session cookie is deleted. Also redirect to login
+    using get_full_path() instead of path only.
+    """
 
     def process_exception(self, request, exception):
         """Catches internal Horizon exception classes such as NotAuthorized,
@@ -160,3 +162,62 @@ class CustomHorizonMiddleware(middleware.HorizonMiddleware):
             # TODO(gabriel): Find a way to display an appropriate message to
             # the user *on* the login form...
             return shortcuts.redirect(exception.location)
+
+    def process_request(self, request):
+        """Adds data necessary for Horizon to function to the request."""
+
+        request.horizon = {'dashboard': None,
+                           'panel': None,
+                           'async_messages': []}
+        if not hasattr(request, "user") or not request.user.is_authenticated():
+            # proceed no further if the current request is already known
+            # not to be authenticated
+            # it is CRITICAL to perform this check as early as possible
+            # to avoid creating too many sessions
+            return None
+
+        # Check for session timeout if user is (or was) authenticated.
+        has_timed_out, timestamp = self._check_has_timed_timeout(request)
+        if has_timed_out:
+            return self._logout(request, request.get_full_path(), "Session timed out.")
+
+        if request.is_ajax():
+            # if the request is Ajax we do not want to proceed, as clients can
+            #  1) create pages with constant polling, which can create race
+            #     conditions when a page navigation occurs
+            #  2) might leave a user seemingly left logged in forever
+            #  3) thrashes db backed session engines with tons of changes
+            return None
+        # If we use cookie-based sessions, check that the cookie size does not
+        # reach the max size accepted by common web browsers.
+        if (
+            settings.SESSION_ENGINE ==
+            'django.contrib.sessions.backends.signed_cookies'
+        ):
+            max_cookie_size = getattr(
+                settings, 'SESSION_COOKIE_MAX_SIZE', None)
+            session_cookie_name = getattr(
+                settings, 'SESSION_COOKIE_NAME', None)
+            session_key = request.COOKIES.get(session_cookie_name)
+            if max_cookie_size is not None and session_key is not None:
+                cookie_size = sum((
+                    len(key) + len(value)
+                    for key, value in six.iteritems(request.COOKIES)
+                ))
+                if cookie_size >= max_cookie_size:
+                    LOG.error(
+                        'Total Cookie size for user_id: %(user_id)s is '
+                        '%(cookie_size)sB >= %(max_cookie_size)sB. '
+                        'You need to configure file-based or database-backed '
+                        'sessions instead of cookie-based sessions: '
+                        'http://docs.openstack.org/developer/horizon/topics/'
+                        'deployment.html#session-storage'
+                        % {
+                            'user_id': request.session.get(
+                                'user_id', 'Unknown'),
+                            'cookie_size': cookie_size,
+                            'max_cookie_size': max_cookie_size,
+                        }
+                    )
+        # We have a valid session, so we set the timestamp
+        request.session['last_activity'] = timestamp
