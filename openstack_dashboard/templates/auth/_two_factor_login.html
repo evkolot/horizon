@@ -9,6 +9,7 @@
   {% block autocomplete %}{{ HORIZON_CONFIG.password_autocomplete }}{% endblock %}
 
   {% block modal-body %}
+    {% if next %}<input type="hidden" name="{{ redirect_field_name }}" value="{{ next }}" />{% endif %}
     <div>
       <p>Two factor authentication enabled</p>
       <i class="fa fa-mobile fa-4x tf_icon"></i>
