@@ -41,7 +41,7 @@
                          '2': 'medium_pwd_input',
                          '3': 'hard_pwd_input',
                          '4': 'hard_pwd_input'};
-    $('#id_password1').on("input", function() {
+    $("body").on("input", "#id_password1", function() {
       var pwdInput = this.value;
       if (pwdInput !== '') {
         result = zxcvbn(pwdInput);
