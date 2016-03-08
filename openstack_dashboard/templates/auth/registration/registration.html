@@ -31,7 +31,7 @@
                          '2': 'medium',
                          '3': 'hard',
                          '4': 'hard'};
-    message_classes =  { '0': 'weak_pwd',
+    message_classes =  { '0': 'weak_pwd_input',
                          '1': 'medium_pwd',
                          '2': 'medium_pwd',
                          '3': 'hard_pwd',
@@ -43,13 +43,18 @@
                          '4': 'hard_pwd_input'};
     $('#id_password1').on("input", function() {
       var pwdInput = this.value;
-      result = zxcvbn(pwdInput);
-      $('[for=id_password1]').html("Password\t<a href='#' class='" + 
-                                    message_classes[result.score] + 
-                                    "'data-toggle='tooltip' data-placement='right' title='" + 
-                                    result.feedback.warning + 
-                                    "'>" + strength_messages[result.score] + '</a>');
-      $('#id_password1').removeClass( "weak_pwd_input medium_pwd_input hard_pwd_input" ).addClass(input_classes[result.score]);
+      if (pwdInput !== '') {
+        result = zxcvbn(pwdInput);
+        $('[for=id_password1]').html("Password\t<a href='#' class='" + 
+                                      message_classes[result.score] + 
+                                      "'data-toggle='tooltip' data-placement='right' title='" + 
+                                      result.feedback.warning + 
+                                      "'>" + strength_messages[result.score] + '</a>');
+        $('#id_password1').removeClass( "weak_pwd_input medium_pwd_input hard_pwd_input" ).addClass(input_classes[result.score]); 
+      } else {
+        $('[for=id_password1]').html("Password");
+        $('#id_password1').removeClass( "weak_pwd_input medium_pwd_input hard_pwd_input" )
+      }
       $('[data-toggle="tooltip"]').tooltip();
     });
   </script>
