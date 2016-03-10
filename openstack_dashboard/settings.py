@@ -236,6 +236,7 @@ INSTALLED_APPS = [
     'nocaptcha_recaptcha',
     'django_summernote',
     'corsheaders',
+    'django_gravatar'
 ]
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 AUTHENTICATION_BACKENDS = ('openstack_auth.backend.KeystoneBackend',)
