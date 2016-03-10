@@ -8,6 +8,10 @@ function readURL(input) {
     if (input.files && input.files[0]) {
         var reader = new FileReader();
         
+        if (!$('#avatar-update').length){
+            $('#avatar-update-container').append('<img id="avatar-update" />');
+        }
+
         reader.onload = function (e) {
             $('#avatar-update').attr('src', e.target.result);
             $('#avatar-update').Jcrop({

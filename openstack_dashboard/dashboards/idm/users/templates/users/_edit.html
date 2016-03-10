@@ -1,6 +1,7 @@
 {% extends "horizon/common/_modal_form.html" %}
 {% load i18n %}
 {% load url from future %}
+{% load form_helpers %}
 
 {% block form_class %}{% endblock %}
 {% block form_action %}{{form.action}}{% endblock %}
@@ -13,23 +14,53 @@
 
 {% block modal-body %}
 
-{% if form.title == 'Change your avatar'%}
+{% if form.title == 'Change your avatar' %}
 <div>
-	<img id="avatar-update" src="{{ image }}" alt="your image"   />
+	<div>
+		<img src="{{ uploaded_image }}" alt="your uploaded image"   />
+	</div>
+	<div>
+		<fieldset>
+			{% include "horizon/common/_form_fields.html" %}
+		</fieldset>
+	</div>
+	<input class="btn" name="use_uploaded_image" type="submit" value="Use this image">
+	{% if no_uploaded_image %}
+	<input class="btn" name="delete_uploaded_image" type="submit" value="Delete this image">
+	{% endif %}
 </div>
+
+<div>
+	{% if gravatar_image %}
+	<img id="gravatar-preview" src="{{ gravatar_image }}" alt="your gravatar"   />
+	<input class="btn{% if req.user.use_gravatar %} disabled{% endif %}" name="use_gravatar" type="submit" value="Use gravatar">
+	<p>Update it at <a href="https://en.gravatar.com/emails/">Gravatar</a>.</p>
+	{% else %}
+	<p>We're compatible with Gravatar. Create your profile!</p>
+	{% endif %}
+</div>
+
+<div id="avatar-update-container">
+</div>
+
 {% elif form.title == 'Cancel Account' %}
 <a class="modal-header panel-title" data-toggle="collapse" data-parent="#accordion" href="#destroy_organization" class="panel-heading">
     <h3>
       Are you sure you want to delete your account?
     </h3>
 </a>
-
-{% endif %}
 <div >
   <fieldset>
     {% include "horizon/common/_form_fields.html" %}
   </fieldset>
 </div>
+{% else %}
+<div >
+  <fieldset>
+    {% include "horizon/common/_form_fields.html" %}
+  </fieldset>
+</div>
+{% endif %}
 {% endblock %}
 
 
@@ -41,11 +72,9 @@
     <button type="submit" class="btn btn-danger">{% trans "Delete User" %} </button>
 
 </div>  
-
 {% else %}
 <button type="submit" class="btn btn-primary">{% trans "Update User" %} </button>
 {% endif %}
-
 
     
 {% endblock %}
