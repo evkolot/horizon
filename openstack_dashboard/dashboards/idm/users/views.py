@@ -187,6 +187,11 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
     def get_context_data(self, **kwargs):
         context = super(BaseUsersMultiFormView, self).get_context_data(**kwargs)
         
+        user_id = self.kwargs['user_id']
+        user = fiware_api.keystone.user_get(self.request, user_id)
+        if getattr(user, 'use_gravatar', None):
+            context['using_gravatar'] = True
+        
         if has_gravatar(getattr(self.object, 'name', None)):
             gravatar_image = get_gravatar_url(getattr(self.object, 'name', None), size=idm_utils.AVATAR_SIZE['img_original'])
             context['gravatar_image'] = gravatar_image

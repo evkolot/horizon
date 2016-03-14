@@ -24,19 +24,17 @@
 			{% include "horizon/common/_form_fields.html" %}
 		</fieldset>
 	</div>
-	<input class="btn" name="use_uploaded_image" type="submit" value="Use this image">
-	{% if no_uploaded_image %}
-	<input class="btn" name="delete_uploaded_image" type="submit" value="Delete this image">
-	{% endif %}
+	<button class="btn btn-primary always-enabled" {% if not using_gravatar %}disabled="true" {% endif %}name="use_uploaded_image" type="submit">Use this image</button>
+	<button class="btn btn-primary always-enabled" name="delete_uploaded_image" type="submit" {% if no_uploaded_image %}disabled="true"{% endif %}>Delete this image</button>
 </div>
 
 <div>
 	{% if gravatar_image %}
 	<img id="gravatar-preview" src="{{ gravatar_image }}" alt="your gravatar"   />
-	<input class="btn{% if req.user.use_gravatar %} disabled{% endif %}" name="use_gravatar" type="submit" value="Use gravatar">
-	<p>Update it at <a href="https://en.gravatar.com/emails/">Gravatar</a>.</p>
+	<button class="btn btn-primary always-enabled" {% if using_gravatar %}disabled="true" {% endif %}name="use_gravatar" type="submit">Use Gravatar</button>
+	<p>Update it at <a href="https://en.gravatar.com/emails/" target="_blank">Gravatar</a>.</p>
 	{% else %}
-	<p>We're compatible with Gravatar. Create your profile!</p>
+	<p>We're compatible with Gravatar. Create your profile <a href="https://en.gravatar.com/" target="_blank">here</a>!</p>
 	{% endif %}
 </div>
 
