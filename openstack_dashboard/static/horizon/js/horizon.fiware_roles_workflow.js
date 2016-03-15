@@ -15,7 +15,7 @@ horizon.fiware_roles_workflow = {
    * passed the selector with id: "id_group_id12345").
    **/
   get_field_id: function(id_string) {
-    return id_string.slice(id_string.lastIndexOf("_") + 1);
+    return id_string.slice(id_string.lastIndexOf("_permission_") + 12);
   },
 
   /*
