@@ -134,8 +134,7 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
     template_name = 'idm/users/edit.html'
     forms_classes = [
         user_forms.InfoForm,
-        user_forms.AvatarForm,
-        user_forms.CancelForm
+        user_forms.AvatarForm
     ]
 
     def _can_edit(self):
@@ -156,8 +155,6 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
                 'horizon:idm:users:info', kwargs=self.kwargs),
             user_forms.AvatarForm: reverse(
                 'horizon:idm:users:avatar', kwargs=self.kwargs),
-            user_forms.CancelForm: reverse(
-                'horizon:idm:users:cancel', kwargs=self.kwargs),
         }
         return endpoints.get(form_class)
 
@@ -211,11 +208,3 @@ class InfoFormHandleView(BaseUsersMultiFormView):
    
 class AvatarFormHandleView(BaseUsersMultiFormView):
     form_to_handle_class = user_forms.AvatarForm
-
-class CancelFormHandleView(BaseUsersMultiFormView):
-    form_to_handle_class = user_forms.CancelForm
-
-    def handle_form(self, form):
-        """ Wrapper for form.handle for easier overriding."""
-        return form.handle(self.request, 
-            form.cleaned_data, user=self.object)

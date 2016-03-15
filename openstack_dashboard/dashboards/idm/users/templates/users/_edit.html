@@ -42,17 +42,6 @@
 <div id="avatar-update-container">
 </div>
 
-{% elif form.title == 'Cancel Account' %}
-<a class="modal-header panel-title" data-toggle="collapse" data-parent="#accordion" href="#destroy_organization" class="panel-heading">
-    <h3>
-      Are you sure you want to delete your account?
-    </h3>
-</a>
-<div >
-  <fieldset>
-    {% include "horizon/common/_form_fields.html" %}
-  </fieldset>
-</div>
 {% else %}
 <div >
   <fieldset>
@@ -63,13 +52,7 @@
 {% endblock %}
 
 {% block modal-footer %}
-	{% if form.title == 'Cancel Account'%}
-	<div id="destroy_organization" class="panel-collapse collapse">
-
-		<button type="submit" class="btn btn-danger">{% trans "Delete User" %} </button>
-
-	</div>  
-	{% elif form.title == 'Change your avatar' %}
+	{% if form.title == 'Change your avatar' %}
 	{% else %}
 	<button type="submit" class="btn btn-primary">{% trans "Update User" %} </button>
 	{% endif %}

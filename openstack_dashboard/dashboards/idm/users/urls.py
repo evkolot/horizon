@@ -30,6 +30,4 @@ urlpatterns = patterns('',
     #    views.ContactFormHandleView.as_view(), name='contact'),
     url(r'^(?P<user_id>[^/]+)/edit/avatar/$', 
         views.AvatarFormHandleView.as_view(), name='avatar'),
-    url(r'^(?P<user_id>[^/]+)/edit/cancel/$', 
-        views.CancelFormHandleView.as_view(), name='cancel'),
 )

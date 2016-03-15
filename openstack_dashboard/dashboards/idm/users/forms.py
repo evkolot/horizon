@@ -123,21 +123,3 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
 
         return shortcuts.redirect('horizon:idm:users:detail', 
             data['userID'])
-
-             
-class CancelForm(forms.SelfHandlingForm):
-    userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-    title = 'Cancel Account'
-    
-    def handle(self, request, data, user):
-        image = getattr(user, 'img_original', '')
-        if "UserAvatar" in image:
-            os.remove(AVATAR_SMALL + user.id)
-            os.remove(AVATAR_MEDIUM + user.id)
-            os.remove(AVATAR_ORIGINAL + user.id)
-            LOG.debug('{0} deleted'.format(image))
-        api.keystone.user_delete(request, user)
-        LOG.info('User {0} deleted'.format(user.id))
-        messages.success(request, ("User deleted successfully."))
-        response = shortcuts.redirect('horizon:idm:users:detail')
-        return response
