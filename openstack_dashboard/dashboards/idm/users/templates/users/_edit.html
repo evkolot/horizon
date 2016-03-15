@@ -1,57 +1,76 @@
 {% extends "horizon/common/_modal_form.html" %}
 {% load i18n %}
 {% load url from future %}
+{% load form_helpers %}
 
 {% block form_class %}{% endblock %}
 {% block form_action %}{{form.action}}{% endblock %}
 {% block form_enctype %}multipart/form-data{% endblock %}
 
-{% block modal_id %}edit{% endblock %}
+{% block modal_class %}edit{% endblock %}
+{% if form.title == 'Change your avatar' %}{% block modal_id %}update-avatar-modal{% endblock %}{% endif %}
 {% block modal-header %}
 {{form.title}}
 {% endblock %}
 
 {% block modal-body %}
 
-{% if form.title == 'Change your avatar'%}
-<div>
-	<img id="avatar-update" src="{{ image }}" alt="your image"   />
+{% if form.title == 'Change your avatar' %}
+<div{% if not using_gravatar %} class="used-avatar"{% endif %}>
+	<div>
+		<img src="{{ uploaded_image }}" alt="your uploaded image"   />
+	</div>
+	<div>
+		<fieldset>
+			{% include "horizon/common/_form_fields.html" %}
+		</fieldset>
+	</div>
+	<button class="btn btn-primary always-enabled" {% if not using_gravatar %}disabled="true" {% endif %}name="use_uploaded_image" type="submit">Use this image</button>
+	<button class="btn btn-primary always-enabled" name="delete_uploaded_image" type="submit" {% if no_uploaded_image %}disabled="true"{% endif %}>Delete this image</button>
 </div>
+
+<div{% if using_gravatar %} class="used-avatar"{% endif %}>
+	{% if gravatar_image %}
+	<img id="gravatar-preview" src="{{ gravatar_image }}" alt="your gravatar"   />
+	<button class="btn btn-primary always-enabled" {% if using_gravatar %}disabled="true" {% endif %}name="use_gravatar" type="submit">Use Gravatar</button>
+	<a class="btn btn-primary always-enabled" href="https://en.gravatar.com/emails/" target="_blank">Edit at Gravatar</a>
+	{% else %}
+	<p>We're compatible with Gravatar. Create your profile <a href="https://en.gravatar.com/" target="_blank">here</a>!</p>
+	{% endif %}
+</div>
+
+<div id="avatar-update-container">
+</div>
+
 {% elif form.title == 'Cancel Account' %}
 <a class="modal-header panel-title" data-toggle="collapse" data-parent="#accordion" href="#destroy_organization" class="panel-heading">
     <h3>
       Are you sure you want to delete your account?
     </h3>
 </a>
-
-{% endif %}
 <div >
   <fieldset>
     {% include "horizon/common/_form_fields.html" %}
   </fieldset>
 </div>
+{% else %}
+<div >
+  <fieldset>
+    {% include "horizon/common/_form_fields.html" %}
+  </fieldset>
+</div>
+{% endif %}
 {% endblock %}
-
 
 {% block modal-footer %}
+	{% if form.title == 'Cancel Account'%}
+	<div id="destroy_organization" class="panel-collapse collapse">
 
-{% if form.title == 'Cancel Account'%}
-<div id="destroy_organization" class="panel-collapse collapse">
+		<button type="submit" class="btn btn-danger">{% trans "Delete User" %} </button>
 
-    <button type="submit" class="btn btn-danger">{% trans "Delete User" %} </button>
-
-</div>  
-
-{% else %}
-<button type="submit" class="btn btn-primary">{% trans "Update User" %} </button>
-{% endif %}
-
-
-    
+	</div>  
+	{% elif form.title == 'Change your avatar' %}
+	{% else %}
+	<button type="submit" class="btn btn-primary">{% trans "Update User" %} </button>
+	{% endif %}
 {% endblock %}
-
-
-
-
-
-    

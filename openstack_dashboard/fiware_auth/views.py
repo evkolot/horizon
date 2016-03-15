@@ -188,6 +188,11 @@ class RegistrationView(_RequestPassingFormView):
                     endpoint_group=region_group,
                     use_idm_account=True)
 
+            # Enable Gravatar
+            import pdb; pdb.set_trace()
+            if cleaned_data['use_gravatar']:
+                fiware_api.keystone.user_update(request, new_user.id, use_gravatar=True, password='', use_idm_account=True)
+
             email_utils.send_activation_email(new_user, new_user.activation_key)
 
             msg = (

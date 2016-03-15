@@ -27,6 +27,8 @@ from keystoneclient import exceptions as keystoneclient_exceptions
 
 from openstack_dashboard import fiware_api
 
+from django_gravatar.helpers import has_gravatar
+
 
 TRIAL_USER_MESSAGE = 'auth/_trial_users_not_available.html'
 
@@ -87,6 +89,7 @@ class RegistrationForm(ConfirmPasswordForm):
         })
     email = forms.EmailField(label=("E-mail"),
                              required=True)
+    use_gravatar = forms.BooleanField(label=("I have Gravatar and want to use it for my avatar."), required=False)
     trial = forms.BooleanField(label=("I want to be a trial user"),
                                required=False)
 
@@ -96,12 +99,12 @@ class RegistrationForm(ConfirmPasswordForm):
         if settings.USE_CAPTCHA:
             self.fields.keyOrder = [
                 'username', 'email', 'password1', 'password2', 
-                'captcha', 'trial', 
+                'captcha', 'trial', 'use_gravatar',
             ]
         else:
             self.fields.keyOrder = [
                 'username', 'email', 'password1', 'password2', 
-                'trial', 
+                'trial', 'use_gravatar',
             ]
         # Get the number of trial users and disable the field
         # if it exceeds the treshold
@@ -152,6 +155,17 @@ class RegistrationForm(ConfirmPasswordForm):
                                          code='invalid')
         except keystoneclient_exceptions.NotFound:
             return email
+
+    def clean(self):
+        cleaned_data = super(RegistrationForm, self).clean()
+
+        email = cleaned_data.get("email")
+        use_gravatar = cleaned_data.get("use_gravatar")
+
+        if email and use_gravatar and not has_gravatar(email):
+            raise forms.ValidationError("We couldn't find your Gravatar. Please make sure the e-mail you wrote is correct, or uncheck the Gravatar box", code='invalid')
+
+        return cleaned_data
 
 
 class EmailForm(forms.Form):

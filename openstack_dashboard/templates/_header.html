@@ -1,5 +1,6 @@
 {% load branding i18n %}
 {% load url from future %}
+{% load gravatar %}
 
 <header class="navbar navbar-default navbar-fixed-top">
   <div class="container-fluid">
@@ -32,7 +33,9 @@
               </a>
             {% else %}
               <a  href="{% url 'horizon:idm:users:detail' request.user.id %}">
-                {% if request.user.img_small %}
+                {% if request.user.use_gravatar %}
+                  {% gravatar request.user.name 25 "User" %}
+                {% elif request.user.img_small %}
                   <img alt="User" src="{{ MEDIA_URL }}{{ request.user.img_small }}">
                 {% else %}
                   <img alt="User" src="{{ STATIC_URL }}dashboard/img/logos/small/user.png">
@@ -56,7 +59,9 @@
                   {% for org in request.organizations %}
                     {% if org.id == request.user.default_project_id %}
                       <li><a href="{% url 'switch_tenants' org.id %}">
-                      {% if request.user.img_small %}
+                      {% if request.user.use_gravatar %}
+                        {% gravatar request.user.name 25 "User" %}
+                      {% elif request.user.img_small %}
                       <img src="{{ MEDIA_URL }}{{ request.user.img_small }}">
                       {% else %}
                       <img src="{{ STATIC_URL }}dashboard/img/logos/small/user.png">

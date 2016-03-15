@@ -75,36 +75,50 @@ class InfoForm(forms.SelfHandlingForm):
 
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
     userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-    image = forms.ImageField(required=False)
+    image = forms.ImageField(label=("Upload image"), required=False)
     title = 'Change your avatar'
 
     def handle(self, request, data):
-        if request.FILES:
-            image = request.FILES['image'] 
-            output_img = self.crop(image)
-            
-            small = 25, 25, 'small'
-            medium = 36, 36, 'medium'
-            original = 100, 100, 'original'
-            meta = [original, medium, small]
-            for meta in meta:
-                size = meta[0], meta[1]
-                img_type = meta[2]
-                output_img.thumbnail(size)
-                img = 'UserAvatar/' + img_type + "/" + self.data['userID']
-                output_img.save(settings.MEDIA_ROOT + "/" + img, 'JPEG')
+        if 'use_gravatar' in request.POST:
+            api.keystone.user_update(request, data['userID'], use_gravatar=True, password='')
+        elif 'delete_uploaded_image' in request.POST:
+            api.keystone.user_update(request, data['userID'], 
+                                     img_small='',
+                                     img_medium='',
+                                     img_original='',
+                                     password='')
+            os.remove(AVATAR_SMALL + data['userID'])
+            os.remove(AVATAR_MEDIUM + data['userID'])
+            os.remove(AVATAR_ORIGINAL + data['userID'])
+            return shortcuts.redirect('horizon:idm:users:edit', data['userID'])
+        elif 'use_uploaded_image' in request.POST:
+            api.keystone.user_update(request, data['userID'], use_gravatar=False, password='')
+            if request.FILES:
+                image = request.FILES['image'] 
+                output_img = self.crop(image)
                 
-                if img_type == 'small':
-                    api.keystone.user_update(request, data['userID'], 
-                        img_small=img, password='')
-                elif img_type == 'medium':
-                    api.keystone.user_update(request, data['userID'], 
-                        img_medium=img, password='')
-                else:
-                    api.keystone.user_update(request, data['userID'], 
-                        img_original=img, password='')
+                small = 25, 25, 'small'
+                medium = 36, 36, 'medium'
+                original = 100, 100, 'original'
+                meta = [original, medium, small]
+                for meta in meta:
+                    size = meta[0], meta[1]
+                    img_type = meta[2]
+                    output_img.thumbnail(size)
+                    img = 'UserAvatar/' + img_type + "/" + self.data['userID']
+                    output_img.save(settings.MEDIA_ROOT + "/" + img, 'JPEG')
+                    
+                    if img_type == 'small':
+                        api.keystone.user_update(request, data['userID'], 
+                            img_small=img, password='')
+                    elif img_type == 'medium':
+                        api.keystone.user_update(request, data['userID'], 
+                            img_medium=img, password='')
+                    else:
+                        api.keystone.user_update(request, data['userID'], 
+                            img_original=img, password='')
 
-            LOG.debug('User {0} image updated'.format(data['userID']))
+                LOG.debug('User {0} image uploaded'.format(data['userID']))
             messages.success(request, ("User updated successfully."))
 
         return shortcuts.redirect('horizon:idm:users:detail', 

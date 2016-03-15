@@ -32,6 +32,8 @@ from openstack_dashboard.dashboards.idm.users \
 from openstack_dashboard.dashboards.idm.users \
     import forms as user_forms
 
+from django_gravatar.helpers import get_gravatar_url, has_gravatar
+
 
 LOG = logging.getLogger('idm_logger')
 LIMIT = getattr(local_settings, 'PAGE_LIMIT', 8)
@@ -112,8 +114,11 @@ class DetailUserView(tables.MultiTableView):
         context = super(DetailUserView, self).get_context_data(**kwargs)
         user_id = self.kwargs['user_id']
         user = fiware_api.keystone.user_get(self.request, user_id)
+        user_email = getattr(user, 'name', None)
         context['user'] = user
-        if hasattr(user, 'img_original'):
+        if getattr(user, 'use_gravatar', None) and has_gravatar(user_email):
+            image = get_gravatar_url(user_email, size=idm_utils.AVATAR_SIZE['img_original'])
+        elif hasattr(user, 'img_original') and getattr(user, 'img_original') != '':
             image = getattr(user, 'img_original')
             image = settings.MEDIA_URL + image
         else:
@@ -180,15 +185,24 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
         return initial
 
     def get_context_data(self, **kwargs):
-
         context = super(BaseUsersMultiFormView, self).get_context_data(**kwargs)
-        if hasattr(self.object, 'img_original'):
-            image = getattr(self.object, 'img_original')
-            image = settings.MEDIA_URL + image
+        
+        user_id = self.kwargs['user_id']
+        user = fiware_api.keystone.user_get(self.request, user_id)
+        if getattr(user, 'use_gravatar', None):
+            context['using_gravatar'] = True
+        
+        if has_gravatar(getattr(self.object, 'name', None)):
+            gravatar_image = get_gravatar_url(getattr(self.object, 'name', None), size=idm_utils.AVATAR_SIZE['img_original'])
+            context['gravatar_image'] = gravatar_image
+        if hasattr(self.object, 'img_original') and getattr(self.object, 'img_original') != '':
+            uploaded_image = getattr(self.object, 'img_original')
+            uploaded_image = settings.MEDIA_URL + uploaded_image
         else:
-            image = (settings.STATIC_URL + 
+            uploaded_image = (settings.STATIC_URL + 
                 'dashboard/img/logos/original/user.png')
-        context['image'] = image
+            context['no_uploaded_image'] = True
+        context['uploaded_image'] = uploaded_image
         return context
 
 

@@ -24,6 +24,8 @@ from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 from openstack_dashboard.local import local_settings
 
+from django_gravatar.helpers import get_gravatar_url, has_gravatar
+
 
 LOG = logging.getLogger('idm_logger')
 
@@ -34,6 +36,10 @@ DEFAULT_USER_MEDIUM_AVATAR = 'dashboard/img/logos/medium/user.png'
 DEFAULT_ORG_SMALL_AVATAR = 'dashboard/img/logos/small/group.png'
 DEFAULT_APP_SMALL_AVATAR = 'dashboard/img/logos/small/app.png'
 DEFAULT_USER_SMALL_AVATAR = 'dashboard/img/logos/small/user.png'
+
+AVATAR_SIZE = {'img_small': 25,
+               'img_medium': 36,
+               'img_original': 100}
 
 
 def filter_default(items):
@@ -76,11 +82,19 @@ def swap_dict(old_dict):
 
 def get_avatar(obj, avatar_type, default_avatar):
     """Gets the object avatar or a default one."""
+
     if type(obj) == dict:
+        use_gravatar = obj.get('use_gravatar', None)
+        email = obj.get('name', None)
         avatar = obj.get(avatar_type, None)
     else:
+        use_gravatar = getattr(obj, 'use_gravatar', None)
+        email = getattr(obj, 'name', None)
         avatar = getattr(obj, avatar_type, None)
-    if avatar:
+
+    if use_gravatar and has_gravatar(email):
+        return get_gravatar_url(email, size=AVATAR_SIZE[avatar_type])
+    if avatar and avatar != '':
         return settings.MEDIA_URL + avatar
     else:
         return settings.STATIC_URL + default_avatar
