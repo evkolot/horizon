@@ -37,7 +37,7 @@ class UserRoleApi(idm_workflows.RelationshipApiInterface):
         all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
         return [
             (user.id, idm_utils.get_avatar(user, 'img_medium', 
-                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
+                idm_utils.DEFAULT_USER_MEDIUM_AVATAR) + '$' + user.username) 
             for user in all_users if getattr(user, 'username', None)]
 
     def _list_all_objects(self, request, superset_id):
@@ -130,7 +130,7 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
 
         return [
             (user.id, idm_utils.get_avatar(user, 'img_medium', 
-                idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
+                idm_utils.DEFAULT_USER_MEDIUM_AVATAR) + '$' + user.username) 
             for user in members]
 
 

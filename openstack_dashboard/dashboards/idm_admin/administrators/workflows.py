@@ -33,7 +33,7 @@ class AuthorizedMembersApi(idm_workflows.RelationshipApiInterface):
 
         return [
             (user.id, idm_utils.get_avatar(
-                user, 'img_medium', idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username)
+                user, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR) + '$' + user.username)
             for user in all_users if getattr(user, 'username', None)
         ]
 

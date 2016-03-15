@@ -262,7 +262,7 @@ class UsersComplexFilter(ComplexAjaxFilter):
             'id',
             'username',
             'default_project_id',
-            'img_small',
+            'img_medium',
         ]
 
         # add MEDIA_URL to avatar paths or the default avatar
@@ -273,8 +273,8 @@ class UsersComplexFilter(ComplexAjaxFilter):
                 continue
 
             json_user = idm_utils.obj_to_jsonable_dict(user, attrs)
-            json_user['img_small'] = idm_utils.get_avatar(
-                user, 'img_small', idm_utils.DEFAULT_USER_SMALL_AVATAR)
+            json_user['img_medium'] = idm_utils.get_avatar(
+                user, 'img_medium', idm_utils.DEFAULT_USER_MEDIUM_AVATAR)
 
             # Consistency with other elements
             json_user['name'] = json_user.pop('username')
