@@ -189,7 +189,7 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
         attrs = [
             'id',
             'name',
-            'img_small',
+            'img_medium',
             'description',
         ]
 
@@ -197,8 +197,8 @@ class OrganizationsComplexFilter(ComplexAjaxFilter):
         json_orgs = []
         for org in organizations:
             json_org = idm_utils.obj_to_jsonable_dict(org, attrs) 
-            json_org['img_small'] = idm_utils.get_avatar(json_org, 
-                'img_small', idm_utils.DEFAULT_ORG_SMALL_AVATAR)
+            json_org['img_medium'] = idm_utils.get_avatar(json_org, 
+                'img_medium', idm_utils.DEFAULT_ORG_MEDIUM_AVATAR)
             json_orgs.append(json_org)
             
         return json_orgs
@@ -339,7 +339,7 @@ class ApplicationsComplexFilter(ComplexAjaxFilter):
         attrs = [
             'id',
             'name',
-            'img_small',
+            'img_medium',
             'url',
         ]
 
@@ -347,8 +347,8 @@ class ApplicationsComplexFilter(ComplexAjaxFilter):
         json_apps = []
         for app in applications:
             json_app = idm_utils.obj_to_jsonable_dict(app, attrs)
-            json_app['img_small'] = idm_utils.get_avatar(
-                json_app, 'img_small', idm_utils.DEFAULT_APP_SMALL_AVATAR)
+            json_app['img_medium'] = idm_utils.get_avatar(
+                json_app, 'img_medium', idm_utils.DEFAULT_APP_MEDIUM_AVATAR)
             json_apps.append(json_app)
 
         return json_apps
