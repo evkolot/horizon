@@ -34,7 +34,7 @@ class UserRoleApi(idm_workflows.RelationshipApiInterface):
     def _list_all_owners(self, request, superset_id):
         all_users = fiware_api.keystone.user_list(request, filters={'enabled':True})
         return [
-            (user.id, idm_utils.get_avatar(user, 'img_small', 
+            (user.id, idm_utils.get_avatar(user, 'img_medium', 
                 idm_utils.DEFAULT_USER_SMALL_AVATAR) + '$' + user.username) 
             for user in all_users if getattr(user, 'username', None)]
 
