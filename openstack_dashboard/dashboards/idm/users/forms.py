@@ -75,7 +75,7 @@ class InfoForm(forms.SelfHandlingForm):
 
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
     userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-    image = forms.ImageField(label=("Upload image"), required=False)
+    image = forms.ImageField(label=(""), required=False)
     title = 'Change your avatar'
 
     def handle(self, request, data):
