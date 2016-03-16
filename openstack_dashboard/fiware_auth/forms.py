@@ -98,13 +98,13 @@ class RegistrationForm(ConfirmPasswordForm):
         super(RegistrationForm, self).__init__(*args, **kwargs)
         if settings.USE_CAPTCHA:
             self.fields.keyOrder = [
-                'username', 'email', 'password1', 'password2', 
-                'captcha', 'trial', 'use_gravatar',
+                'username', 'email', 'use_gravatar', 'password1', 'password2', 
+                'captcha', 'trial',
             ]
         else:
             self.fields.keyOrder = [
-                'username', 'email', 'password1', 'password2', 
-                'trial', 'use_gravatar',
+                'username', 'email', 'use_gravatar', 'password1', 'password2', 
+                'trial',
             ]
         # Get the number of trial users and disable the field
         # if it exceeds the treshold
