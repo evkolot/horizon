@@ -548,7 +548,40 @@ textarea {
   }
 }
 
+#update-avatar-modal{
+  .modal-body{
+    .avatar_col{
+      padding: 10px;
+      border: 1px solid gray;
+      margin: 0 0 15px 15px;
+      width: 47.3%;
+      border-radius: 3px;
+      .profile_img{
+        width: 100px;
+        float: left;
+        img{
+          vertical-align: bottom;
+        }
+      }
+      .btn{
+        float: right;
+        width: 150px;
+        margin-bottom: 5px;
 
+      }
+      .clear_right{
+        clear: right;
+      }
+    }
+    .used-avatar{
+      border: 3px solid #48b9c9;
+      background-color: #eaf4f6;
+    }
+  }
+  .modal-footer{
+    border: none;
+  }
+}
 
 #authorize_application_modal{
   @extend .well;
