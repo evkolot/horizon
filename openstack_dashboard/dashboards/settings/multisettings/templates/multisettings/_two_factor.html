@@ -125,12 +125,10 @@
     });
 
     $(document).on("click", "#two_factor_enable_modal, [data-dismiss='modal']", function(e) {
-        console.log("HOLA");
         location.reload(true);
     });
 
     $(document).on("click", "#two_factor_enable_modal > .modal-dialog", function(e) {
-        console.log("ADIOS");
         e.stopPropagation();
     });
 

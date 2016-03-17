@@ -2,10 +2,10 @@
 {% load i18n %}
 {% load url from future %}
 
-{% block form_id %}cancel_account_modal{% endblock %}
+{% block form_id %}two_factor_forget_devices_form{% endblock %}
 {% block form_action %}{% url 'horizon:settings:multisettings:forgetdevices' %}{% endblock %}
 
-{% block modal_id %}two_factor_disable{% endblock %}
+{% block modal_id %}two_factor_forget_devices_modal{% endblock %}
 {% block modal-header %}Forget Devices for Two Factor Authentication{% endblock %}
 
 {% block modal-body %}
