@@ -18,6 +18,7 @@ import logging
 from django import shortcuts
 from django.conf import settings
 from django import forms 
+from django.core.urlresolvers import reverse_lazy
 
 from horizon import forms
 from horizon import messages
@@ -81,16 +82,6 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
     def handle(self, request, data):
         if 'use_gravatar' in request.POST:
             api.keystone.user_update(request, data['userID'], use_gravatar=True, password='')
-        elif 'delete_uploaded_image' in request.POST:
-            api.keystone.user_update(request, data['userID'], 
-                                     img_small='',
-                                     img_medium='',
-                                     img_original='',
-                                     password='')
-            os.remove(AVATAR_SMALL + data['userID'])
-            os.remove(AVATAR_MEDIUM + data['userID'])
-            os.remove(AVATAR_ORIGINAL + data['userID'])
-            return shortcuts.redirect('horizon:idm:users:edit', data['userID'])
         elif 'use_uploaded_image' in request.POST:
             api.keystone.user_update(request, data['userID'], use_gravatar=False, password='')
             if request.FILES:
@@ -123,3 +114,23 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
 
         return shortcuts.redirect('horizon:idm:users:detail', 
             data['userID'])
+
+class DeleteImageForm(forms.SelfHandlingForm):
+    description = 'Delete uploaded image'
+    template = 'idm/users/_delete_image.html'
+
+    def __init__(self, *args, **kwargs):
+        self.user_id = kwargs.pop('user_id')
+        super(DeleteImageForm, self).__init__(*args, **kwargs)
+
+    def handle(self, request, data):
+        user_id = self.user_id
+        api.keystone.user_update(request, user_id, 
+                                 img_small='',
+                                 img_medium='',
+                                 img_original='',
+                                 password='')
+        os.remove(AVATAR_SMALL + user_id)
+        os.remove(AVATAR_MEDIUM + user_id)
+        os.remove(AVATAR_ORIGINAL + user_id)
+        return shortcuts.redirect('horizon:idm:users:edit', user_id)

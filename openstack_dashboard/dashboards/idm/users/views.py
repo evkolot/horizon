@@ -183,10 +183,11 @@ class BaseUsersMultiFormView(idm_views.BaseMultiFormView):
 
     def get_context_data(self, **kwargs):
         context = super(BaseUsersMultiFormView, self).get_context_data(**kwargs)
-        
+
         user_id = self.kwargs['user_id']
-        user = fiware_api.keystone.user_get(self.request, user_id)
-        if getattr(user, 'use_gravatar', None):
+        context['user_id'] = user_id
+
+        if getattr(self.object, 'use_gravatar', None):
             context['using_gravatar'] = True
         
         if has_gravatar(getattr(self.object, 'name', None)):
@@ -208,3 +209,27 @@ class InfoFormHandleView(BaseUsersMultiFormView):
    
 class AvatarFormHandleView(BaseUsersMultiFormView):
     form_to_handle_class = user_forms.AvatarForm
+
+class DeleteImageView(forms.ModalFormView):
+    form_class = user_forms.DeleteImageForm
+    template_name = 'idm/users/delete_image.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DeleteImageView, self).get_context_data(**kwargs)
+
+        context['user_id'] = self.kwargs.get('user_id')
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super(DeleteImageView, self).get_form_kwargs()
+
+        kwargs.update(self.kwargs)
+        return kwargs
+
+    def dispatch(self, request, user_id, *args, **kwargs):
+
+        user = fiware_api.keystone.user_get(self.request, user_id)
+
+        if not hasattr(user, 'img_original') and getattr(user, 'img_original') != '':
+            return redirect('horizon:idm:users:edit')
+        return super(DeleteImageView, self).dispatch(request, args, kwargs)

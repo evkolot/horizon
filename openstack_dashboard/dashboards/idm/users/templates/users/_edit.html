@@ -23,7 +23,7 @@
 		</div>
 		<button class="btn btn-primary always-enabled" {% if not using_gravatar %}disabled="true" {% endif %}name="use_uploaded_image" type="submit">Use this image</button>
 		<div class="clear_right"></div>
-		<button class="btn btn-primary always-enabled" name="delete_uploaded_image" type="submit" {% if no_uploaded_image %}disabled="true"{% endif %}>Delete this image</button>
+		<button class="btn btn-primary always-enabled ajax-modal" href="{% url 'horizon:idm:users:delete_image' user_id %}"{% if no_uploaded_image %} disabled="true"{% endif %}>Delete this image</button>
 
 	</div>
 
