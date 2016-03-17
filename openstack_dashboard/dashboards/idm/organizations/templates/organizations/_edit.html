@@ -7,6 +7,7 @@
 {% block form_enctype %}multipart/form-data{% endblock %}
 
 {% block modal_class %}edit{% endblock %}
+{% block modal_id %}{% if form.title == 'Cancel' %}cancel-organization-modal{% endif %}{% endblock %}
 {% block modal-header %}
 {{form.title}}
 {% endblock %}
@@ -38,18 +39,12 @@
 <div id="destroy_organization" class="panel-collapse collapse">
   <span>This will delete the organization and all its data</span>
   <button type="submit" class="btn btn-danger">{% trans "Delete Organization" %} </button>
-</div>  
+</div>
 
 {% else %}
   <button type="submit" class="btn btn-primary">{% trans "Update Organization" %} </button>
 {% endif %}
 
 
-    
+
 {% endblock %}
-
-
-
-
-
-    

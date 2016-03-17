@@ -7,6 +7,7 @@
 {% block form_enctype %}multipart/form-data{% endblock %}
 
 {% block modal_class %}edit{% endblock %}
+{% block modal_id %}{% if form.title == 'Cancel' %}cancel-application-modal{% endif %}{% endblock %}
 {% block modal-header %}
 {{form.title}}
 {% endblock %}
@@ -37,20 +38,13 @@
 		<div id="destroy_application" class="panel-collapse collapse">
       <span>This will remove the application and all its data</span>
     	<button type="submit" class="btn btn-danger">
-  	    {% trans "Delete Application" %} 
+  	    {% trans "Delete Application" %}
     	</button>
-		</div>  
+		</div>
 
 	{% else %}
 	    <button type="submit" class="btn btn-primary">
-	    	{% trans "Update Application" %} 
+	    	{% trans "Update Application" %}
 	    </button>
 	{% endif %}
 {% endblock %}
-
-
-
-
-
-    
-

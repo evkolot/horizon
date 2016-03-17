@@ -547,6 +547,13 @@ textarea {
     }
   }
 }
+#cancel-organization-modal, #cancel-application-modal{
+  .modal-footer{
+    .panel-collapse{
+      border: none;
+    }
+  }
+}
 
 #update-avatar-modal{
   .modal-body{
