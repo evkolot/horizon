@@ -84,6 +84,8 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
             api.keystone.user_update(request, data['userID'], use_gravatar=True, password='')
         elif 'use_uploaded_image' in request.POST:
             api.keystone.user_update(request, data['userID'], use_gravatar=False, password='')
+        elif 'crop_and_use' in request.POST:
+            api.keystone.user_update(request, data['userID'], use_gravatar=False, password='')
             if request.FILES:
                 image = request.FILES['image'] 
                 output_img = self.crop(image)
