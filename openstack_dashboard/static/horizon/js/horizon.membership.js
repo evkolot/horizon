@@ -487,7 +487,7 @@ horizon.membership = {
             if (display_name === undefined) {
               display_name = items[i]['name'];
             }
-            var avatar = items[i]['img_small'];
+            var avatar = items[i]['img_medium'];
             var data_id = items[i]['id'];
             var role_ids = horizon.membership.get_member_roles(step_slug, data_id);
             if (role_ids.length == 0) {
