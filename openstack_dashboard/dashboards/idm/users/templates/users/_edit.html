@@ -17,29 +17,32 @@
 
 {% if form.title == 'Change your avatar' %}
 <div class="row">
-	<div class="avatar_col col-md-6{% if not using_gravatar %} used-avatar{% endif %}">
+	<div class="avatar_col col-xs-12 col-md-6{% if not using_gravatar %} used-avatar{% endif %}">
 		<div class="profile_img">
 			<img src="{{ uploaded_image }}" alt="your uploaded image"   />
 		</div>
-		<button class="btn btn-primary always-enabled avatar-button" {% if not using_gravatar %}disabled="true" {% endif %}name="use_uploaded_image" type="submit">Use this image</button>
-		<div class="clear_right"></div>
-		<button class="btn btn-primary always-enabled ajax-modal" href="{% url 'horizon:idm:users:delete_image' user_id %}"{% if no_uploaded_image %} disabled="true"{% endif %}>Delete this image</button>
-
+		<div class="profile_actions">
+			<button class="btn btn-primary always-enabled avatar-button" {% if not using_gravatar %}disabled="true" {% endif %}name="use_uploaded_image" type="submit">Use this image</button>
+			<div class="clear_right"></div>
+			<button class="btn btn-primary always-enabled ajax-modal" href="{% url 'horizon:idm:users:delete_image' user_id %}"{% if no_uploaded_image %} disabled="true"{% endif %}>Delete this image</button>
+		</div>
 	</div>
 
-	<div class="avatar_col col-md-6{% if using_gravatar %} used-avatar{% endif %}">
+	<div class="avatar_col col-xs-12 col-md-6{% if using_gravatar %} used-avatar{% endif %}">
 		{% if gravatar_image %}
 		<div class="profile_img">
 			<img id="gravatar-preview" src="{{ gravatar_image }}" alt="your gravatar"   />
 		</div>
-		<button class="btn btn-primary always-enabled avatar-button" {% if using_gravatar %}disabled="true" {% endif %}name="use_gravatar" type="submit">Use Gravatar</button>
-		<div class="clear_right"></div>
-		<a class="btn btn-primary always-enabled" href="https://en.gravatar.com/emails/" target="_blank">Edit at Gravatar</a>
+		<div class="profile_actions">
+			<button class="btn btn-primary always-enabled avatar-button" {% if using_gravatar %}disabled="true" {% endif %}name="use_gravatar" type="submit">Use Gravatar</button>
+			<div class="clear_right"></div>
+			<a class="btn btn-primary always-enabled" href="https://en.gravatar.com/emails/" target="_blank">Edit at Gravatar</a>
+		</div>
 		{% else %}
 		<div class="profile_img">
 			<img id="gravatar-preview" src="{{ STATIC_URL}}dashboard/img/gravatar.png" width="100" height="100" 	alt="gravatar default" />
 		</div>
-		<p>We're compatible with Gravatar. Create your profile <a href="https://en.gravatar.com/" target="_blank">here</a>!</p>
+		<p class="profile_txt">We're compatible with Gravatar. Create your profile <a href="https://en.gravatar.com/" target="_blank">here</a>!</p>
 		{% endif %}
 	</div>
 </div>
@@ -50,9 +53,11 @@
 </div>
 
 <div id="avatar-update-container">
-	<button style="display:none;" id="crop-and-use-button" disabled="true" class="btn btn-primary always-enabled" name="crop_and_use" type="submit">Crop and use</button>
-	<a href="#" class="btn btn-secondary always-enabled" style="display:none;" id="cancel-crop-button">Cancel</a>
-	<p style="display:none">Select the part of the image you want to use as avatar.</p>
+
+		<button style="display:none;" id="crop-and-use-button" disabled="true" class="btn btn-primary always-enabled" name="crop_and_use" type="submit">Crop and use</button>
+		<a href="#" class="btn btn-secondary always-enabled" style="display:none;" id="cancel-crop-button">Cancel</a>
+		<p style="display:none">Select the part of the image you want to use as avatar.</p>
+
 </div>
 
 {% else %}
