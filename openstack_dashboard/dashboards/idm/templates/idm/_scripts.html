@@ -19,7 +19,7 @@ function readURL(input) {
             var reader = new FileReader();
             
             if (!$('#avatar-update').length){
-                $('#avatar-update-container').append('<img id="avatar-update" />');
+                $('#avatar-update-container').prepend('<div class="col-md-10"><img id="avatar-update" /></div>');
             }
 
             reader.onload = function (e) {
@@ -43,7 +43,7 @@ function readURL(input) {
 
 function destroyJcropAPI(callback) {
     jcrop_api.destroy();
-    $('#avatar-update').remove();
+    $('#avatar-update').parent().remove();
     $("#avatar-update-container").children().hide();
     callback();
 }
