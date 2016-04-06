@@ -17,7 +17,7 @@ function readURL(input) {
         img.onload = function() {
             $("#avatar-update-container").children().show();
             var reader = new FileReader();
-            
+
             if (!$('#avatar-update').length){
                 $('#avatar-update-container').prepend('<div class="col-md-10"><img id="avatar-update" /></div>');
             }
@@ -35,7 +35,7 @@ function readURL(input) {
                     jcrop_api = this;
                 });
             }
-            
+
             reader.readAsDataURL(input.files[lastIndex]);
         };
     }
@@ -57,14 +57,14 @@ $("#id_image").change(function(){
         });
     }
     else {
-        readURL(input);      
+        readURL(input);
     }
 });
 
 function showCoordsAndButtons(c){
-    $("#id_x1").val(c.x); 
+    $("#id_x1").val(c.x);
     $("#id_y1").val(c.y);
-    $("#id_x2").val(c.x2); 
+    $("#id_x2").val(c.x2);
     $("#id_y2").val(c.y2);
     $("#crop-and-use-button").prop("disabled", false);
 };
@@ -76,20 +76,20 @@ $('#cancel-crop-button').on("click", function(e){
     e.stopPropagation();
 });
 
-    
+
 // $(document).ready(function() {
 // 	url = "/static/dashboard/img/logos/small/user.png"
 // 	$.get(url)
-//     .done(function() { 
+//     .done(function() {
 //         $('#org-avatar').attr("src","/static/dashboard/img/logos/small/group.png")
 //         console.log('done')
-//     }).fail(function() { 
-//     	//Poner imagen de cada organización. Pasar como nombre 
+//     }).fail(function() {
+//     	//Poner imagen de cada organización. Pasar como nombre
 //        $('#org-avatar').attr("src","/static/dashboard/img/logos/small/user.png")
 //        console.log('fail')
 //     })
-	
-	
+
+
 // });
 
 </script>

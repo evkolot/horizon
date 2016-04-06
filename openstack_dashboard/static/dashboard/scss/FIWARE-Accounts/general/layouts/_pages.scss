@@ -594,6 +594,20 @@ textarea {
       border: 3px solid #48b9c9;
       background-color: #eaf4f6;
     }
+    //update container img
+    #avatar-update-container{
+      .update_actions{
+        h6{
+          margin: 10px 0;
+          line-height: 1.2em;
+        }
+        .btn{
+          width: 100%;
+          margin-bottom: 5px;
+        }
+      }
+
+    }
   }
   .modal-footer{
     border: none;
