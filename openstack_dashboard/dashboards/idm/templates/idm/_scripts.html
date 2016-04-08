@@ -15,11 +15,11 @@ function readURL(input) {
             alert( "Please upload a valid file: " + input.files[lastIndex].type);
         };
         img.onload = function() {
-            $("#avatar-update-container").children().show();
+            $(".avatar-update-container").children().show();
             var reader = new FileReader();
 
             if (!$('#avatar-update').length){
-                $('#avatar-update-container').prepend('<div class="col-md-10"><img id="avatar-update" /></div>');
+                $('.avatar-update-container').prepend('<div class="col-md-10"><img id="avatar-update" /></div>');
             }
 
             reader.onload = function (e) {
@@ -29,7 +29,7 @@ function readURL(input) {
                     // onChange: showCoords,
                     onSelect: showCoordsAndButtons,
                     aspectRatio: 1,
-                    boxWidth: $('#avatar-update-container div.col-md-10').width(),
+                    boxWidth: $('.avatar-update-container div.col-md-10').width(),
                     setSelect: [img.naturalWidth/2 - size/2, img.naturalHeight/2 - size/2, img.naturalWidth/2 + size/2, img.naturalHeight/2 + size/2]
                 }, function(){
                     jcrop_api = this;
@@ -44,7 +44,7 @@ function readURL(input) {
 function destroyJcropAPI(callback) {
     jcrop_api.destroy();
     $('#avatar-update').parent().remove();
-    $("#avatar-update-container").children().hide();
+    $(".avatar-update-container").children().hide();
     callback();
 };
 
@@ -72,6 +72,9 @@ $("#id_image").change(function(){
 $('#cancel-crop-button').on("click", function(e){
     destroyJcropAPI(function() {
         $('#id_image').val('');
+        if ($('div.steps-group').length){
+            $('.avatar-update-container').prepend('<div class="col-md-10"><img id="avatar-update" src="{{ STATIC_URL }}dashboard/img/logos/original/app.png" alt="your image"   /></div>');
+        }
     });
     e.stopPropagation();
 });

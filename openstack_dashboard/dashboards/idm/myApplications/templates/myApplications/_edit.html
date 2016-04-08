@@ -6,7 +6,7 @@
 {% block form_action %}{{form.action}}{% endblock %}
 {% block form_enctype %}multipart/form-data{% endblock %}
 
-{% block modal_class %}edit{% endblock %}
+{% block modal_class %}edit{% if form.title == 'Avatar Update' %} update-avatar-modal{% endif %}{% endblock %}
 {% block modal_id %}{% if form.title == 'Cancel' %}cancel-application-modal{% endif %}{% endblock %}
 {% block modal-header %}
 {{form.title}}
@@ -14,8 +14,28 @@
 
 {% block modal-body %}
     {% if form.title == 'Avatar Update'%}
+    	<div class="row">
+			<div class="avatar_col col-xs-12 col-md-6 used-avatar">
+				<div class="profile_img">
+					<img src="{{ uploaded_image }}" alt="uploaded image"   />
+				</div>
+				<div class="profile_actions">
+					<button class="btn btn-primary always-enabled ajax-modal" href="{% url 'horizon:idm:myApplications:delete_image' application_id %}"{% if no_uploaded_image %} disabled="true"{% endif %}>Delete this image</button>
+				</div>
+			</div>
+		</div>
 		<div>
-			<img id="avatar-update" src="{{ image }}" alt="your image"   />
+			<fieldset>
+				<h6>Upload an image</h6> {% include "horizon/common/_form_fields.html" %}
+			</fieldset>
+		</div>
+
+		<div class="row avatar-update-container">
+			<div class="col-md-2 update_actions" style="display:none;">
+				<h6>Select the part of the image you want to use as avatar.</h6>
+				<button id="crop-and-use-button" disabled="true" class="btn btn-primary always-enabled" name="crop_and_use" type="submit">Crop and use</button>
+				<a href="#" class="btn btn-default always-enabled" id="cancel-crop-button">Cancel</a>
+			</div>
 		</div>
 	{% elif form.title == 'Cancel' %}
 		<a class="panel-title" data-toggle="collapse" data-parent="#accordion" href="#destroy_application">
@@ -23,13 +43,18 @@
 		      Remove application
 		    </h3>
 		</a>
-
-    {% endif %}
+		<div >
+		    <fieldset>
+		        {% include "horizon/common/_form_fields.html" %}
+		    </fieldset>
+		</div>
+    {% else %}
 	<div >
 	    <fieldset>
 	        {% include "horizon/common/_form_fields.html" %}
 	    </fieldset>
 	</div>
+	{% endif %}
 {% endblock %}
 
 
@@ -42,6 +67,7 @@
     	</button>
 		</div>
 
+	{% elif form.title == 'Avatar Update' %}
 	{% else %}
 	    <button type="submit" class="btn btn-primary">
 	    	{% trans "Update Application" %}

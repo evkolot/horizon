@@ -1,0 +1,89 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block form_id %}delete_app_image_form{% endblock %}
+{% block form_action %}{% url 'horizon:idm:myApplications:delete_image' application_id %}{% endblock %}
+
+{% block modal_id %}delete_app_image_modal{% endblock %}
+{% block modal-header %}Delete uploaded image{% endblock %}
+
+{% block modal-body %}
+<div class="left">
+    <fieldset>
+    {% include "horizon/common/_form_fields.html" %}
+    </fieldset>
+</div>
+<div class="right">
+    <p>Are you sure you want to delete this image?</p>
+    <p>You can upload it again whenever you want.</p>
+</div>
+{% endblock %}
+
+{% block modal-footer %}
+    <button type="submit" class="btn btn-primary">Confirm</button>
+    {% if hide %}<a href="{% url 'horizon:idm:myApplications:delete_image' application_id %}" class="btn btn-default secondary cancel">Cancel</a>{% endif %}
+{% endblock %}
+
+<script type="text/javascript">
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    var csrftoken = getCookie('csrftoken');
+
+    // AJAX setup functions
+    var beforeSend = function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+        horizon.modals.modal_spinner(gettext("Loading"));
+    };
+    var complete = function(){
+        // Clear the global storage;
+        horizon.modals._request = null;
+        horizon.modals.spinner.modal('hide');
+    };
+    var error = function(jqXHR, status, errorThrown) {
+        if (jqXHR.status === 401){
+            var redir_url = jqXHR.getResponseHeader("X-Horizon-Location");
+            if (redir_url){
+                location.href = redir_url;
+            } else {
+                location.reload(true);
+            }
+        }
+        else {
+            if (!horizon.ajax.get_messages(jqXHR)) {
+                // Generic error handler. Really generic.
+                horizon.alert("danger", gettext("An error occurred. Please try again later."));
+            }
+        }
+    };
+
+    $(document).on("click", "#delete_image_modal, [data-dismiss='modal']", function(e) {
+        location.reload(true);
+    });
+
+    $(document).on("click", "#delete_image_modal > .modal-dialog", function(e) {
+        e.stopPropagation();
+    });
+
+</script>

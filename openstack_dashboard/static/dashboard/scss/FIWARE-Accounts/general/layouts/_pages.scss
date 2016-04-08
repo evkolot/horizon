@@ -445,7 +445,7 @@ textarea {
   }
 }
 
-#avatar-update{
+.avatar-update{
   @include border-top-radius ($border-radius-base);
   @include border-bottom-radius ($border-radius-base);
 }
@@ -555,7 +555,7 @@ textarea {
   }
 }
 
-#update-avatar-modal{
+.update-avatar-modal{
   .modal-body{
     .avatar_col{
       padding: 10px;
@@ -595,7 +595,7 @@ textarea {
       background-color: #eaf4f6;
     }
     //update container img
-    #avatar-update-container{
+    .avatar-update-container{
       .update_actions{
         h6{
           margin: 10px 0;

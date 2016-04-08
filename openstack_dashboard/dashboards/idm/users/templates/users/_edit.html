@@ -7,8 +7,7 @@
 {% block form_action %}{{form.action}}{% endblock %}
 {% block form_enctype %}multipart/form-data{% endblock %}
 
-{% block modal_class %}edit{% endblock %}
-{% if form.title == 'Change your avatar' %}{% block modal_id %}update-avatar-modal{% endblock %}{% endif %}
+{% block modal_class %}edit{% if form.title == 'Change your avatar' %} update-avatar-modal{% endif %}{% endblock %}
 {% block modal-header %}
 {{form.title}}
 {% endblock %}
@@ -52,7 +51,7 @@
 	</fieldset>
 </div>
 
-<div id="avatar-update-container" class="row">
+<div class="row avatar-update-container">
 	<div class="col-md-2 update_actions" style="display:none;">
 		<h6>Select the part of the image you want to use as avatar.</h6>
 		<button id="crop-and-use-button" disabled="true" class="btn btn-primary always-enabled" name="crop_and_use" type="submit">Crop and use</button>

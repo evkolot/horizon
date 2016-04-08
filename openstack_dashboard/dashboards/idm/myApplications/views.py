@@ -421,12 +421,12 @@ class DetailApplicationView(tables.MultiTableView):
 
         context['application'] = application
 
-        if hasattr(application, 'img_original'):
+        if hasattr(application, 'img_original') and getattr(application, 'img_original') != '':
             image = getattr(application, 'img_original')
             image = settings.MEDIA_URL + image
         else:
             image = settings.STATIC_URL + 'dashboard/img/logos/original/app.png'
-
+        
         context['image'] = image
         if self._can_edit():
             context['edit'] = True
@@ -530,12 +530,19 @@ class BaseApplicationsMultiFormView(idm_views.BaseMultiFormView):
     def get_context_data(self, **kwargs):
         context = super(BaseApplicationsMultiFormView, 
             self).get_context_data(**kwargs)
-        if hasattr(self.object, 'img_original'):
-            image = getattr(self.object, 'img_original')
-            image = settings.MEDIA_URL + image
+
+        application_id = self.kwargs['application_id']
+        context['application_id'] = application_id
+
+        if hasattr(self.object, 'img_original') and getattr(self.object, 'img_original') != '':
+            uploaded_image = getattr(self.object, 'img_original')
+            uploaded_image = settings.MEDIA_URL + uploaded_image
         else:
-            image = settings.STATIC_URL + 'dashboard/img/logos/original/app.png'
-        context['image'] = image
+            uploaded_image = (settings.STATIC_URL + 
+                'dashboard/img/logos/original/app.png')
+            context['no_uploaded_image'] = True
+        context['uploaded_image'] = uploaded_image
+
         return context
 
 
@@ -545,6 +552,29 @@ class CreateApplicationFormHandleView(BaseApplicationsMultiFormView):
 
 class AvatarFormHandleView(BaseApplicationsMultiFormView):
     form_to_handle_class = application_forms.AvatarForm
+
+class DeleteImageView(forms.ModalFormView):
+    form_class = application_forms.DeleteImageForm
+    template_name = 'idm/myApplications/delete_image.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DeleteImageView, self).get_context_data(**kwargs)
+
+        context['application_id'] = self.kwargs.get('application_id')
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super(DeleteImageView, self).get_form_kwargs()
+
+        kwargs.update(self.kwargs)
+        return kwargs
+
+    def dispatch(self, request, application_id, *args, **kwargs):
+
+        app = fiware_api.keystone.application_get(self.request, application_id)
+        if not hasattr(app, 'img_original') and getattr(app, 'img_original') != '':
+            return redirect('horizon:idm:myApplications:edit', application_id)
+        return super(DeleteImageView, self).dispatch(request, args, kwargs)
 
 
 class CancelFormHandleView(BaseApplicationsMultiFormView):

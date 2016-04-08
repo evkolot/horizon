@@ -111,7 +111,7 @@ class CreateApplicationForm(forms.SelfHandlingForm):
     
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
     appID = forms.CharField(widget=forms.HiddenInput())
-    image = forms.ImageField(required=False)
+    image = forms.ImageField(label=(""), required=False)
     redirect_to = forms.CharField(widget=forms.HiddenInput(), required=False)
     title = 'Avatar Update'
 
@@ -158,6 +158,26 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
                 'horizon:idm:myApplications:roles_step', application_id)
             LOG.debug('Avatar for application {0} saved'.format(application_id))
         return response
+
+
+class DeleteImageForm(forms.SelfHandlingForm):
+    description = 'Delete uploaded image'
+    template = 'idm/myApplications/_delete_image.html'
+
+    def __init__(self, *args, **kwargs):
+        self.application_id = kwargs.pop('application_id')
+        super(DeleteImageForm, self).__init__(*args, **kwargs)
+
+    def handle(self, request, data):
+        application_id = self.application_id
+        fiware_api.keystone.application_update(request, application_id, 
+                                               img_small='',
+                                               img_medium='',
+                                               img_original='')
+        os.remove(AVATAR_SMALL + application_id)
+        os.remove(AVATAR_MEDIUM + application_id)
+        os.remove(AVATAR_ORIGINAL + application_id)
+        return shortcuts.redirect('horizon:idm:myApplications:edit', application_id)
 
 
 class CreateRoleForm(forms.SelfHandlingForm):
