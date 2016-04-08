@@ -29,7 +29,7 @@ function readURL(input) {
                     // onChange: showCoords,
                     onSelect: showCoordsAndButtons,
                     aspectRatio: 1,
-                    boxWidth: 650,
+                    boxWidth: $('#avatar-update-container div.col-md-10').width(),
                     setSelect: [img.naturalWidth/2 - size/2, img.naturalHeight/2 - size/2, img.naturalWidth/2 + size/2, img.naturalHeight/2 + size/2]
                 }, function(){
                     jcrop_api = this;
@@ -46,7 +46,15 @@ function destroyJcropAPI(callback) {
     $('#avatar-update').parent().remove();
     $("#avatar-update-container").children().hide();
     callback();
-}
+};
+
+function showCoordsAndButtons(c){
+    $("#id_x1").val(c.x);
+    $("#id_y1").val(c.y);
+    $("#id_x2").val(c.x2);
+    $("#id_y2").val(c.y2);
+    $("#crop-and-use-button").prop("disabled", false);
+};
 
 $("#id_image").change(function(){
     input = this;
@@ -61,20 +69,20 @@ $("#id_image").change(function(){
     }
 });
 
-function showCoordsAndButtons(c){
-    $("#id_x1").val(c.x);
-    $("#id_y1").val(c.y);
-    $("#id_x2").val(c.x2);
-    $("#id_y2").val(c.y2);
-    $("#crop-and-use-button").prop("disabled", false);
-};
-
 $('#cancel-crop-button').on("click", function(e){
     destroyJcropAPI(function() {
         $('#id_image').val('');
     });
     e.stopPropagation();
 });
+
+$(window).resize(function(){
+    if (typeof(jcrop_api) !== "undefined"){
+        destroyJcropAPI(function() {
+            readURL(input);
+        });
+    }
+})
 
 
 // $(document).ready(function() {
