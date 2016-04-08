@@ -178,7 +178,7 @@ class InfoForm(forms.SelfHandlingForm):
 
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
     orgID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
-    image = forms.ImageField(required=False)
+    image = forms.ImageField(label=(''), required=False)
     title = 'Avatar Update'
 
     def handle(self, request, data):
@@ -209,6 +209,26 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
 
         response = shortcuts.redirect('horizon:idm:organizations:detail', data['orgID'])
         return response
+
+
+class DeleteImageForm(forms.SelfHandlingForm):
+    description = 'Delete uploaded image'
+    template = 'idm/organizations/_delete_image.html'
+
+    def __init__(self, *args, **kwargs):
+        self.organization_id = kwargs.pop('organization_id')
+        super(DeleteImageForm, self).__init__(*args, **kwargs)
+
+    def handle(self, request, data):
+        organization_id = self.organization_id
+        fiware_api.keystone.project_update(request, organization_id, 
+                                           img_small='',
+                                           img_medium='',
+                                           img_original='')
+        os.remove(AVATAR_SMALL + organization_id)
+        os.remove(AVATAR_MEDIUM + organization_id)
+        os.remove(AVATAR_ORIGINAL + organization_id)
+        return shortcuts.redirect('horizon:idm:organizations:edit', organization_id)
 
              
 class CancelForm(forms.SelfHandlingForm):

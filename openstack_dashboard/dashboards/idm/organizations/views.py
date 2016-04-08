@@ -165,7 +165,7 @@ class DetailOrganizationView(tables.MultiTableView):
             organization_id)
         context['organization'] = organization
 
-        if hasattr(organization, 'img_original'):
+        if hasattr(organization, 'img_original') and getattr(organization, 'img_original') != '':
             image = (settings.MEDIA_URL + getattr(organization, 
                 'img_original'))
         else:
@@ -274,16 +274,20 @@ class BaseOrganizationsMultiFormView(idm_views.BaseMultiFormView):
         return initial
 
     def get_context_data(self, **kwargs):
-
         context = super(BaseOrganizationsMultiFormView, 
             self).get_context_data(**kwargs)
-        if hasattr(self.object, 'img_original'):
-            image = getattr(self.object, 'img_original')
-            image = settings.MEDIA_URL + image
+
+        organization_id = self.kwargs['organization_id']
+        context['organization_id'] = organization_id
+
+        if hasattr(self.object, 'img_original') and getattr(self.object, 'img_original') != '':
+            uploaded_image = getattr(self.object, 'img_original')
+            uploaded_image = settings.MEDIA_URL + uploaded_image
         else:
-            image = (settings.STATIC_URL 
+            uploaded_image = (settings.STATIC_URL 
                 + 'dashboard/img/logos/original/group.png')
-        context['image'] = image
+            context['no_uploaded_image'] = True
+        context['uploaded_image'] = uploaded_image
         return context
 
 
@@ -295,6 +299,30 @@ class InfoFormHandleView(BaseOrganizationsMultiFormView):
    
 class AvatarFormHandleView(BaseOrganizationsMultiFormView):
     form_to_handle_class = organization_forms.AvatarForm
+
+class DeleteImageView(forms.ModalFormView):
+    form_class = organization_forms.DeleteImageForm
+    template_name = 'idm/organizations/delete_image.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DeleteImageView, self).get_context_data(**kwargs)
+
+        context['organization_id'] = self.kwargs.get('organization_id')
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super(DeleteImageView, self).get_form_kwargs()
+
+        kwargs.update(self.kwargs)
+        return kwargs
+
+    def dispatch(self, request, organization_id, *args, **kwargs):
+
+        org = fiware_api.keystone.project_get(self.request, organization_id)
+        if not hasattr(org, 'img_original') and getattr(org, 'img_original') != '':
+            return redirect('horizon:idm:organizations:edit', organization_id)
+        return super(DeleteImageView, self).dispatch(request, args, kwargs)
+
 
 class CancelFormHandleView(BaseOrganizationsMultiFormView):
     form_to_handle_class = organization_forms.CancelForm
