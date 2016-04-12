@@ -6,7 +6,7 @@
 {% block form_action %}{{form.action}}{% endblock %}
 {% block form_enctype %}multipart/form-data{% endblock %}
 
-{% block modal_class %}edit{% if form.title == 'Avatar Update' %} update-avatar-modal{% endif %}{% endblock %}
+{% block modal_class %}edit{% if form.title == 'Organization Avatar' %} update-avatar-modal{% endif %}{% endblock %}
 {% block modal_id %}{% if form.title == 'Cancel' %}cancel-organization-modal{% endif %}{% endblock %}
 {% block modal-header %}
 {{form.title}}
@@ -14,7 +14,7 @@
 
 {% block modal-body %}
 
-{% if form.title == 'Avatar Update'%}
+{% if form.title == 'Organization Avatar' %}
 	<div class="row">
 		<div class="avatar_col col-xs-12 col-md-6 used-avatar">
 			<div class="profile_img">
@@ -41,7 +41,7 @@
 {% elif form.title == 'Cancel' %}
 	<a class="panel-title" data-toggle="collapse" data-parent="#accordion" href="#destroy_organization">
 	    <h3>
-	      <span>Delete organization</span>
+	      <span>Delete Organization</span>
 	    </h3>
 	</a>
 	<div >
@@ -67,7 +67,7 @@
   <button type="submit" class="btn btn-danger">{% trans "Delete Organization" %} </button>
 </div>
 
-{% elif form.title == 'Avatar Update' %}
+{% elif form.title == 'Organization Avatar' %}
 {% else %}
   <button type="submit" class="btn btn-primary">{% trans "Update Organization" %} </button>
 {% endif %}

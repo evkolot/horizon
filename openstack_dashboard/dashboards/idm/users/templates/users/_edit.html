@@ -7,14 +7,14 @@
 {% block form_action %}{{form.action}}{% endblock %}
 {% block form_enctype %}multipart/form-data{% endblock %}
 
-{% block modal_class %}edit{% if form.title == 'Change your avatar' %} update-avatar-modal{% endif %}{% endblock %}
+{% block modal_class %}edit{% if form.title == 'Personal Avatar' %} update-avatar-modal{% endif %}{% endblock %}
 {% block modal-header %}
 {{form.title}}
 {% endblock %}
 
 {% block modal-body %}
 
-{% if form.title == 'Change your avatar' %}
+{% if form.title == 'Personal Avatar' %}
 <div class="row">
 	<div class="avatar_col col-xs-12 col-md-6{% if not using_gravatar %} used-avatar{% endif %}">
 		<div class="profile_img">
@@ -69,7 +69,7 @@
 {% endblock %}
 
 {% block modal-footer %}
-	{% if form.title == 'Change your avatar' %}
+	{% if form.title == 'Personal Avatar' %}
 	{% else %}
 	<button type="submit" class="btn btn-primary">{% trans "Update User" %} </button>
 	{% endif %}

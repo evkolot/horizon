@@ -45,7 +45,7 @@ class CreateApplicationForm(forms.SelfHandlingForm):
         required=True)
     url = forms.CharField(label=("URL"), required=True)
     callbackurl = forms.CharField(label=("Callback URL"), required=True)
-    title = 'Information'
+    title = 'Application Information'
 
     def handle(self, request, data):
         #create application
@@ -113,7 +113,7 @@ class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
     appID = forms.CharField(widget=forms.HiddenInput())
     image = forms.ImageField(label=(""), required=False)
     redirect_to = forms.CharField(widget=forms.HiddenInput(), required=False)
-    title = 'Avatar Update'
+    title = 'Application Avatar'
 
     def handle(self, request, data):
         application_id = data['appID']

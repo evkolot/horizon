@@ -77,7 +77,7 @@ class InfoForm(forms.SelfHandlingForm):
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
     userID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
     image = forms.ImageField(label=(""), required=False)
-    title = 'Change your avatar'
+    title = 'Personal Avatar'
 
     def handle(self, request, data):
         if 'use_gravatar' in request.POST:

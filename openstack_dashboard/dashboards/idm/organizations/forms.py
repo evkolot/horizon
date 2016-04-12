@@ -154,7 +154,7 @@ class InfoForm(forms.SelfHandlingForm):
         widget=forms.widgets.Textarea(attrs={'rows':4, 'cols':40}), 
         required=True)
     website = forms.URLField(label=("Website"), required=False)
-    title = 'Information'
+    title = 'Organization Information'
 
     def handle(self, request, data):
         try:
@@ -179,7 +179,7 @@ class InfoForm(forms.SelfHandlingForm):
 class AvatarForm(forms.SelfHandlingForm, idm_forms.ImageCropMixin):
     orgID = forms.CharField(label=("ID"), widget=forms.HiddenInput())
     image = forms.ImageField(label=(''), required=False)
-    title = 'Avatar Update'
+    title = 'Organization Avatar'
 
     def handle(self, request, data):
         if request.FILES:
