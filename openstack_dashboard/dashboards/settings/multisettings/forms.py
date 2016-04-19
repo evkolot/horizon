@@ -56,7 +56,6 @@ class UpgradeForm(forms.SelfHandlingForm, user_accounts_forms.UserAccountsLogicM
     def handle(self, request, data):
 
         try:
-            user_id = request.user.id
             role_id = fiware_api.keystone.get_trial_role(request).id
             regions = ['Spain2']
             default_durations = getattr(settings, 'FIWARE_DEFAULT_DURATION', None)
@@ -65,7 +64,7 @@ class UpgradeForm(forms.SelfHandlingForm, user_accounts_forms.UserAccountsLogicM
             else:
                 duration = 14
 
-            self.update_account(request, user_id, role_id, regions, duration)
+            self.update_account(request, request.user, role_id, regions, duration)
             messages.success(request, 'Updated account to Trial succesfully.')
 
             return shortcuts.redirect('logout')
