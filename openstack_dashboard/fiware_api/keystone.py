@@ -150,6 +150,59 @@ def delete_pep_proxy(request, pep_proxy_name):
     pep = keystone.users.find(name=pep_proxy_name)
     return keystone.users.delete(pep)
 
+# IoT SENSORS
+def register_iot_sensor(request, application_id, password=None):
+    iot_sensors_group = getattr(settings, 'IOT_SENSORS_GROUP', None)
+    if not iot_sensors_group:
+        LOG.error('IOT_SENSORS_GROUP is not set in local_settings.py')
+        return
+
+    iot_sensors_role = getattr(settings, 'IOT_SENSORS_ROLE', None)
+    if not iot_sensors_role:
+        LOG.error('IOT_SENSORS_ROLE is not set in local_settings.py')
+        return
+
+    # create user with random password and unique name
+    username = 'iot_sensor_' + uuid.uuid4().hex
+    if not password:
+        password = uuid.uuid4().hex
+    keystone = internal_keystoneclient(request)
+    # TODO(garcianavalon) better domain usage
+    domain = 'default'
+    sensor = keystone.users.create(username, password=password, domain=domain)
+
+    # add it to the iot sensors group
+    try:
+        iot_group = keystone.groups.find(name=iot_sensors_group)
+    except ks_exceptions.NotFound:
+        LOG.debug('Creating IoT Sensors group in Keystone')
+        iot_group = keystone.groups.create(name=iot_sensors_group, domain=domain)
+    
+    # asign a role in the domain to the group
+    try:
+        iot_role = keystone.roles.find(name=iot_sensors_role)
+    except ks_exceptions.NotFound:
+        LOG.debug('Creating IoT Sensors role in Keystone')
+        iot_role = keystone.roles.create(name=iot_sensors_role, domain=domain)
+        keystone.roles.grant(iot_role, group=iot_group, domain=domain)
+
+    keystone.users.add_to_group(user=sensor, group=iot_group)
+
+    # done!
+    return sensor
+
+def reset_iot_sensor(request, iot_sensor_name, password=None):
+    if not password:
+        password = uuid.uuid4().hex
+    keystone = internal_keystoneclient(request)
+    sensor = keystone.users.find(name=iot_sensor_name)
+    return keystone.users.update(sensor, password=password)
+
+def delete_iot_sensor(request, iot_sensor_name):
+    keystone = internal_keystoneclient(request)
+    sensor = keystone.users.find(name=iot_sensor_name)
+    return keystone.users.delete(sensor)
+
 # USER REGISTRATION
 def _find_user(keystone, email=None, username=None):
     if email:

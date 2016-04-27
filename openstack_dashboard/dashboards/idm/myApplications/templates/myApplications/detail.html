@@ -71,6 +71,31 @@
         </div>
         <div class="extra">
           <h4 class="panel-title">
+            <a data-toggle="collapse" href="#collapse_iot_sensors" aria-expanded="true" aria-controls="collapse_iot_sensors">
+              IoT Sensors
+            </a>
+          </h4>
+          <div id="collapse_iot_sensors" class="form-group collapse {% if iot_sensor_password %}in{% endif %}" role="tabpanel">
+            {% if application.iot_sensors %}
+              {% for sensor_name in application.iot_sensors %}
+              <div>
+                <h6 class="panel-heading">Username</h6>
+                <p>{{ sensor_name }}</p>
+                {% if iot_sensor_password and sensor_name == iot_sensor_name %}
+                  <h6 class="panel-heading">Password</h6>
+                  <p class="info">{{ iot_sensor_password }}</p>
+                {% endif %}
+                <a href="{% url 'horizon:idm:myApplications:reset_password_iot_sensor' application.id sensor_name %}" class="btn btn-default">Reset password</a>
+                <a href="{% url 'horizon:idm:myApplications:delete_iot_sensor' application.id sensor_name %}" class="btn btn-danger">Delete IoT Sensor</a>
+              </div>
+              {% endfor %}
+            {% endif %}
+              <h6 class="panel-heading"></h6>
+              <a href="{% url 'horizon:idm:myApplications:register_iot_sensor' application.id %}" class="btn btn-default">Register a new IoT Sensor</a>
+          </div>
+        </div>
+        <div class="extra">
+          <h4 class="panel-title">
             <a data-toggle="collapse" href="#collapse_oauth2_credentials" aria-expanded="true" aria-controls="collapse_oauth2_credentials">
               OAuth2 Credentials
             </a>

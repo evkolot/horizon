@@ -437,6 +437,9 @@ class DetailApplicationView(tables.MultiTableView):
 
         # consume pep_proxy_password if present
         context['pep_proxy_password'] = self.request.session.pop('pep_proxy_password', None)
+        context['iot_sensor_password'] = self.request.session.pop('iot_sensor_password', None)
+        context['iot_sensor_name'] = self.request.session.pop('iot_sensor_name', None)
+
         
         return context
 
@@ -603,7 +606,7 @@ def _can_edit(request, application_id):
 
 def register_pep_proxy(request, application_id):
     if not _can_edit(request, application_id):
-        messages.error(request, 'You are not allowed not register a PEP Proxy for this application')
+        messages.error(request, 'You are not allowed to register a PEP Proxy for this application')
         return redirect('horizon:idm:myApplications:detail', application_id)
 
     # get the application
@@ -662,4 +665,76 @@ def delete_pep_proxy(request, application_id):
 
     # done!
     messages.success(request, 'Removed PEP Proxy.')
+    return redirect('horizon:idm:myApplications:detail', application_id)
+
+def register_iot_sensor(request, application_id):
+    if not _can_edit(request, application_id):
+        messages.error(request, 'You are not allowed to register an IoT sensor for this application')
+        return redirect('horizon:idm:myApplications:detail', application_id)
+
+    # get application and sensors
+    app = fiware_api.keystone.application_get(request, application_id)
+    iot_sensors = getattr(app, 'iot_sensors', None)
+
+    if not iot_sensors:
+        iot_sensors = []
+
+    # create a new sensor
+    password = uuid.uuid4().hex
+    sensor = fiware_api.keystone.register_iot_sensor(request, application_id, password)
+    
+    if not sensor:
+        messages.error(request, ('Error registering the IoT Sensor. Please contact an administrator'))
+        return redirect('horizon:idm:myApplications:detail', application_id)
+
+    # update application
+    iot_sensors.append(sensor.name)
+    fiware_api.keystone.application_update(request, app.id, iot_sensors=iot_sensors)
+
+    # save password in session
+    request.session['iot_sensor_name'] = sensor.name
+    request.session['iot_sensor_password'] = password  
+
+    # done!
+    messages.success(request, 'Registered a new IoT Sensor.')
+    return redirect('horizon:idm:myApplications:detail', application_id)
+
+def reset_password_iot_sensor(request, application_id, iot_sensor_name):
+    if not _can_edit(request, application_id):
+        messages.error(request, 'You are not allowed to manage IoT sensors for this application')
+        return redirect('horizon:idm:myApplications:detail', application_id)
+
+    # get the application
+    app = fiware_api.keystone.application_get(request, application_id)
+
+    # update sensor
+    password = uuid.uuid4().hex
+    sensor = fiware_api.keystone.reset_iot_sensor(request, iot_sensor_name, password)
+
+    # save password in session
+    request.session['iot_sensor_name'] = sensor.name
+    request.session['iot_sensor_password'] = password
+
+    # done!
+    messages.success(request, 'Generated new IoT Sensor password.')
+    return redirect('horizon:idm:myApplications:detail', application_id)
+
+def delete_iot_sensor(request, application_id, iot_sensor_name):
+    if not _can_edit(request, application_id):
+        messages.error(request, 'You are not allowed to manage IoT sensors for this application')
+        return redirect('horizon:idm:myApplications:detail', application_id)
+
+    # get application and sensors
+    app = fiware_api.keystone.application_get(request, application_id)
+    iot_sensors = getattr(app, 'iot_sensors', None)
+
+    # delete sensor
+    fiware_api.keystone.delete_iot_sensor(request, iot_sensor_name)
+
+    # update application
+    iot_sensors.remove(iot_sensor_name)
+    fiware_api.keystone.application_update(request, app.id, iot_sensors=iot_sensors)
+
+    # done!
+    messages.success(request, 'Removed IoT Sensor.')
     return redirect('horizon:idm:myApplications:detail', application_id)
