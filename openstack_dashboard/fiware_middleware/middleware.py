@@ -65,7 +65,7 @@ class UserInfoMiddleware(object):
 
         try:
             user_data = api.keystone.user_get(request, request.user.id)
-            LOG.debug(str(user_data) + 'for user %s', request.user.id)
+            # LOG.debug(str(user_data) + 'for user %s', request.user.id)
             # setattr(user_data, 'username', user_data.name)
             for attr, value in user_data.__dict__.iteritems():
                 setattr(request.user, attr, value)
