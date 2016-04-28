@@ -47,6 +47,29 @@
       {% if viewCred %}
         <div class="extra">
           <h4 class="panel-title">
+            <a data-toggle="collapse" href="#collapse_oauth2_credentials" aria-expanded="true" aria-controls="collapse_oauth2_credentials">
+              OAuth2 Credentials
+            </a>
+          </h4>
+          <div id="collapse_oauth2_credentials" class="form-group collapse" role="tabpanel">
+            <div>
+              <h6 class="panel-heading">Client ID</h6>
+              <p>{{ application.id }}</p>
+            </div>
+            <div>
+              <h6 class="panel-heading">Client Secret</h6>
+              <p>{{ application.secret }}</p>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  {% if viewCred %}
+  <div class="panel panel-default info">
+    <div class="panel-body">
+        <div class="extra">
+          <h4 class="panel-title">
             <a data-toggle="collapse" href="#collapse_pep_proxy" aria-expanded="true" aria-controls="collapse_pep_proxy">
               PEP Proxy
             </a>
@@ -69,7 +92,11 @@
             {% endif %}
           </div>
         </div>
-        <div class="extra">
+    </div>
+  </div>
+  <div class="panel panel-default info">
+    <div class="panel-body">
+      <div class="extra">
           <h4 class="panel-title">
             <a data-toggle="collapse" href="#collapse_iot_sensors" aria-expanded="true" aria-controls="collapse_iot_sensors">
               IoT Sensors
@@ -94,27 +121,9 @@
               <a href="{% url 'horizon:idm:myApplications:register_iot_sensor' application.id %}" class="btn btn-default">Register a new IoT Sensor</a>
           </div>
         </div>
-        <div class="extra">
-          <h4 class="panel-title">
-            <a data-toggle="collapse" href="#collapse_oauth2_credentials" aria-expanded="true" aria-controls="collapse_oauth2_credentials">
-              OAuth2 Credentials
-            </a>
-          </h4>
-          <div id="collapse_oauth2_credentials" class="form-group collapse" role="tabpanel">
-            <div>
-              <h6 class="panel-heading">Client ID</h6>
-              <p>{{ application.id }}</p>
-            </div>
-            <div>
-              <h6 class="panel-heading">Client Secret</h6>
-              <p>{{ application.secret }}</p>
-            </div>
-          </div>
-        </div>
-      {% endif %}
     </div>
   </div>
-
+  {% endif %}
 
   {{ auth_users_table.render}}
 
