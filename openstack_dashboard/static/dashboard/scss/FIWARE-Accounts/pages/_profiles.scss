@@ -38,7 +38,7 @@
     margin-bottom: 25px;    
   }
   .extra{
-    .panel-title:hover{
+    .panel-title > a:hover{
        i{
           -ms-transform: rotate(180deg); /* IE 9 */
           -webkit-transform: rotate(180deg); /* Chrome, Safari, Opera */
