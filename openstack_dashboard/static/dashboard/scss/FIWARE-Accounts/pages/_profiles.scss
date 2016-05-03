@@ -38,6 +38,14 @@
     margin-bottom: 25px;    
   }
   .extra{
+    .panel-title:hover{
+       i{
+          -ms-transform: rotate(180deg); /* IE 9 */
+          -webkit-transform: rotate(180deg); /* Chrome, Safari, Opera */
+          transform: rotate(180deg);
+          transition: all 0.5s; 
+        }     
+    }
     .collapse{
       margin: 10px 0 0;
         .content_pep{
@@ -49,6 +57,7 @@
         .content_pep_activenew{
           background-color: aliceblue;    
         }
+        
       //div{
         //min-height: 40px;
         //p{
