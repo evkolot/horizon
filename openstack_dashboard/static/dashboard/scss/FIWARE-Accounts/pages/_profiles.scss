@@ -40,13 +40,23 @@
   .extra{
     .collapse{
       margin: 10px 0 0;
-      div{
-          min-height: 40px;
-        p{
-           word-break: break-word;
-           margin-bottom: 15px;
+        .content_pep{
+            .actions_pep{
+                text-align: right;
+                margin-top: 20px;
+            }
         }
-      }
+        .content_pep_activenew{
+          background-color: aliceblue;    
+        }
+      //div{
+        //min-height: 40px;
+        //p{
+          // word-break: break-word;
+          // margin-bottom: 15px;
+        //}
+      //}
+    
     }
   }
 }

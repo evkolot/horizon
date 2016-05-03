@@ -76,15 +76,19 @@
           </h4>
           <div id="collapse_pep_proxy" class="form-group collapse {% if pep_proxy_password %}in{% endif %}" role="tabpanel">
             {% if application.pep_proxy_name %}
-              <div>
-                <h6 class="panel-heading">Username</h6>
-                <p>{{ application.pep_proxy_name }}</p>
-                {% if pep_proxy_password %}
-                  <h6 class="panel-heading">Password</h6>
-                  <p class="info">{{ pep_proxy_password }}</p>
-                {% endif %}
-                <a href="{% url 'horizon:idm:myApplications:reset_password_pep' application.id %}" class="btn btn-default">Reset password</a>
-                <a href="{% url 'horizon:idm:myApplications:delete_pep' application.id %}" class="btn btn-danger">Delete PEP Proxy</a>
+              <div class="row content_pep">
+                <div class="col-md-8 user_pep">  
+                    <h6 class="panel-heading">Username</h6>
+                    <p>{{ application.pep_proxy_name }}</p>
+                    {% if pep_proxy_password %}
+                      <h6 class="panel-heading">Password</h6>
+                      <p class="info">{{ pep_proxy_password }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 actions_pep">  
+                    <a href="{% url 'horizon:idm:myApplications:reset_password_pep' application.id %}" class="btn btn-default">Reset password</a>
+                    <a href="{% url 'horizon:idm:myApplications:delete_pep' application.id %}" class="btn btn-danger"><i class="fa fa-trash"></i> Delete</a>
+                </div>
               </div>
             {% else %}
               <h6 class="panel-heading"></h6>
@@ -105,15 +109,19 @@
           <div id="collapse_iot_sensors" class="form-group collapse {% if iot_sensor_password %}in{% endif %}" role="tabpanel">
             {% if application.iot_sensors %}
               {% for sensor_name in application.iot_sensors %}
-              <div>
-                <h6 class="panel-heading">Username</h6>
-                <p>{{ sensor_name }}</p>
-                {% if iot_sensor_password and sensor_name == iot_sensor_name %}
-                  <h6 class="panel-heading">Password</h6>
-                  <p class="info">{{ iot_sensor_password }}</p>
-                {% endif %}
-                <a href="{% url 'horizon:idm:myApplications:reset_password_iot_sensor' application.id sensor_name %}" class="btn btn-default">Reset password</a>
-                <a href="{% url 'horizon:idm:myApplications:delete_iot_sensor' application.id sensor_name %}" class="btn btn-danger">Delete IoT Sensor</a>
+              <div class="row content_pep">
+                <div class="col-md-8 user_pep">   
+                    <h6 class="panel-heading">Username</h6>
+                    <p>{{ sensor_name }}</p>
+                    {% if iot_sensor_password and sensor_name == iot_sensor_name %}
+                      <h6 class="panel-heading">Password</h6>
+                      <p class="info">{{ iot_sensor_password }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 actions_pep">
+                  <a href="{% url 'horizon:idm:myApplications:reset_password_iot_sensor' application.id sensor_name %}" class="btn btn-default">Reset password</a>
+                  <a href="{% url 'horizon:idm:myApplications:delete_iot_sensor' application.id sensor_name %}" class="btn btn-danger"><i class="fa fa-trash"></i> Delete</a>
+                </div>
               </div>
               {% endfor %}
             {% endif %}
@@ -130,3 +138,7 @@
   {{ organizations_table.render}}
 </div>
 {% endblock %}
+
+<script type="text/javascript">
+
+</script>
