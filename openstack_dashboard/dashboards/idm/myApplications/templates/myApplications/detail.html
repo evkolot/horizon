@@ -159,11 +159,13 @@
   });
 
   $(function(){
+    var passedPassword = false;
     $('#collapse_iot_sensors').children('div').children('.user_pep').children('h6').each(function(index){
-      if ($(this).html() === 'Username'){
+      if ($(this).html() === 'Username' && !passedPassword){
         $(this).append(' / Sensor ' + (index+1));
       } else {
-        $(this).append(' / Sensor ' + index); // in case it's password row
+        $(this).append(' / Sensor ' + (index)); // in case it's password row
+        passedPassword = true;
       }
     });
   });
