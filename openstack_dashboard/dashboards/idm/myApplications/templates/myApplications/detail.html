@@ -157,5 +157,16 @@
       $(this).children().removeClass('fa-rotate-180');
     }
   });
+
+  $(function(){
+    $('#collapse_iot_sensors').children('div').children('.user_pep').children('h6').each(function(index){
+      if ($(this).html() === 'Username'){
+        $(this).append(' / Sensor ' + (index+1));
+      } else {
+        $(this).append(' / Sensor ' + index); // in case it's password row
+      }
+    });
+  });
+
 </script>
 {% endblock %}
