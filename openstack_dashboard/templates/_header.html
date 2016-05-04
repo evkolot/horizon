@@ -40,7 +40,7 @@
               {% endif %}
               {{ request.user.username }}
             {% endif %}
-            
+
               <i class="fa fa-angle-double-down"></i>
             </a>
 
@@ -58,10 +58,7 @@
                  Profile
                 </a>
               </li>
-              <li>
-                <a href="{% url 'horizon:settings:multisettings:index' %}"> <i class="fa fa-cog"></i> {% trans "Settings" %}
-                </a>
-              </li>
+
 
             {% if request.organizations %}
               <li class="dropdown-submenu">
@@ -95,6 +92,11 @@
                 </ul>
               </li>
               {% endif %}
+              <li>
+                <a href="{% url 'horizon:settings:multisettings:index' %}"> <i class="fa fa-cog"></i> {% trans "Settings" %}
+                </a>
+              </li>
+              <li class="divider"></li>
               <li>
                 <a href="#" onclick="Fiware.signOut('account'); return false">
                   <i class="fa fa-sign-out"></i> {% trans "Sign Out" %}
