@@ -47,7 +47,7 @@
       {% if viewCred %}
         <div class="extra">
           <h4 class="panel-title">
-            <a data-toggle="collapse" href="#collapse_oauth2_credentials" aria-expanded="true" aria-controls="collapse_oauth2_credentials">
+            <a data-toggle="collapse" href="#collapse_oauth2_credentials" aria-expanded="true" aria-controls="collapse_oauth2_credentials" class="collapsed">
                 OAuth2 Credentials <i class="fa fa-angle-up"></i>
             </a>
           </h4>
@@ -70,7 +70,7 @@
     <div class="panel-body">
         <div class="extra">
           <h4 class="panel-title">
-            <a data-toggle="collapse" href="#collapse_pep_proxy" aria-expanded="true" aria-controls="collapse_pep_proxy">
+            <a data-toggle="collapse" href="#collapse_pep_proxy" aria-expanded="true" aria-controls="collapse_pep_proxy" class="collapsed">
                 PEP Proxy <i class="fa fa-angle-up"></i>
             </a>
           </h4>
@@ -102,7 +102,7 @@
     <div class="panel-body">
       <div class="extra">
           <h4 class="panel-title">
-            <a data-toggle="collapse" href="#collapse_iot_sensors" aria-expanded="true" aria-controls="collapse_iot_sensors">
+            <a data-toggle="collapse" href="#collapse_iot_sensors" aria-expanded="true" aria-controls="collapse_iot_sensors" class="collapsed">
               IoT Sensors <i class="fa fa-angle-up"></i>
             </a>
           </h4>
@@ -137,8 +137,25 @@
 
   {{ organizations_table.render}}
 </div>
-{% endblock %}
-
 <script type="text/javascript">
-    
+  $('.panel-title a').mouseover(function(){
+    $(this).children().toggleClass('fa-rotate-180');
+  });
+
+  $('.panel-title a').mouseleave(function(){
+    if ($(this).hasClass('collapsed')){
+      $(this).children().removeClass('fa-rotate-180');
+    } else {
+      $(this).children().addClass('fa-rotate-180');
+    }
+  });
+
+  $('.panel-title a').click(function(){
+    if ($(this).hasClass('collapsed')){
+      $(this).children().addClass('fa-rotate-180');
+    } else {
+      $(this).children().removeClass('fa-rotate-180');
+    }
+  });
 </script>
+{% endblock %}
