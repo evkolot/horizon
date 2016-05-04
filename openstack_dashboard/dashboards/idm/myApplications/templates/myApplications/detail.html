@@ -109,8 +109,8 @@
           <div id="collapse_iot_sensors" class="form-group collapse {% if iot_sensor_password %}in{% endif %}" role="tabpanel">
             {% if application.iot_sensors %}
               {% for sensor_name in application.iot_sensors %}
-              <div class="row content_pep">
-                <div class="col-md-8 user_pep">   
+              <div class="row content_pep{% if iot_sensor_password and sensor_name == iot_sensor_name %} content_pep_activenew{% endif %}">
+                <div class="col-md-8 user_pep">
                     <h6 class="panel-heading">Username</h6>
                     <p>{{ sensor_name }}</p>
                     {% if iot_sensor_password and sensor_name == iot_sensor_name %}
