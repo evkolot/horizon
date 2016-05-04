@@ -51,14 +51,16 @@
                 OAuth2 Credentials <i class="fa fa-angle-up"></i>
             </a>
           </h4>
-          <div id="collapse_oauth2_credentials" class="form-group collapse" role="tabpanel">
-            <div>
-              <h6 class="panel-heading">Client ID</h6>
-              <p>{{ application.id }}</p>
-            </div>
-            <div>
-              <h6 class="panel-heading">Client Secret</h6>
-              <p>{{ application.secret }}</p>
+          <div class="collapse_out">
+            <div id="collapse_oauth2_credentials" class="form-group collapse" role="tabpanel">
+              <div>
+                <h6 class="panel-heading">Client ID</h6>
+                <p>{{ application.id }}</p>
+              </div>
+              <div>
+                <h6 class="panel-heading">Client Secret</h6>
+                <p>{{ application.secret }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -77,7 +79,7 @@
           <div id="collapse_pep_proxy" class="form-group collapse {% if pep_proxy_password %}in{% endif %}" role="tabpanel">
             {% if application.pep_proxy_name %}
               <div class="row content_pep">
-                <div class="col-md-8 user_pep">  
+                <div class="col-md-8 user_pep">
                     <h6 class="panel-heading">Username</h6>
                     <p>{{ application.pep_proxy_name }}</p>
                     {% if pep_proxy_password %}
@@ -85,7 +87,7 @@
                       <p class="info">{{ pep_proxy_password }}</p>
                     {% endif %}
                 </div>
-                <div class="col-md-4 actions_pep">  
+                <div class="col-md-4 actions_pep">
                     <a href="{% url 'horizon:idm:myApplications:reset_password_pep' application.id %}" class="btn btn-default">Reset password</a>
                     <a href="{% url 'horizon:idm:myApplications:delete_pep' application.id %}" class="btn btn-danger"><i class="fa fa-trash"></i> Delete</a>
                 </div>
