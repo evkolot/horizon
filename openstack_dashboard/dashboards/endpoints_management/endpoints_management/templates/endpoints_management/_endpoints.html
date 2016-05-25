@@ -1,0 +1,115 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block form_id %}manage_endpoints_forms{% endblock %}
+{% block form_action %}{% url 'horizon:endpoints_management:endpoints_management:index' %}{% endblock %}
+
+{% block modal_id %}endpoints{% endblock %}
+{% block modal-header %}
+    {% include "horizon/common/_domain_page_header.html" with title="Manage Endpoints" %}
+{% endblock %}
+
+{% block modal-body %}
+<section id="services_list" class="services_list">
+  <header>
+    <h4>Services</h4>
+  </header>
+
+  <div class="btn-group-vertical services" data-toggle="buttons" id="services">
+    {% for service in available_services %}
+    <div class="btn btn-default service">
+      <input type="radio" name="{{ service.name }}" id="{{ service.name }}_radio" autocomplete="off" data-service-function="{{ service.function }}" data-service-description="{{ service.description }}" />
+      <label for="{{ service.name }}_radio">{{ service.name }}</label>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="service_description" class="service_description">
+  <header>
+    <h4>Description</h4>
+  </header>
+  <div class="alert alert-info endpoints_info_message">
+    Select a service to see its description
+  </div>
+</section>
+
+<section id="service_username" class="service_username">
+  <header>
+    <h4>Username</h4>
+  </header>
+  <div class="alert alert-info endpoints_info_message">
+    Select a service to see and manage its username
+  </div>
+</section>
+
+<section id="endpoints_list" class="endpoints_list">
+  <header>
+    <h4>Endpoints</h4>
+  </header>
+  {# show when no role is selected #}
+  <div class="alert alert-info endpoints_info_message">
+    Select a service to see and manage its endpoints
+  </div>
+  <div id="endpoints_data">
+    <div class="btn btn-default endpoint">
+      <label for="public_endpoint">Public</label>
+      <input type="text" name="public_endpoint" id="public_endpoint" autocomplete="off">
+    </div>
+    <div class="btn btn-default endpoint">
+      <label for="internal_endpoint">Internal</label>
+      <input type="text" name="internal_endpoint" id="internal_endpoint" autocomplete="off">
+    </div>
+    <div class="btn btn-default endpoint">
+      <label for="admin_endpoint">Admin</label>
+      <input type="text" name="admin_endpoint" id="admin_endpoint" autocomplete="off">
+    </div>
+  </div>
+</section>
+
+
+<div class="endpoints_form hidden">
+  <fieldset>
+    {% include "horizon/common/_form_fields.html" %}
+  </fieldset>
+</div>
+
+
+<script>
+
+  $(function() {
+    $('#endpoints_data').hide();
+  });
+
+  var service_name = '';
+
+  $("input[type=radio]").on('change', function (evt) {
+    if (!($(this).is(':checked'))) {
+      return;
+    }
+
+    $('.endpoints_info_message').hide();
+    $('#endpoints_data').show();
+
+    service_name = $(this).attr('name').toLowerCase();
+
+    $('#service_description p, #service_description h5').remove();
+    $('#service_description').append('<h5>' + $(this).attr('data-service-function') + '</h5>');
+    $('#service_description').append('<p>' + $(this).attr('data-service-description') + '</p>');
+    $('#public_endpoint').val($("[data-service-name='" + service_name + "'][data-endpoint-interface='public']").val());
+    $('#internal_endpoint').val($("[data-service-name='" + service_name + "'][data-endpoint-interface='internal']").val());
+    $('#admin_endpoint').val($("[data-service-name='" + service_name + "'][data-endpoint-interface='admin']").val());
+  });
+
+  $(".endpoint input").keyup(function(){
+    var endpoint_scope = $(this).attr('name').split('_endpoint')[0];
+    $("[data-service-name='" + service_name + "'][data-endpoint-interface='" + endpoint_scope + "']").val($(this).val());
+  });
+
+</script>
+{% endblock %}
+
+{% block modal-footer %}
+    <button class="btn btn-primary" type="submit">Save</button>
+{% endblock %}

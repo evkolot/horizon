@@ -688,6 +688,21 @@ def user_update(request, user, use_idm_account=False, **data):
 def keystone_role_list(request):
     manager = internal_keystoneclient(request).roles
     return manager.list()
+
+
+# SERVICE CATALOG & ENDPOINTS
+def service_list(request):
+    manager = internal_keystoneclient(request).services
+    return manager.list()
+
+def endpoint_list(request):
+    manager = internal_keystoneclient(request).endpoints
+    return manager.list()
+
+def endpoint_update(request, endpoint_id, endpoint_new_url):
+    manager = internal_keystoneclient(request).endpoints
+    manager.update(endpoint_id, url=endpoint_new_url)
+
     
 # PROJECTS
 def project_get(request, project_id):

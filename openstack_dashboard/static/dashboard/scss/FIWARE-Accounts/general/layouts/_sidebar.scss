@@ -59,7 +59,8 @@
     a.myApplications,
     a.notify,
     a.administrators,
-    a.user_accounts{
+    a.user_accounts,
+    a.endpoints_management{
       line-height: 42px;
       display: block;
       margin-bottom: 9px;
@@ -165,4 +166,5 @@ a.organizations i, li.members i{@extend .fa-group;}
 a.notify i{@extend .fa-comment;}
 a.administrators i{@extend .fa-wrench;}
 a.user_accounts i{@extend .fa-shield;}
+a.endpoints_management i{@extend .fa-globe;}
 
