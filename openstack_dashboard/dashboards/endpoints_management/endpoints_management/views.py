@@ -11,14 +11,17 @@
 # under the License.
 
 import logging
+import uuid
 
 from django.shortcuts import redirect
+from django.utils import simplejson
 from django.forms.formsets import formset_factory
 
 from openstack_dashboard.fiware_api import keystone
 
 from horizon import forms
 from openstack_dashboard.dashboards.endpoints_management.endpoints_management import forms as endpoints_forms
+from openstack_dashboard.dashboards.endpoints_management import utils
 
 
 LOG = logging.getLogger('idm_logger')
@@ -26,22 +29,22 @@ LOG = logging.getLogger('idm_logger')
 # NOTE @(federicofdez) Move to local_settings.py
 AVAILABLE_SERVICES = [
     {'name': 'Keystone',
-     'function': 'Identity',
+     'type': 'Identity',
      'description': 'Provides an authentication and authorization service for other OpenStack services. Provides a catalog of endpoints for all OpenStack services.'},
     {'name': 'Swift',
-     'function': 'Object storage',
+     'type': 'Object storage',
      'description': 'Stores and retrieves arbitrary unstructured data objects via a RESTful, HTTP based API. It is highly fault tolerant with its data replication and scale out architecture. Its implementation is not like a file server with mountable directories.'},
     {'name': 'Nova',
-     'function': 'Compute',
+     'type': 'Compute',
      'description': 'Manages the lifecycle of compute instances in an OpenStack environment. Responsibilities include spawning, scheduling and decomissioning of machines on demand.'},
     {'name': 'Neutron',
-     'function': 'Networking',
+     'type': 'Networking',
      'description': 'Enables network connectivity as a service for other OpenStack services, such as OpenStack Compute. Provides an API for users to define networks and the attachments into them. Has a pluggable architecture that supports many popular networking vendors and technologies.'},
     {'name': 'Cinder',
-     'function': 'Block storage',
+     'type': 'Block storage',
      'description': 'Provides persistent block storage to running instances. Its pluggable driver architecture facilitates the creation and management of block storage devices.'},
     {'name': 'Glance',
-     'function': 'Image service',
+     'type': 'Image service',
      'description': 'Stores and retrieves virtual machine disk images. OpenStack Compute makes use of this during instance provisioning.'},
 ]
 
@@ -53,7 +56,7 @@ class EndpointsView(forms.ModalFormView):
         kwargs = super(EndpointsView, self).get_form_kwargs()
 
         self.services = keystone.service_list(self.request)
-        self.endpoints = keystone.endpoint_list(self.request)
+        self.endpoints = keystone.endpoint_list(self.request, region=self.request.session['endpoints_region'])
         
         kwargs['services'] = self.services
         kwargs['endpoints'] = self.endpoints
@@ -64,20 +67,45 @@ class EndpointsView(forms.ModalFormView):
         context = super(EndpointsView, self).get_context_data(**kwargs)
 
         context['available_services'] = AVAILABLE_SERVICES
-        context['services'] = self.services
         context['endpoints'] = self.endpoints
+        context['endpoints_region'] = self.request.session['endpoints_region']
+
+        services_passwords = self.request.session.pop('services_passwords', None)
+        if services_passwords:
+            context['services_passwords'] = simplejson.dumps(services_passwords)
 
         return context
-    
-    def _can_manage_endpoints(self):
-        # Allowed to manage endpoints if username begins with 'admin'
-        user = self.request.user
-        #return 'admin' in user.id and user.id.index('admin') == 0
-        return True
 
     def dispatch(self, request, *args, **kwargs):
-        if self._can_manage_endpoints():
+        if utils.can_manage_endpoints(request):
             return super(EndpointsView, self).dispatch(request, *args, **kwargs)
         else:
             return redirect('horizon:user_home')
-    
+
+
+class DisableServiceView(forms.ModalFormView):
+    form_class = endpoints_forms.DisableServiceForm
+    template_name = 'endpoints_management/endpoints_management/disable_service.html'
+
+    def get_initial(self):
+        initial_data = {
+            "service_name": self.kwargs['service_name'],
+        }
+        return initial_data
+
+    def dispatch(self, request, *args, **kwargs):
+        if utils.can_manage_endpoints(request):
+            return super(DisableServiceView, self).dispatch(request, *args, **kwargs)
+        else:
+            return redirect('horizon:user_home')
+
+
+def enable_service_view(request, service_name):
+    region = request.session['endpoints_region']
+    password = uuid.uuid4().hex
+    service_account = keystone.register_service(request=request,
+                                                    password=password,
+                                                    service=service_name,
+                                                    region=region)
+    request.session['services_passwords'][service_name] = password
+    return redirect('horizon:endpoints_management:endpoints_management:index')

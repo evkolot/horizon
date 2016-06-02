@@ -1,0 +1,25 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block form_id %}disable_service_form{% endblock %}
+{% block form_action %}{% url 'horizon:endpoints_management:endpoints_management:disable_service' %}{% endblock %}
+
+{% block modal_id %}disable_service_modal{% endblock %}
+{% block modal-header %}Disable Service{% endblock %}
+
+{% block modal-body %}
+<div class="left">
+    <fieldset>
+    {% include "horizon/common/_form_fields.html" %}
+    </fieldset>
+</div>
+<div class="right">
+    <p>Are you sure you want to disable this service?</p>
+</div>
+{% endblock %}
+
+{% block modal-footer %}
+    <button type="submit" class="btn btn-primary">Confirm</button>
+    {% if hide %}<a href="{% url 'horizon:endpoints_management:endpoints_management:index' %}" class="btn btn-default secondary cancel">Cancel</a>{% endif %}
+{% endblock %}

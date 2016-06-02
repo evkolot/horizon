@@ -20,4 +20,6 @@ from openstack_dashboard.dashboards.endpoints_management.endpoints_management im
 
 urlpatterns = patterns('',
     url(r'^$', views.EndpointsView.as_view(), name='index'),
+    url(r'^(?P<service_name>[^/]+)/enable$', views.enable_service_view, name='enable_service'),
+    url(r'^(?P<service_name>[^/]+)/disable$', views.DisableServiceView.as_view(), name='disable_service'),
 )

@@ -14,6 +14,16 @@
 
 from openstack_dashboard import fiware_api
 
+def can_manage_endpoints(request):
+    # Allowed to manage endpoints if username begins with 'admin'
+    user = request.user
+    if 'admin' in user.id and user.id.index('admin') == 0:
+        # save region in session
+        request.session['endpoints_region'] = user.id.split('admin-')[1]
+        return True
+    else:
+        return False
+
 def is_current_user_fiware_administrator(request):
     """ Checks if the current user is an administrator (in other words, if he
     has any roles in the idm_admin application) AND if he/she is a fiware admin user
