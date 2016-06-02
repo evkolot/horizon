@@ -710,12 +710,12 @@ def register_service(request, service, region, password):
     #default_domain = keystone.domains.find(name=domain_name)
     # TODO(garcianavalon) better domain usage
     default_domain = 'default'
-    service_account = keystone.users.create(username=service+'-'+region, 
+    service_account = keystone.users.create(service+'-'+region, 
                                             password=password,
                                             domain=default_domain)
     return service_account
 
-def delete_service(request, service, region):
+def disable_service(request, service, region):
     keystone = internal_keystoneclient(request)
     service_account = keystone.users.find(name=service+'-'+region)
     return keystone.users.delete(service_account)

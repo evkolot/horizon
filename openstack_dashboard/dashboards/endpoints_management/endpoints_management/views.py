@@ -20,6 +20,8 @@ from django.forms.formsets import formset_factory
 from openstack_dashboard.fiware_api import keystone
 
 from horizon import forms
+from horizon import messages
+from horizon import exceptions
 from openstack_dashboard.dashboards.endpoints_management.endpoints_management import forms as endpoints_forms
 from openstack_dashboard.dashboards.endpoints_management import utils
 
@@ -70,6 +72,9 @@ class EndpointsView(forms.ModalFormView):
         context['endpoints'] = self.endpoints
         context['endpoints_region'] = self.request.session['endpoints_region']
 
+        context['new_service_name'] = self.request.session.pop('new_service_name', None)
+        context['new_service_password'] = self.request.session.pop('new_service_password', None)
+
         services_passwords = self.request.session.pop('services_passwords', None)
         if services_passwords:
             context['services_passwords'] = simplejson.dumps(services_passwords)
@@ -83,23 +88,6 @@ class EndpointsView(forms.ModalFormView):
             return redirect('horizon:user_home')
 
 
-class DisableServiceView(forms.ModalFormView):
-    form_class = endpoints_forms.DisableServiceForm
-    template_name = 'endpoints_management/endpoints_management/disable_service.html'
-
-    def get_initial(self):
-        initial_data = {
-            "service_name": self.kwargs['service_name'],
-        }
-        return initial_data
-
-    def dispatch(self, request, *args, **kwargs):
-        if utils.can_manage_endpoints(request):
-            return super(DisableServiceView, self).dispatch(request, *args, **kwargs)
-        else:
-            return redirect('horizon:user_home')
-
-
 def enable_service_view(request, service_name):
     region = request.session['endpoints_region']
     password = uuid.uuid4().hex
@@ -107,5 +95,21 @@ def enable_service_view(request, service_name):
                                                     password=password,
                                                     service=service_name,
                                                     region=region)
-    request.session['services_passwords'][service_name] = password
+    request.session['new_service_password'] = password
+    request.session['new_service_name'] = service_name
+    messages.warning(request, 'Service {0} enabled for region {1}. Don\'t forget to add the new endpoints.'.format(service_name, region))
+    return redirect('horizon:endpoints_management:endpoints_management:index')
+
+
+def disable_service_view(request, service_name):
+    region = request.session['endpoints_region']
+    try:
+        LOG.debug('Disabling service {0} for region {1}'.format(region, data['service_name']))
+        keystone.disable_service(request, service=data['service_name'], region=region)
+        messages.success(request,
+                         ('Service %s was successfully disabled.')
+                         % data['service_name'].capitalize())
+    except Exception:
+        exceptions.handle(request, ('Unable to disable service.'))
+
     return redirect('horizon:endpoints_management:endpoints_management:index')

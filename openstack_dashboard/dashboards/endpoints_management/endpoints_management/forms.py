@@ -40,6 +40,8 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
 
         fields = {}
         initial = {}
+
+        # add fields for existing endpoints, and set initial values
         for endpoint in self.endpoints:
             service_name = ''.join(service.name for service in self.services \
                 if service.id == endpoint.service_id)
@@ -50,6 +52,26 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                                                             'data-endpoint-interface': endpoint.interface
                                                           }))
             initial[endpoint.id] = endpoint.url
+
+        # add blank fields for new service, if any
+        new_service = None
+        if 'new_service_name' in self.request.session:
+            new_service = self.request.session['new_service_name']
+            fields['new_service'] = forms.CharField(required=False,
+                                                     widget=forms.HiddenInput())
+            initial['new_service'] = new_service
+
+        elif 'new_service' in self.request.POST:
+            new_service = self.request.POST.get('new_service')
+        
+        if new_service:
+            for interface in ['public', 'admin', 'internal']:
+                fields[new_service + '_' + interface] = forms.CharField(label=new_service + '_' + interface,
+                                                                        required=False,
+                                                                        widget=forms.TextInput(
+                                                                        attrs={'data-service-name': new_service,
+                                                                               'data-endpoint-interface': interface
+                                                                        }))
 
         self.fields = fields
         self.initial = initial
@@ -62,34 +84,22 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
         # to check if all of them are empty (delete service) or just some of 
         # them (validation error)
 
-        empty_services = {}
+        empty_services = []
         empty_endpoints = []
 
         for endpoint_id, new_url in cleaned_data.iteritems():
             endpoint = keystone.endpoint_get(self.request, endpoint_id)
-            if endpoint and new_url == u'':
-                if endpoint.service_id not in empty_services:
-                    empty_services[endpoint.service_id] = 1
-                else:
-                    empty_services[endpoint.service_id] += 1
-                empty_endpoints.append(endpoint_id)
-            else:
-                new_data[endpoint_id] = new_url
-        for service_id, count in empty_services.iteritems():
-            if count < 3:
+            if new_url == u'':
+                empty_services.append(endpoint.service_id if endpoint else endpoint_id.split('_')[0])
+
+        for service_id in set(empty_services):
+            if empty_services.count(service_id) < 3:
                 service = keystone.service_get(self.request, service_id)
-                raise ValidationError(('All interfaces for {0} service {1} must be provided'.format(
-                    service.type.capitalize(),
-                    service.name.capitalize())))
+                raise ValidationError(('All interfaces for {0} service must be provided'.format(
+                    service.name.capitalize() if service else service_id.capitalize())))
 
-        self.empty_endpoints = empty_endpoints # save endpoints to be deleted when handling form
-
-        # include new services data
-        new_services = self.request.POST.getlist('new-services')
-        for service in new_services:
-            new_data[service + '_public'] = self.request.POST.get(service + '-public')
-            new_data[service + '_internal'] = self.request.POST.get(service + '-internal')
-            new_data[service + '_admin'] = self.request.POST.get(service + '-admin')
+        # save endpoints to be deleted when handling form
+        self.empty_endpoints = [e for e, url in cleaned_data.iteritems() if url == u'' ]
             
         return new_data
 
@@ -102,7 +112,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
         # create and update endpoints
         for endpoint_id, new_url in data.iteritems():
             endpoint = keystone.endpoint_get(request, endpoint_id)
-
+            import pdb; pdb.set_trace()
             if '_' in endpoint_id: # new endpoint ID will look like "service_interface"
                 service_name, interface = endpoint_id.split('_')
                 service = next((s for s in self.services if s.name == service_name), None)
@@ -157,25 +167,3 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                 name=request.session['endpoints_region'] + ' Region Group',
                 region_id=request.session['endpoints_region'])
 
-
-class DisableServiceForm(forms.SelfHandlingForm):
-    action = reverse_lazy('horizon:endpoints_management:endpoints_management:disable_service')
-    description = 'Disable a service in a certain region'
-    template_name = 'endpoints_management/endpoints_management/_disable_service.html'
-
-    service_name = forms.CharField(required=True,
-                                   widget=forms.HiddenInput())
-
-    def handle(self, request, data):
-        region = self.request.session['endpoints_region']
-        try:
-            LOG.debug('Disabling service {0} for region {1}'.format(region, data['service_name']))
-            fiware_api.keystone.disable_service(request, service=data['service_name'], region=region)
-            messages.success(request,
-                             ('Service "%s" was successfully disabled.')
-                             % data['service_name'])
-            return True
-        except Exception:
-            exceptions.handle(request, ('Unable to disable service.'))
-
-        return shortcuts.redirect('horizon:endpoints_management:endpoints_management:index')

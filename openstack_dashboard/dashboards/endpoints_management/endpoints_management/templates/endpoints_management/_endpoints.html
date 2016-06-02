@@ -60,17 +60,27 @@
     <h4>Endpoints</h4>
   </header>
   <div id="endpoints_data">
-    <div class="btn btn-default endpoint">
+    <div class="form-group endpoint">
       <label for="public_endpoint">Public</label>
-      <input type="text" id="public_endpoint" autocomplete="off">
+      <div class="input-group">
+        <div class="input-group-addon">http://</div>
+        <input type="text" id="public_endpoint" autocomplete="off">
+      </div>
     </div>
-    <div class="btn btn-default endpoint">
+    <div class="form-group enpdoint">
       <label for="internal_endpoint">Internal</label>
-      <input type="text" id="internal_endpoint" autocomplete="off">
+      <div class="input-group">
+        <div class="input-group-addon">http://</div>
+        <input type="text" id="internal_endpoint" autocomplete="off">
+      </div>
     </div>
-    <div class="btn btn-default endpoint">
+    </div>
+    <div class="form-group endpoint">
       <label for="admin_endpoint">Admin</label>
-      <input type="text" id="admin_endpoint" autocomplete="off">
+      <div class="input-group">
+        <div class="input-group-addon">http://</div>
+        <input type="text" id="admin_endpoint" autocomplete="off">
+      </div>
     </div>
   </div>
 </section>
@@ -80,8 +90,6 @@
     {% include "horizon/common/_form_fields.html" %}
   </fieldset>
 </div>
-
-
 <script>
 
   $(function() {
@@ -103,7 +111,7 @@
     // hide info message
     $('.endpoints_info_message').hide();
     // show service description
-    $('#service_description p, #service_description h5, #service_description button').remove();
+    $('#service_description p, #service_description h5, #service_description a').remove();
     $('#service_description').append('<h5>' + $(this).attr('data-service-type') + '</h5>');
     $('#service_description').append('<p>' + $(this).attr('data-service-description') + '</p>');
 
@@ -116,35 +124,33 @@
       $('#service_username').show();
 
       // add disabling button
-      $("<button/>", {
+      $("<a/>", {
           href: disableServiceURL.replace('serviceName', serviceName),
-          class: 'btn btn-secondary',
+          class: 'btn btn-default secondary ajax-modal',
           id: 'disable-service-button',
           "data-service-name": serviceName,
           text: 'Disable service',
+          "data-toggle": "modal",
+          "data-target": "#disable_service_modal",
       }).appendTo("#service_description");
 
       // show username and password, if any
-      
       $("#service_username p").html(serviceName + '-' + endpointsRegion);
-      {% if services_passwords %}
-      if ({{ services_passwords }}.contains(serviceName)){
-        $("#service_username div div:first-child").append('<h6 class="panel-heading">Password</h6><p class="info">' + {{ services_passwords }}[serviceName] + '</p>');
-      }
+      {% if new_service_password %}
+      $("#service_username div div:first-child").append('<h6 class="panel-heading">Password</h6><p class="info">{{ new_service_password }}</p>');
       {% endif %}
 
       // fill endpoints
       $('#public_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='public']").val());
       $('#internal_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='internal']").val());
       $('#admin_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='admin']").val());    
-
     } else {
 
       $('#endpoints_list').hide();
       $('#service_username').hide();
-      $("<button/>", {
+      $("<a/>", {
           href: enableServiceURL.replace('serviceName', serviceName),
-          class: 'btn btn-secondary',
+          class: 'btn btn-default secondary',
           id: 'enable-service-button',
           "data-service-name": serviceName,
           text: 'Enable service',
@@ -159,45 +165,39 @@
     $("[data-service-name='" + serviceName + "'][data-endpoint-interface='" + endpoint_scope + "']").val(new_url);
   });
 
-  // fill in input fields with hidden data when clicking 
-  $("body").on("click", '#enable-service-button', function(e){
-    e.stopPropagation();
-
-    var interfaces = ['public', 'internal', 'admin'];
-
-    for (var i=0; i < interfaces.length; i++){
-      var inputElement = $('<input/>', {
-        class: 'form-control',
-        'data-endpoint-interface': interfaces[i],
-        'data-service-name': serviceName,
-        id: serviceName + '-' + interfaces[i],
-        name: serviceName + '-' + interfaces[i],
-        type: 'text'
-      });
-      var innerDiv = $('<div/>');
-      innerDiv.append(inputElement);
-      var labelElement = $('<label/>', {
-        class: 'control-label',
-        for: serviceName + '-' + interfaces[i],
-        text: serviceName + '_' + interfaces[i]
-      });
-      var divElement = $('<div/>', {
-        class: 'form-group'
-      });
-      $('#endpoints_form fieldset').append(divElement.append(labelElement).append(innerDiv));
-    };
-
-    $('#endpoints_form fieldset').append('<input type="text" name="new-services" value="' + serviceName + '"/>');
-    $("input[type=radio]").trigger('change');
-  });
-
-  $("body").on("click", '#disable-service-button', function(e){
-    
-  });
+  $("#disable-service-button").click(function(){
+    $('#disable_service_form').attr('action', $('#disable_service_form').attr('action').replace('serviceName', serviceName));
+  })
 
 </script>
 {% endblock %}
 
 {% block modal-footer %}
-    <button class="btn btn-primary" type="submit">Save</button>
+  <button class="btn btn-primary" type="submit">Save</button>
+
+  <div id="disable_service_modal" class="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Disable Service</h3>
+        </div>
+        <form id="disable_service_form"
+              action="{% url 'horizon:endpoints_management:endpoints_management:disable_service' 'serviceName' %}"
+              method="POST">
+          {% csrf_token %}
+          <div class="modal-body clearfix">
+            <div class="left">
+            </div>
+            <div class="right">
+              <p>Are you sure you want to disable this service?</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Confirm</button>
+            <a href="{% url 'horizon:endpoints_management:endpoints_management:index' %}" class="btn btn-default secondary cancel">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 {% endblock %}
