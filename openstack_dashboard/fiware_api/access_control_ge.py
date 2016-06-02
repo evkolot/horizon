@@ -12,6 +12,7 @@
 
 import logging
 import requests
+import uuid
 
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -23,6 +24,7 @@ LOG = logging.getLogger('idm_logger')
 
 XACML_TEMPLATE = 'access_control/policy_set.xacml'
 DOMAIN_TEMPLATE = 'access_control/domain.xacml'
+POLICY_TEMPLATE = 'access_control/policy_properties.xacml'
 
 def get_application_domain(request, application):
     """Checks if application has an associated domain in AC. If not, it creates it.
@@ -44,7 +46,7 @@ def get_application_domain(request, application):
             'X-Auth-Token': settings.ACCESS_CONTROL_MAGIC_KEY
         }
 
-        url = settings.ACCESS_CONTROL_URL + '/authzforce/domains'
+        url = settings.ACCESS_CONTROL_URL + '/authzforce-ce/domains'
 
         # LOG.debug('BODY: %s', xml)
         # LOG.debug('URL: %s', url)
@@ -83,11 +85,13 @@ def policyset_update(request, application, role_permissions):
         return 
 
     app_id = application.id
+    policy_id = str(uuid.uuid4())
 
     context = {
         'policy_set_description': 'TODO',
         'role_permissions': role_permissions,
         'app_id': app_id,
+        'policy_id': policy_id
     }
 
     xml = render_to_string(XACML_TEMPLATE, context)
@@ -100,8 +104,22 @@ def policyset_update(request, application, role_permissions):
 
     domain = get_application_domain(request, application)
 
-    url = settings.ACCESS_CONTROL_URL + '/authzforce/domains/' + domain + '/pap/policySet'
+    url = settings.ACCESS_CONTROL_URL + '/authzforce-ce/domains/' + domain + '/pap/policies'
 
+    LOG.debug('Sending request to : %s', url)
+
+    response = requests.post(
+        url,
+        data=xml,
+        headers=headers,
+        verify=False)
+
+    LOG.debug('Response code from the AC GE: %s', response.status_code)
+
+    xml = render_to_string(POLICY_TEMPLATE, context)
+    url = settings.ACCESS_CONTROL_URL + '/authzforce-ce/domains/' + domain + '/pap/pdp.properties'
+    
+    LOG.debug('Activating policy %s', policy_id)
     LOG.debug('Sending request to : %s', url)
 
     response = requests.put(
@@ -109,7 +127,5 @@ def policyset_update(request, application, role_permissions):
         data=xml,
         headers=headers,
         verify=False)
-
-    LOG.debug('Response code from the AC GE: %s', response.status_code)
 
     return response
