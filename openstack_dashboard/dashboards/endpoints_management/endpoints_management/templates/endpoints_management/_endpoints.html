@@ -19,7 +19,7 @@
   <div class="btn-group-vertical services" data-toggle="buttons" id="services">
     {% for service in available_services %}
     <div class="btn btn-default service">
-      <input type="radio" name="{{ service.name }}" id="{{ service.name }}_radio" autocomplete="off" data-service-function="{{ service.function }}" data-service-description="{{ service.description }}" />
+      <input type="radio" id="{{ service.name }}_radio" autocomplete="off" data-service-type="{{ service.type }}" data-service-description="{{ service.description }}" />
       <label for="{{ service.name }}_radio">{{ service.name }}</label>
     </div>
     {% endfor %}
@@ -33,14 +33,25 @@
   <div class="alert alert-info endpoints_info_message">
     Select a service to see its description
   </div>
+  {% if form.non_field_errors %}
+    <div class="alert alert-message alert-danger">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
 </section>
 
 <section id="service_username" class="service_username">
   <header>
-    <h4>Username</h4>
+    <h4>Credentials</h4>
   </header>
-  <div class="alert alert-info endpoints_info_message">
-    Select a service to see and manage its username
+  <div class="row content_pep">
+    <div class="col-md-8 user_pep">
+        <h6 class="panel-heading">Username</h6>
+        <p></p>
+    </div>
+    <div class="col-md-4 actions_pep">
+        <a href="#" class="btn btn-default">Reset password</a>
+    </div>
   </div>
 </section>
 
@@ -48,28 +59,23 @@
   <header>
     <h4>Endpoints</h4>
   </header>
-  {# show when no role is selected #}
-  <div class="alert alert-info endpoints_info_message">
-    Select a service to see and manage its endpoints
-  </div>
   <div id="endpoints_data">
     <div class="btn btn-default endpoint">
       <label for="public_endpoint">Public</label>
-      <input type="text" name="public_endpoint" id="public_endpoint" autocomplete="off">
+      <input type="text" id="public_endpoint" autocomplete="off">
     </div>
     <div class="btn btn-default endpoint">
       <label for="internal_endpoint">Internal</label>
-      <input type="text" name="internal_endpoint" id="internal_endpoint" autocomplete="off">
+      <input type="text" id="internal_endpoint" autocomplete="off">
     </div>
     <div class="btn btn-default endpoint">
       <label for="admin_endpoint">Admin</label>
-      <input type="text" name="admin_endpoint" id="admin_endpoint" autocomplete="off">
+      <input type="text" id="admin_endpoint" autocomplete="off">
     </div>
   </div>
 </section>
 
-
-<div class="endpoints_form hidden">
+<div id="endpoints_form" class="hidden">
   <fieldset>
     {% include "horizon/common/_form_fields.html" %}
   </fieldset>
@@ -79,32 +85,114 @@
 <script>
 
   $(function() {
-    $('#endpoints_data').hide();
+    $('#endpoints_list').hide();
+    $('#service_username').hide();
   });
 
-  var service_name = '';
+  var serviceName = '';
+  var endpointsRegion = '{{ endpoints_region }}';
+  var enableServiceURL = "{% url 'horizon:endpoints_management:endpoints_management:enable_service' 'serviceName' %}";
+  var disableServiceURL = "{% url 'horizon:endpoints_management:endpoints_management:disable_service' 'serviceName' %}";
 
-  $("input[type=radio]").on('change', function (evt) {
+  // show service info and/or endpoints when clicking on service
+  $("input[type=radio]").change(function (evt) {
     if (!($(this).is(':checked'))) {
       return;
     }
 
+    // hide info message
     $('.endpoints_info_message').hide();
-    $('#endpoints_data').show();
-
-    service_name = $(this).attr('name').toLowerCase();
-
-    $('#service_description p, #service_description h5').remove();
-    $('#service_description').append('<h5>' + $(this).attr('data-service-function') + '</h5>');
+    // show service description
+    $('#service_description p, #service_description h5, #service_description button').remove();
+    $('#service_description').append('<h5>' + $(this).attr('data-service-type') + '</h5>');
     $('#service_description').append('<p>' + $(this).attr('data-service-description') + '</p>');
-    $('#public_endpoint').val($("[data-service-name='" + service_name + "'][data-endpoint-interface='public']").val());
-    $('#internal_endpoint').val($("[data-service-name='" + service_name + "'][data-endpoint-interface='internal']").val());
-    $('#admin_endpoint').val($("[data-service-name='" + service_name + "'][data-endpoint-interface='admin']").val());
+
+    // if service is enabled, show username and endpoints
+    serviceName = $(this).attr('id').split('_radio')[0].toLowerCase();
+    if ($("[data-service-name='" + serviceName + "']").length > 0){
+
+      // show endpoints and username containers
+      $('#endpoints_list').show();
+      $('#service_username').show();
+
+      // add disabling button
+      $("<button/>", {
+          href: disableServiceURL.replace('serviceName', serviceName),
+          class: 'btn btn-secondary',
+          id: 'disable-service-button',
+          "data-service-name": serviceName,
+          text: 'Disable service',
+      }).appendTo("#service_description");
+
+      // show username and password, if any
+      
+      $("#service_username p").html(serviceName + '-' + endpointsRegion);
+      {% if services_passwords %}
+      if ({{ services_passwords }}.contains(serviceName)){
+        $("#service_username div div:first-child").append('<h6 class="panel-heading">Password</h6><p class="info">' + {{ services_passwords }}[serviceName] + '</p>');
+      }
+      {% endif %}
+
+      // fill endpoints
+      $('#public_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='public']").val());
+      $('#internal_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='internal']").val());
+      $('#admin_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='admin']").val());    
+
+    } else {
+
+      $('#endpoints_list').hide();
+      $('#service_username').hide();
+      $("<button/>", {
+          href: enableServiceURL.replace('serviceName', serviceName),
+          class: 'btn btn-secondary',
+          id: 'enable-service-button',
+          "data-service-name": serviceName,
+          text: 'Enable service',
+      }).appendTo("#service_description");
+    }
   });
 
+  // fill in hidden form when typing
   $(".endpoint input").keyup(function(){
-    var endpoint_scope = $(this).attr('name').split('_endpoint')[0];
-    $("[data-service-name='" + service_name + "'][data-endpoint-interface='" + endpoint_scope + "']").val($(this).val());
+    var endpoint_scope = $(this).attr('id').split('_endpoint')[0];
+    var new_url = $(this).val();
+    $("[data-service-name='" + serviceName + "'][data-endpoint-interface='" + endpoint_scope + "']").val(new_url);
+  });
+
+  // fill in input fields with hidden data when clicking 
+  $("body").on("click", '#enable-service-button', function(e){
+    e.stopPropagation();
+
+    var interfaces = ['public', 'internal', 'admin'];
+
+    for (var i=0; i < interfaces.length; i++){
+      var inputElement = $('<input/>', {
+        class: 'form-control',
+        'data-endpoint-interface': interfaces[i],
+        'data-service-name': serviceName,
+        id: serviceName + '-' + interfaces[i],
+        name: serviceName + '-' + interfaces[i],
+        type: 'text'
+      });
+      var innerDiv = $('<div/>');
+      innerDiv.append(inputElement);
+      var labelElement = $('<label/>', {
+        class: 'control-label',
+        for: serviceName + '-' + interfaces[i],
+        text: serviceName + '_' + interfaces[i]
+      });
+      var divElement = $('<div/>', {
+        class: 'form-group'
+      });
+      $('#endpoints_form fieldset').append(divElement.append(labelElement).append(innerDiv));
+    };
+
+    $('#endpoints_form fieldset').append('<input type="text" name="new-services" value="' + serviceName + '"/>');
+    $("input[type=radio]").trigger('change');
+  });
+
+  $("body").on("click", '#disable-service-button', function(e){
+    
   });
 
 </script>
