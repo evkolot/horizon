@@ -720,6 +720,13 @@ def disable_service(request, service, region):
     service_account = keystone.users.find(name=service+'-'+region)
     return keystone.users.delete(service_account)
 
+def reset_service(request, service, region, password):
+    if not password:
+        password = uuid.uuid4().hex
+    keystone = internal_keystoneclient(request)
+    service_account = keystone.users.find(name=service+'-'+region)
+    return keystone.users.update(service_account, password=password)
+
 def endpoint_list(request, region=None):
     manager = internal_keystoneclient(request).endpoints
     return manager.list(region=region)

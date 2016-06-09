@@ -22,4 +22,5 @@ urlpatterns = patterns('',
     url(r'^$', views.EndpointsView.as_view(), name='index'),
     url(r'^(?P<service_name>[^/]+)/enable$', views.enable_service_view, name='enable_service'),
     url(r'^(?P<service_name>[^/]+)/disable$', views.disable_service_view, name='disable_service'),
+    url(r'^(?P<service_name>[^/]+)/reset$', views.reset_service_password_view, name='reset_service'),
 )

@@ -48,50 +48,41 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
             fields[endpoint.id] = forms.CharField(label=service_name + '_' + endpoint.interface,
                                                   required=False,
                                                   widget=forms.TextInput(
-                                                    attrs={'data-service-name': service_name,
-                                                            'data-endpoint-interface': endpoint.interface
-                                                          }))
-            initial[endpoint.id] = endpoint.url
+                                                  attrs={'data-service-name': service_name,
+                                                         'data-endpoint-interface': endpoint.interface
+                                                  }))
+            initial[endpoint.id] = endpoint.url.split('http://')[1]
 
         # add blank fields for new service, if any
-        new_service = None
-        if 'new_service_name' in self.request.session:
-            new_service = self.request.session['new_service_name']
-            fields['new_service'] = forms.CharField(required=False,
-                                                     widget=forms.HiddenInput())
-            initial['new_service'] = new_service
-
-        elif 'new_service' in self.request.POST:
-            new_service = self.request.POST.get('new_service')
-        
-        if new_service:
-            for interface in ['public', 'admin', 'internal']:
-                fields[new_service + '_' + interface] = forms.CharField(label=new_service + '_' + interface,
+        if 'new_services' in self.request.session and len(self.request.session['new_services']) > 0:
+            for service in self.request.session['new_services']:
+                for interface in ['public', 'admin', 'internal']:
+                    fields[service + '_' + interface] = forms.CharField(label=service + '_' + interface,
                                                                         required=False,
                                                                         widget=forms.TextInput(
-                                                                        attrs={'data-service-name': new_service,
-                                                                               'data-endpoint-interface': interface
+                                                                        attrs={'data-service-name': service,
+                                                                                'data-endpoint-interface': interface
                                                                         }))
 
         self.fields = fields
         self.initial = initial
 
     def clean(self):
-        cleaned_data = super(UpdateEndpointsForm, self).clean()
-        new_data = {}
 
         # endpoints may arrive in any order, so we need to count them in order 
         # to check if all of them are empty (delete service) or just some of 
         # them (validation error)
 
         empty_services = []
-        empty_endpoints = []
+        cleaned_data = {}
 
-        for endpoint_id, new_url in cleaned_data.iteritems():
+        for endpoint_id, new_url in super(UpdateEndpointsForm, self).clean().iteritems():
             endpoint = keystone.endpoint_get(self.request, endpoint_id)
             if new_url == u'':
                 empty_services.append(endpoint.service_id if endpoint else endpoint_id.split('_')[0])
-
+            else:
+                cleaned_data[endpoint_id] = 'http://' + new_url
+        
         for service_id in set(empty_services):
             if empty_services.count(service_id) < 3:
                 service = keystone.service_get(self.request, service_id)
@@ -99,25 +90,22 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                     service.name.capitalize() if service else service_id.capitalize())))
 
         # save endpoints to be deleted when handling form
-        self.empty_endpoints = [e for e, url in cleaned_data.iteritems() if url == u'' ]
-            
-        return new_data
+        # do not save endpoints for newly created services, since they don't exist yet
+        self.empty_endpoints = [e for e, url in cleaned_data.iteritems() if url == u'' and '_' not in e ]
+        
+        return cleaned_data
 
     def handle(self, request, data):
-
         new_services = set()
-        updated_services = set()
-        deleted_services = set()
 
         # create and update endpoints
         for endpoint_id, new_url in data.iteritems():
-            endpoint = keystone.endpoint_get(request, endpoint_id)
-            import pdb; pdb.set_trace()
+            
             if '_' in endpoint_id: # new endpoint ID will look like "service_interface"
                 service_name, interface = endpoint_id.split('_')
                 service = next((s for s in self.services if s.name == service_name), None)
                 if not service:
-                    LOG.debug ('Service {0} is not created, skipping this endpoint'.format(service_name))
+                    #LOG.debug ('Service {0} is not created, skipping this endpoint'.format(service_name))
                     messages.error(request, 
                         'Unable to store {0} endpoint for {1} service (service not found).'.format(interface, service_name))
                     continue
@@ -125,26 +113,19 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                 new_services.add(service_name)
 
             # existing endpoint ID can be used to retrieve endpoint object
-            elif new_url != '' and new_url != endpoint.url: 
-                service = keystone.service_get(request, endpoint.service_id)
-                service_name = service.name
-                keystone.endpoint_update(request, endpoint_id=endpoint_id, endpoint_new_url=new_url)
-                updated_services.add(service_name)
+            else:
+                endpoint = keystone.endpoint_get(request, endpoint_id)
+                if new_url != '' and new_url != endpoint.url:
+                    keystone.endpoint_update(request, endpoint_id=endpoint_id, endpoint_new_url=new_url)
 
         self._delete_empty_endpoints(request)
         self._create_endpoint_group_for_region(request)
 
+        for service in new_services:
+            request.session['new_services'].pop(request.session['new_services'].index(service))
+
         # display success messages
-        if len(new_services) > 0:
-            messages.success(request, 'Service{0} {1} {2} enabled for your region.'
-                .format('' if len(new_services) == 0 else 's',
-                        ', '.join([s.capitalize() for s in new_services]),
-                        'was' if len(new_services) == 0 else 'were'))
-        if len(updated_services) > 0:
-            messages.success(request, 'Service{0} {1} {2} updated.'
-                .format('' if len(updated_services) == 0 else 's',
-                        ', '.join([s.capitalize() for s in updated_services]),
-                        'was' if len(updated_services) == 0 else 'were'))
+        messages.success(request, 'Endpoints updated for your region.')
 
         return shortcuts.redirect('horizon:endpoints_management:endpoints_management:index')
 
