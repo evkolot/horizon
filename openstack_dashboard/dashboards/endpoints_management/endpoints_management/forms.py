@@ -68,20 +68,21 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
         self.initial = initial
 
     def clean(self):
-
+        cleaned_data = super(UpdateEndpointsForm, self).clean()
+        
         # endpoints may arrive in any order, so we need to count them in order 
         # to check if all of them are empty (delete service) or just some of 
         # them (validation error)
 
         empty_services = []
-        cleaned_data = {}
+        new_data = {}
 
-        for endpoint_id, new_url in super(UpdateEndpointsForm, self).clean().iteritems():
-            endpoint = keystone.endpoint_get(self.request, endpoint_id)
+        for endpoint_id, new_url in cleaned_data.iteritems():
             if new_url == u'':
-                empty_services.append(endpoint.service_id if endpoint else endpoint_id.split('_')[0])
+                service_id = endpoint_id.split('_')[0] if '_' in endpoint_id else keystone.endpoint_get(self.request, endpoint_id).service_id
+                empty_services.append(service_id)
             else:
-                cleaned_data[endpoint_id] = 'http://' + new_url
+                new_data[endpoint_id] = 'http://' + new_url
         
         for service_id in set(empty_services):
             if empty_services.count(service_id) < 3:
@@ -93,7 +94,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
         # do not save endpoints for newly created services, since they don't exist yet
         self.empty_endpoints = [e for e, url in cleaned_data.iteritems() if url == u'' and '_' not in e ]
         
-        return cleaned_data
+        return new_data
 
     def handle(self, request, data):
         new_services = set()
@@ -134,6 +135,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
             for endpoint_id in self.empty_endpoints:
                 keystone.endpoint_delete(request, endpoint_id)
             messages.success(request, 'Blank endpoints deleted.')
+        
 
     def _create_endpoint_group_for_region(self, request):
         endpoint_group_for_region = [
