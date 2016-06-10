@@ -1,0 +1,190 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block form_id %}manage_endpoints_form{% endblock %}
+{% block form_action %}{% url 'horizon:endpoints_management:endpoints_management:index' %}{% endblock %}
+
+{% block modal_id %}endpoints{% endblock %}
+{% block modal-header %}
+    {% include "horizon/common/_domain_page_header.html" with title="Manage Endpoints" %}
+{% endblock %}
+
+{% block modal-body %}
+<section id="services_list" class="services_list">
+  <header>
+    <h4>Services</h4>
+  </header>
+
+  <div class="btn-group-vertical services" data-toggle="buttons" id="services">
+    {% for service in available_services %}
+    <div class="btn btn-default service">
+      <input type="radio" id="{{ service.name }}_radio" autocomplete="off" data-service-type="{{ service.type }}" data-service-description="{{ service.description }}" />
+      <label for="{{ service.name }}_radio">{{ service.name }}</label>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="service_description" class="service_description">
+  <header>
+    <h4>Description</h4>
+  </header>
+  <div class="alert alert-info endpoints_info_message">
+    Select a service to see its description
+  </div>
+  {% if form.non_field_errors %}
+    <div class="alert alert-message alert-danger">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+</section>
+
+<section id="service_username" class="service_username">
+  <header>
+    <h4>Credentials</h4>
+  </header>
+  <div class="row content_pep">
+    <div class="col-md-8 user_pep">
+        <h6 class="panel-heading">Username</h6>
+        <p></p>
+    </div>
+    <div class="col-md-4 actions_pep">
+        <a href="#" class="btn btn-default">Reset password</a>
+    </div>
+  </div>
+</section>
+
+<section id="endpoints_list" class="endpoints_list">
+  <header>
+    <h4>Endpoints</h4>
+  </header>
+  <div id="endpoints_data">
+    <div class="form-group endpoint">
+      <label for="public_endpoint">Public</label>
+      <div class="input-group">
+        <div class="input-group-addon">http://</div>
+        <input type="text" id="public_endpoint" autocomplete="off">
+      </div>
+    </div>
+    <div class="form-group endpoint">
+      <label for="internal_endpoint">Internal</label>
+      <div class="input-group">
+        <div class="input-group-addon">http://</div>
+        <input type="text" id="internal_endpoint" autocomplete="off">
+      </div>
+    </div>
+    </div>
+    <div class="form-group endpoint">
+      <label for="admin_endpoint">Admin</label>
+      <div class="input-group">
+        <div class="input-group-addon">http://</div>
+        <input type="text" id="admin_endpoint" autocomplete="off">
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="endpoints_form" class="hidden">
+  <fieldset>
+    {% include "horizon/common/_form_fields.html" %}
+  </fieldset>
+</div>
+<script>
+  $(function() {
+    $('#endpoints_list').hide();
+    $('#service_username').hide();
+    if (window.location.hash !== '') {
+      var anchor = window.location.hash;
+      $('#' + anchor.charAt(1).toUpperCase() + anchor.slice(2) + '_radio').trigger('click');
+    }
+  });
+
+  var serviceName = '';
+  var endpointsRegion = '{{ endpoints_region }}';
+  var enableServiceURL = "{% url 'horizon:endpoints_management:endpoints_management:enable_service' 'serviceName' %}";
+  var disableServiceURL = "{% url 'horizon:endpoints_management:endpoints_management:disable_service' 'serviceName' %}";
+  var resetServiceURL = "{% url 'horizon:endpoints_management:endpoints_management:reset_service' 'serviceName' %}";
+  var newServiceName = '{% if new_service_name %}{{ new_service_name }}{% endif %}';
+  var newServicePassword = '{% if new_service_password %}{{ new_service_password }}{% endif %}';
+
+  // show service info and/or endpoints when clicking on service
+  $("input[type=radio]").change(function (evt) {
+    if (!($(this).is(':checked'))) {
+      return;
+    }
+
+    // hide info message
+    $('.endpoints_info_message').hide();
+    // show service description
+    $('#service_description p, #service_description h5, #service_description a, #service_username h6:nth-child(3), #service_username p.info').remove();
+    $('#service_description').append('<h5>' + $(this).attr('data-service-type') + '</h5>');
+    $('#service_description').append('<p>' + $(this).attr('data-service-description') + '</p>');
+
+    // if service is enabled, show username and endpoints
+    serviceName = $(this).attr('id').split('_radio')[0].toLowerCase();
+    if ($("[data-service-name='" + serviceName + "']").length > 0){
+
+      // show endpoints and username containers
+      $('#endpoints_list').show();
+      $('#service_username').show();
+
+      // add disabling button
+      $("<a/>", {
+          class: 'btn btn-default secondary',
+          id: 'disable-service-button',
+          text: 'Disable service',
+          "data-toggle": "modal",
+          "data-target": "#disable_service_modal",
+      }).appendTo("#service_description");
+
+      $('#disable_service_form').attr('action', $('#disable_service_form').attr('action').replace('serviceName', serviceName));
+
+      // show username and password, if any
+      $("#service_username p").html(serviceName + '-' + endpointsRegion);
+      if (newServiceName === serviceName){
+        $passwordField = $("#service_username div div:first-child").append('<h6 class="panel-heading">Password</h6><p class="info">' + newServicePassword + '</p>');
+      }
+
+      // link reset password button
+      $('#service_username a').attr('href', resetServiceURL.replace('serviceName', serviceName))
+
+      // fill endpoints
+      $('#public_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='public']").val());
+      $('#internal_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='internal']").val());
+      $('#admin_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='admin']").val());    
+    } else {
+
+      $('#endpoints_list').hide();
+      $('#service_username').hide();
+      $("<a/>", {
+          href: enableServiceURL.replace('serviceName', serviceName),
+          class: 'btn btn-default secondary',
+          id: 'enable-service-button',
+          "data-service-name": serviceName,
+          text: 'Enable service',
+      }).appendTo("#service_description");
+    }
+  });
+
+  // fill in hidden form when typing
+  $(".endpoint input").keyup(function(){
+    var endpoint_scope = $(this).attr('id').split('_endpoint')[0];
+    var new_url = $(this).val();
+    $("[data-service-name='" + serviceName + "'][data-endpoint-interface='" + endpoint_scope + "']").val(new_url);
+
+    $(window).bind('beforeunload', function(){
+      return 'Are you sure you want to leave?';
+    });
+  });
+
+  $("#manage_endpoints_form").submit(function(){
+    $(window).unbind('beforeunload');
+  });
+
+</script>
+{% endblock %}
+
+{% block modal-footer %}
+  <button class="btn btn-primary" type="submit">Save</button>
+{% endblock %}

@@ -688,6 +688,70 @@ def user_update(request, user, use_idm_account=False, **data):
 def keystone_role_list(request):
     manager = internal_keystoneclient(request).roles
     return manager.list()
+
+
+# SERVICE CATALOG & ENDPOINTS
+def service_list(request):
+    manager = internal_keystoneclient(request).services
+    return manager.list()
+
+def service_get(request, service_id):
+    manager = internal_keystoneclient(request).services
+    try:
+        service = manager.get(service_id)
+    except ks_exceptions.NotFound:
+        LOG.debug('Endpoint not found')
+        service = None
+    return service
+
+def register_service(request, service, region, password):
+    keystone = internal_keystoneclient(request)
+    #domain_name = getattr(settings, 'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN', 'Default')
+    #default_domain = keystone.domains.find(name=domain_name)
+    # TODO(garcianavalon) better domain usage
+    default_domain = 'default'
+    service_account = keystone.users.create(service+'-'+region, 
+                                            password=password,
+                                            domain=default_domain)
+    return service_account
+
+def disable_service(request, service, region):
+    keystone = internal_keystoneclient(request)
+    service_account = keystone.users.find(name=service+'-'+region)
+    return keystone.users.delete(service_account)
+
+def reset_service(request, service, region, password):
+    if not password:
+        password = uuid.uuid4().hex
+    keystone = internal_keystoneclient(request)
+    service_account = keystone.users.find(name=service+'-'+region)
+    return keystone.users.update(service_account, password=password)
+
+def endpoint_list(request, region=None):
+    manager = internal_keystoneclient(request).endpoints
+    return manager.list(region=region)
+
+def endpoint_get(request, endpoint_id):
+    manager = internal_keystoneclient(request).endpoints
+    try:
+        endpoint = manager.get(endpoint_id)
+    except ks_exceptions.NotFound:
+        LOG.debug('Endpoint not found')
+        endpoint = None
+    return endpoint
+
+def endpoint_create(request, service, url, interface, region=None, enabled=True):
+    manager = internal_keystoneclient(request).endpoints
+    return manager.create(service=service, url=url, interface=interface, region=region, enabled=enabled)
+
+def endpoint_update(request, endpoint_id, endpoint_new_url):
+    manager = internal_keystoneclient(request).endpoints
+    return manager.update(endpoint_id, url=endpoint_new_url)
+
+def endpoint_delete(request, endpoint_id):
+    manager = internal_keystoneclient(request).endpoints
+    return manager.delete(endpoint_id)
+
     
 # PROJECTS
 def project_get(request, project_id):
@@ -753,6 +817,14 @@ def endpoint_group_list(request, use_idm_account=False):
         manager = api.keystone.keystoneclient(
             request, admin=True).endpoint_groups
     return manager.list()
+
+def endpoint_group_create(request, name, region_id, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient(request).endpoint_groups
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).endpoint_groups
+    return manager.create(name=name, filters={'region_id': request.session['endpoints_region']})
 
 def add_endpoint_group_to_project(request, project, endpoint_group, 
                                   use_idm_account=False):
