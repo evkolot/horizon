@@ -27,8 +27,7 @@ class Endpoints_Management(horizon.Dashboard):
     def nav(self, context):
         # NOTE(garcianavalon) hide it if the user doesn't belong to idm_admin
         request = context['request']
-        #return utils.is_current_user_fiware_administrator(request)
-        return True
+        return utils.is_current_user_keystone_administrator(request)
 
 
 horizon.register(Endpoints_Management)

@@ -17,7 +17,7 @@ from django.shortcuts import redirect
 from django.utils import simplejson
 from django.forms.formsets import formset_factory
 
-from openstack_dashboard.fiware_api import keystone
+from openstack_dashboard import fiware_api
 
 from horizon import forms
 from horizon import messages
@@ -59,8 +59,8 @@ class EndpointsView(forms.ModalFormView):
     def get_form_kwargs(self):
         kwargs = super(EndpointsView, self).get_form_kwargs()
 
-        kwargs['services'] = keystone.service_list(self.request)
-        kwargs['endpoints'] = keystone.endpoint_list(self.request, region=self.request.session['endpoints_region'])
+        kwargs['services'] = fiware_api.keystone.service_list(self.request)
+        kwargs['endpoints'] = fiware_api.keystone.endpoint_list(self.request, region=self.request.session['endpoints_region'])
 
         return kwargs
 
@@ -75,20 +75,22 @@ class EndpointsView(forms.ModalFormView):
         return context
 
     def dispatch(self, request, *args, **kwargs):
-        if utils.can_manage_endpoints(request):
-            return super(EndpointsView, self).dispatch(request, *args, **kwargs)
-        else:
+        if not utils.can_manage_endpoints(request):
             return redirect('horizon:user_home')
+        return super(EndpointsView, self).dispatch(request, *args, **kwargs)            
 
 
 def enable_service_view(request, service_name):
+    if not utils.can_manage_endpoints(request):
+        return redirect('horizon:user_home')
+    
     region = request.session['endpoints_region']
     password = uuid.uuid4().hex
     try:
-        service_account = keystone.register_service(request=request,
-                                                    password=password,
-                                                    service=service_name,
-                                                    region=region)
+        service_account = fiware_api.keystone.create_service_account(request=request,
+                                                                     password=password,
+                                                                     service=service_name,
+                                                                     region=region)
         request.session['new_service_password'] = password
         request.session['new_service_name'] = service_name
 
@@ -105,21 +107,31 @@ def enable_service_view(request, service_name):
 
 
 def disable_service_view(request, service_name):
+    if not utils.can_manage_endpoints(request):
+        return redirect('horizon:user_home')
+
     region = request.session['endpoints_region']
 
     try:
-        LOG.debug('Disabling service {0} for region {1}'.format(region, service_name))
+        LOG.debug('Disabling service {0} for region {1}'.format(service_name, region))
         
-        # delete service account and its endpoints (if any)
-        keystone.disable_service(request, service=service_name, region=region)
-        messages.success(request,
-                         ('Service %s was successfully disabled.')
-                         % service_name.capitalize())
+        # delete service account
+        fiware_api.keystone.delete_service_account(request, service=service_name, region=region)
 
         new_services = request.session.get('new_services', None)
         if new_services and service_name in new_services:
             new_services.pop(new_services.index(service_name))
             request.session['new_services'] = new_services
+        else:
+            # delete service endpoints (if any)
+            services = fiware_api.keystone.service_list(request)
+            current_service = next((s for s in services if s.name == service_name), None)
+            for endpoint in fiware_api.keystone.endpoint_list(request, region=region, service_id=current_service.id):
+                fiware_api.keystone.endpoint_delete(request, endpoint)
+
+        messages.success(request,
+                         ('Service %s was successfully disabled.')
+                         % service_name.capitalize())
 
     except Exception:
         exceptions.handle(request, ('Unable to disable service.'))
@@ -128,12 +140,15 @@ def disable_service_view(request, service_name):
 
 
 def reset_service_password_view(request, service_name):
+    if not utils.can_manage_endpoints(request):
+        return redirect('horizon:user_home')
+        
     region = request.session['endpoints_region']
     password = uuid.uuid4().hex
-    service_account = keystone.reset_service(request=request, 
-                                             service=service_name,
-                                             region=region,
-                                             password=password)
+    service_account = fiware_api.keystone.reset_service_account(request=request, 
+                                                                service=service_name,
+                                                                region=region,
+                                                                password=password)
     request.session['new_service_password'] = password
     request.session['new_service_name'] = service_name
     messages.success(request, 'Password for service {0} in region {1} was reset.'.format(service_name.capitalize(), region.capitalize()))
