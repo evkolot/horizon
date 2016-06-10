@@ -46,27 +46,15 @@
     .collapse_out{
       padding-top: 5px;
     }
+    .form-group{ margin: 0;}
     .collapse{
-        margin: 0;
         .content_pep{
-            .actions_pep{
-                padding: 20px;
-                //text-align: right;
-                //margin-top: 20px;
-            }
+          overflow: hidden;
+          clear: both;
         }
         .content_pep_activenew{
           background-color: aliceblue;
         }
-
-      //div{
-        //min-height: 40px;
-        //p{
-          // word-break: break-word;
-          // margin-bottom: 15px;
-        //}
-      //}
-
     }
   }
 }

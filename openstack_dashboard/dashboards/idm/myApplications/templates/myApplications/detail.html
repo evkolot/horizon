@@ -88,6 +88,7 @@
                     {% endif %}
                 </div>
                 <div class="col-md-4 actions_pep">
+                    <br>
                     <a href="{% url 'horizon:idm:myApplications:reset_password_pep' application.id %}" class="btn btn-default">Reset password</a>
                     <a href="{% url 'horizon:idm:myApplications:delete_pep' application.id %}" class="btn btn-danger"><i class="fa fa-trash"></i> Delete</a>
                 </div>
@@ -108,7 +109,7 @@
               IoT Sensors <i class="fa fa-angle-up"></i>
             </a>
           </h4>
-          <div id="collapse_iot_sensors" class="form-group collapse {% if iot_sensor_password %}in{% endif %}" role="tabpanel">
+          <div id="collapse_iot_sensors" class="form-group collapse {% if iot_sensor_password %}in{% endif %} no-transition" role="tabpanel">
             {% if application.iot_sensors %}
               {% for sensor_name in application.iot_sensors %}
               <div class="row content_pep{% if iot_sensor_password and sensor_name == iot_sensor_name %} content_pep_activenew{% endif %}">
@@ -121,6 +122,7 @@
                     {% endif %}
                 </div>
                 <div class="col-md-4 actions_pep">
+                  <br>
                   <a href="{% url 'horizon:idm:myApplications:reset_password_iot_sensor' application.id sensor_name %}" class="btn btn-default">Reset password</a>
                   <a href="{% url 'horizon:idm:myApplications:delete_iot_sensor' application.id sensor_name %}" class="btn btn-danger"><i class="fa fa-trash"></i> Delete</a>
                 </div>
