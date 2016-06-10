@@ -56,33 +56,34 @@
 </section>
 
 <section id="endpoints_list" class="endpoints_list">
+  {% for region in endpoints_allowed_regions %}
   <header>
-    <h4>Endpoints</h4>
+    <h4>Endpoints for {{ region }} region</h4>
   </header>
   <div id="endpoints_data">
     <div class="form-group endpoint">
-      <label for="public_endpoint">Public</label>
+      <label for="public_endpoint_{{ region }}">Public</label>
       <div class="input-group">
         <div class="input-group-addon">http://</div>
-        <input type="text" id="public_endpoint" autocomplete="off">
+        <input type="text" id="public_endpoint_{{ region }}" autocomplete="off">
       </div>
     </div>
     <div class="form-group endpoint">
-      <label for="internal_endpoint">Internal</label>
+      <label for="internal_endpoint_{{ region }}">Internal</label>
       <div class="input-group">
         <div class="input-group-addon">http://</div>
-        <input type="text" id="internal_endpoint" autocomplete="off">
+        <input type="text" id="internal_endpoint_{{ region }}" autocomplete="off">
       </div>
     </div>
-    </div>
     <div class="form-group endpoint">
-      <label for="admin_endpoint">Admin</label>
+      <label for="admin_endpoint_{{ region }}">Admin</label>
       <div class="input-group">
         <div class="input-group-addon">http://</div>
-        <input type="text" id="admin_endpoint" autocomplete="off">
+        <input type="text" id="admin_endpoint_{{ region }}" autocomplete="off">
       </div>
     </div>
   </div>
+  {% endfor %}
 </section>
 
 <div id="endpoints_form" class="hidden">
@@ -91,22 +92,12 @@
   </fieldset>
 </div>
 <script>
-  $(function() {
-    $('#endpoints_list').hide();
-    $('#service_username').hide();
-    if (window.location.hash !== '') {
-      var anchor = window.location.hash;
-      $('#' + anchor.charAt(1).toUpperCase() + anchor.slice(2) + '_radio').trigger('click');
-    }
-  });
-
-  var serviceName = '';
-  var endpointsRegion = '{{ endpoints_region }}';
   var enableServiceURL = "{% url 'horizon:endpoints_management:endpoints_management:enable_service' 'serviceName' %}";
   var disableServiceURL = "{% url 'horizon:endpoints_management:endpoints_management:disable_service' 'serviceName' %}";
   var resetServiceURL = "{% url 'horizon:endpoints_management:endpoints_management:reset_service' 'serviceName' %}";
   var newServiceName = '{% if new_service_name %}{{ new_service_name }}{% endif %}';
   var newServicePassword = '{% if new_service_password %}{{ new_service_password }}{% endif %}';
+  var endpointsUserRegion = '{{ endpoints_user_region }}';
 
   // show service info and/or endpoints when clicking on service
   $("input[type=radio]").change(function (evt) {
@@ -141,7 +132,7 @@
       $('#disable_service_form').attr('action', $('#disable_service_form').attr('action').replace('serviceName', serviceName));
 
       // show username and password, if any
-      $("#service_username p").html(serviceName + '-' + endpointsRegion);
+      $("#service_username p").html(serviceName + '-' + endpointsUserRegion);
       if (newServiceName === serviceName){
         $passwordField = $("#service_username div div:first-child").append('<h6 class="panel-heading">Password</h6><p class="info">' + newServicePassword + '</p>');
       }
@@ -150,9 +141,11 @@
       $('#service_username a').attr('href', resetServiceURL.replace('serviceName', serviceName))
 
       // fill endpoints
-      $('#public_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='public']").val());
-      $('#internal_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='internal']").val());
-      $('#admin_endpoint').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='admin']").val());    
+      {% for region in endpoints_allowed_regions %}
+      $('#public_endpoint_{{ region }}').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='public'][data-endpoint-region='{{ region }}']").val());
+      $('#internal_endpoint_{{ region }}').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='internal'][data-endpoint-region='{{ region }}']").val());
+      $('#admin_endpoint_{{ region }}').val($("[data-service-name='" + serviceName + "'][data-endpoint-interface='admin'][data-endpoint-region='{{ region }}']").val());
+      {% endfor %}
     } else {
 
       $('#endpoints_list').hide();
@@ -169,9 +162,12 @@
 
   // fill in hidden form when typing
   $(".endpoint input").keyup(function(){
-    var endpoint_scope = $(this).attr('id').split('_endpoint')[0];
+    console.log("HOLA");
+    var interface = $(this).attr('id').split('_')[0];
+    var region = $(this).attr('id').split('_')[2];
+
     var new_url = $(this).val();
-    $("[data-service-name='" + serviceName + "'][data-endpoint-interface='" + endpoint_scope + "']").val(new_url);
+    $("[data-service-name='" + serviceName + "'][data-endpoint-interface='" + interface + "'][data-endpoint-region='" + region + "']").val(new_url);
 
     $(window).bind('beforeunload', function(){
       return 'Are you sure you want to leave?';

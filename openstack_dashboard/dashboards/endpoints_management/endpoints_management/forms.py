@@ -34,6 +34,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
 
     def __init__(self, *args, **kwargs):
         self.services = kwargs.pop('services')
+        self.regions = kwargs.pop('regions')
         self.endpoints = kwargs.pop('endpoints')
 
         super(UpdateEndpointsForm, self).__init__(*args, **kwargs)
@@ -49,7 +50,8 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                                                   required=False,
                                                   widget=forms.TextInput(
                                                   attrs={'data-service-name': service_name,
-                                                         'data-endpoint-interface': endpoint.interface
+                                                         'data-endpoint-interface': endpoint.interface,
+                                                         'data-endpoint-region': endpoint.region
                                                   }))
             initial[endpoint.id] = endpoint.url.split('http://')[1]
 
@@ -57,12 +59,15 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
         if 'new_services' in self.request.session and len(self.request.session['new_services']) > 0:
             for service in self.request.session['new_services']:
                 for interface in ['public', 'admin', 'internal']:
-                    fields[service + '_' + interface] = forms.CharField(label=service + '_' + interface,
-                                                                        required=False,
-                                                                        widget=forms.TextInput(
-                                                                        attrs={'data-service-name': service,
-                                                                                'data-endpoint-interface': interface
-                                                                        }))
+                    for region in self.request.session['endpoints_allowed_regions']:
+                        endpoint_id = service + '_' + interface + '_' + region
+                        fields[endpoint_id] = forms.CharField(label=endpoint_id,
+                                                              required=False,
+                                                              widget=forms.TextInput(
+                                                              attrs={'data-service-name': service,
+                                                                     'data-endpoint-interface': interface,
+                                                                     'data-endpoint-region': region
+                                                              }))
 
         self.fields = fields
         self.initial = initial
@@ -85,7 +90,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                 new_data[endpoint_id] = 'http://' + new_url
         
         for service_id in set(empty_services):
-            if empty_services.count(service_id) < 3:
+            if empty_services.count(service_id) < 3*len(self.request.session['endpoints_allowed_regions']):
                 service = keystone.service_get(self.request, service_id)
                 raise ValidationError(('All interfaces for {0} service must be provided'.format(
                     service.name.capitalize() if service else service_id.capitalize())))
@@ -101,16 +106,16 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
 
         # create and update endpoints
         for endpoint_id, new_url in data.iteritems():
-            
             if '_' in endpoint_id: # new endpoint ID will look like "service_interface"
-                service_name, interface = endpoint_id.split('_')
+                service_name, interface, region = endpoint_id.split('_')
                 service = next((s for s in self.services if s.name == service_name), None)
+                region = next((r for r in self.regions if r.id == region), None)
                 if not service:
                     #LOG.debug ('Service {0} is not created, skipping this endpoint'.format(service_name))
                     messages.error(request, 
                         'Unable to store {0} endpoint for {1} service (service not found).'.format(interface, service_name))
                     continue
-                keystone.endpoint_create(request, service=service, url=new_url, interface=interface, region=request.session['endpoints_region'])
+                keystone.endpoint_create(request, service=service, url=new_url, interface=interface, region=region)
                 new_services.add(service_name)
 
             # existing endpoint ID can be used to retrieve endpoint object
@@ -135,18 +140,19 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
             for endpoint_id in self.empty_endpoints:
                 keystone.endpoint_delete(request, endpoint_id)
             messages.success(request, 'Blank endpoints deleted.')
-        
+
 
     def _create_endpoint_group_for_region(self, request):
-        endpoint_group_for_region = [
-            eg for eg in keystone.endpoint_group_list(request)
-            if eg.filters.get('region_id', None) == request.session['endpoints_region']
-        ]
+        for region in request.session['endpoints_allowed_regions']:
+            endpoint_group_for_region = [
+                eg for eg in keystone.endpoint_group_list(request)
+                if eg.filters.get('region_id', None) == region
+            ]
 
-        if not endpoint_group_for_region:
-            LOG.debug('Creating endpoint_group for region {0}'.format(request.session['endpoints_region']))
-            keystone.endpoint_group_create(
-                request=request,
-                name=request.session['endpoints_region'] + ' Region Group',
-                region_id=request.session['endpoints_region'])
+            if not endpoint_group_for_region:
+                LOG.debug('Creating endpoint_group for region {0}'.format(region))
+                keystone.endpoint_group_create(
+                    request=request,
+                    name=region + ' Region Group',
+                    region_id=region)
 

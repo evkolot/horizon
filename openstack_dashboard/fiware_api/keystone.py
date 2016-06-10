@@ -815,7 +815,7 @@ def endpoint_group_create(request, name, region_id, use_idm_account=False):
     else:
         manager = api.keystone.keystoneclient(
             request, admin=True).endpoint_groups
-    return manager.create(name=name, filters={'region_id': request.session['endpoints_region']})
+    return manager.create(name=name, filters={'region_id': region_id})
 
 def add_endpoint_group_to_project(request, project, endpoint_group, 
                                   use_idm_account=False):
