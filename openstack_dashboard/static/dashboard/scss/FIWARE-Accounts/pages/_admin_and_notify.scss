@@ -31,6 +31,10 @@
     padding: 15px 15px 0;
     margin: 0;
     @include border-top-radius (3px);
+    .weak_pwd_input{
+      background-color: #f2dede;
+      border-color: #ebcccc;
+    }
   }
   .modal-footer{
     @include well;
