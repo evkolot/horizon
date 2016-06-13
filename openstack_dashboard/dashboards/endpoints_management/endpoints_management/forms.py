@@ -53,7 +53,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                                                          'data-endpoint-interface': endpoint.interface,
                                                          'data-endpoint-region': endpoint.region
                                                   }))
-            initial[endpoint.id] = endpoint.url.split('http://')[1]
+            initial[endpoint.id] = endpoint.url
 
         # add blank fields for new service, if any
         if 'new_services' in self.request.session and len(self.request.session['new_services']) > 0:
