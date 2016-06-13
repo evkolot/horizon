@@ -96,21 +96,29 @@ def enable_service_view(request, service_name):
     region = request.session['endpoints_user_region']
     password = uuid.uuid4().hex
     try:
-        service_account = fiware_api.keystone.create_service_account(request=request,
-                                                                     password=password,
-                                                                     service=service_name,
-                                                                     region=region)
-        request.session['new_service_password'] = password
-        request.session['new_service_name'] = service_name
+        # try to retrieve service
+        services_list = fiware_api.keystone.service_list(request)
+        service = next((s for s in services_list if s.name == service_name), None)
 
-        if 'new_services' not in request.session:
-            request.session['new_services'] = []
-        request.session['new_services'].append(service_name)
+        if not service:
+            messages.error(request, ('Unable to enable {0} service for your region (service not found).'.format(service_name.capitalize())))
+        else:
+            service_account = fiware_api.keystone.create_service_account(request=request,
+                                                                         password=password,
+                                                                         service=service_name,
+                                                                         region=region)
 
-        #LOG.debug('New services: {0}'.format(request.session['new_services']))
-        messages.warning(request, 'Service {0} enabled. Don\'t forget to add the new endpoints.'.format(service_name))
+            request.session['new_service_password'] = password
+            request.session['new_service_name'] = service_name
+
+            if 'new_services' not in request.session:
+                request.session['new_services'] = []
+            request.session['new_services'].append(service_name)
+
+            #LOG.debug('New services: {0}'.format(request.session['new_services']))
+            messages.warning(request, 'Service {0} enabled. Don\'t forget to add the new endpoints.'.format(service_name))
     except ks_exceptions.Conflict:
-        exceptions.handle(request, ('{0} service is already enabled.'.format(service_name.capitalize())))
+        exceptions.handle(request, ('{0} service is already enabled.'.format(service_name.capitalize())))        
 
     return redirect('horizon:endpoints_management:endpoints_management:service', service_name)
 
