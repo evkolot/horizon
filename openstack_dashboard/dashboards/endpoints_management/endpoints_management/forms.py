@@ -87,13 +87,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                 service_id = endpoint_id.split('_')[0] if '_' in endpoint_id else keystone.endpoint_get(self.request, endpoint_id).service_id
                 empty_services.append(service_id)
             else:
-                new_data[endpoint_id] = 'http://' + new_url
-        
-        for service_id in set(empty_services):
-            if empty_services.count(service_id) < 3*len(self.request.session['endpoints_allowed_regions']):
-                service = keystone.service_get(self.request, service_id)
-                raise ValidationError(('All interfaces for {0} service must be provided'.format(
-                    service.name.capitalize() if service else service_id.capitalize())))
+                new_data[endpoint_id] = new_url
 
         # save endpoints to be deleted when handling form
         # do not save endpoints for newly created services, since they don't exist yet
