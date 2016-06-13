@@ -69,6 +69,10 @@ class EndpointsView(forms.ModalFormView):
 
     def get_context_data(self, **kwargs):
         context = super(EndpointsView, self).get_context_data(**kwargs)
+        
+        highlighted_service = self.kwargs.get('service_name', None)
+        if highlighted_service:
+            context['highlighted_service'] = highlighted_service
 
         context['available_services'] = AVAILABLE_SERVICES
         context['endpoints_user_region'] = self.request.session['endpoints_user_region']
@@ -108,7 +112,7 @@ def enable_service_view(request, service_name):
     except ks_exceptions.Conflict:
         exceptions.handle(request, ('{0} service is already enabled.'.format(service_name.capitalize())))
 
-    return redirect('horizon:endpoints_management:endpoints_management:index')
+    return redirect('horizon:endpoints_management:endpoints_management:service', service_name)
 
 
 def disable_service_view(request, service_name):
@@ -142,7 +146,7 @@ def disable_service_view(request, service_name):
     except Exception:
         exceptions.handle(request, ('Unable to disable service.'))
 
-    return redirect('horizon:endpoints_management:endpoints_management:index')
+    return redirect('horizon:endpoints_management:endpoints_management:service', service_name)
 
 
 def reset_service_password_view(request, service_name):
@@ -159,4 +163,4 @@ def reset_service_password_view(request, service_name):
     request.session['new_service_name'] = service_name
     messages.success(request, 'Password for service {0} was reset.'.format(service_name.capitalize()))
 
-    return redirect('horizon:endpoints_management:endpoints_management:index')
+    return redirect('horizon:endpoints_management:endpoints_management:service', service_name)
