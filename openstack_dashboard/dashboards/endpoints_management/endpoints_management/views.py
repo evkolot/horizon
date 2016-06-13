@@ -59,8 +59,10 @@ class EndpointsView(forms.ModalFormView):
         kwargs['services'] = fiware_api.keystone.service_list(self.request)
         kwargs['regions'] = fiware_api.keystone.region_list(self.request)
         kwargs['endpoints'] = []
+
+        endpoints = fiware_api.keystone.endpoint_list(self.request)
         for region in self.request.session['endpoints_allowed_regions']:
-            region_endpoints = fiware_api.keystone.endpoint_list(self.request, region=region)
+            region_endpoints = [e for e in endpoints if e.region_id == region]
             kwargs['endpoints'] += region_endpoints
 
         return kwargs
