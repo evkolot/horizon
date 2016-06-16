@@ -72,29 +72,6 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
         self.fields = fields
         self.initial = initial
 
-    def clean(self):
-        cleaned_data = super(UpdateEndpointsForm, self).clean()
-        
-        # endpoints may arrive in any order, so we need to count them in order 
-        # to check if all of them are empty (delete service) or just some of 
-        # them (validation error)
-
-        empty_services = []
-        new_data = {}
-
-        for endpoint_id, new_url in cleaned_data.iteritems():
-            if new_url == u'':
-                service_id = endpoint_id.split('_')[0] if '_' in endpoint_id else keystone.endpoint_get(self.request, endpoint_id).service_id
-                empty_services.append(service_id)
-            else:
-                new_data[endpoint_id] = new_url
-
-        # save endpoints to be deleted when handling form
-        # do not save endpoints for newly created services, since they don't exist yet
-        self.empty_endpoints = [e for e, url in cleaned_data.iteritems() if url == u'' and '_' not in e ]
-        
-        return new_data
-
     def handle(self, request, data):
         new_services = set()
 
@@ -118,7 +95,6 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                 if new_url != '' and new_url != endpoint.url:
                     keystone.endpoint_update(request, endpoint_id=endpoint_id, endpoint_new_url=new_url)
 
-        self._delete_empty_endpoints(request)
         self._create_endpoint_group_for_region(request)
 
         for service in new_services:
@@ -128,13 +104,6 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
         messages.success(request, 'Endpoints updated for your region.')
 
         return shortcuts.redirect('horizon:endpoints_management:endpoints_management:index')
-
-    def _delete_empty_endpoints(self, request):
-        if getattr(self, 'empty_endpoints'):
-            for endpoint_id in self.empty_endpoints:
-                keystone.endpoint_delete(request, endpoint_id)
-            messages.success(request, 'Blank endpoints deleted.')
-
 
     def _create_endpoint_group_for_region(self, request):
         for region in request.session['endpoints_allowed_regions']:
