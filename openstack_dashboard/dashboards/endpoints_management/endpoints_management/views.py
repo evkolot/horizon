@@ -78,7 +78,11 @@ class EndpointsView(forms.ModalFormView):
         context['endpoints_user_region'] = self.request.session['endpoints_user_region']
         context['endpoints_allowed_regions'] = self.request.session['endpoints_allowed_regions']
 
-        context['new_service_name'] = self.request.session.pop('new_service_name', None)
+        new_service_name = self.request.session.pop('new_service_name', None)
+        new_services = self.request.session.get('new_services', None)
+
+        context['new_services'] = new_services
+        context['new_service_name'] = new_service_name
         context['new_service_password'] = self.request.session.pop('new_service_password', None)
 
         return context
@@ -116,7 +120,7 @@ def enable_service_view(request, service_name):
             request.session['new_services'].append(service_name)
 
             #LOG.debug('New services: {0}'.format(request.session['new_services']))
-            messages.warning(request, 'Service {0} enabled. Don\'t forget to add the new endpoints.'.format(service_name))
+            messages.warning(request, 'Service {0} enabled. Don\'t forget to add the new endpoints.'.format(service_name.capitalize()))
     except ks_exceptions.Conflict:
         exceptions.handle(request, ('{0} service is already enabled.'.format(service_name.capitalize())))        
 

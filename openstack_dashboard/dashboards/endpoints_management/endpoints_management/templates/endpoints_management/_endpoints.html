@@ -26,6 +26,12 @@
   </div>
 </section>
 
+<div id='endpoints-actions'>
+  <button class="btn" id="edit-endpoints-button" >Edit</button>
+  <button class="btn btn-primary" id="save-endpoints-button" type="submit">Save</button>
+  <a href="{% if new_service_name and new_services and new_service_name in new_services %}{% url 'horizon:endpoints_management:endpoints_management:disable_service' highlighted_service %}{% else %}{% url 'horizon:endpoints_management:endpoints_management:index' %}{% endif %}" class="btn btn-default secondary cancel">Cancel</a>
+</div>
+
 <section id="service_description" class="service_description">
   <header>
     <h4>Description</h4>
@@ -50,7 +56,7 @@
         <p></p>
     </div>
     <div class="col-md-4 actions_pep">
-        <a href="#" class="btn btn-default">Reset password</a>
+        <a href="#" class="btn btn-default" id="reset-service-button">Reset password</a>
     </div>
   </div>
 </section>
@@ -63,15 +69,15 @@
   <div id="endpoints_data">
     <div class="form-group endpoint">
       <label for="public_endpoint_{{ region }}">Public</label>
-      <input type="text" id="public_endpoint_{{ region }}" autocomplete="off">
+      <p id="public_endpoint_{{ region }}"></p>
     </div>
     <div class="form-group endpoint">
       <label for="internal_endpoint_{{ region }}">Internal</label>
-      <input type="text" id="internal_endpoint_{{ region }}" autocomplete="off">
+      <p id="internal_endpoint_{{ region }}"></p>
     </div>
     <div class="form-group endpoint">
       <label for="admin_endpoint_{{ region }}">Admin</label>
-      <input type="text" id="admin_endpoint_{{ region }}" autocomplete="off">
+      <p id="admin_endpoint_{{ region }}"></p>
     </div>
   </div>
   {% endfor %}
@@ -85,5 +91,5 @@
 {% endblock %}
 
 {% block modal-footer %}
-  <button class="btn btn-primary" id="submit-endpoints-button" type="submit">Save</button>
+  {% include "endpoints_management/endpoints_management/_empty_endpoints_modal.html" %}
 {% endblock %}
