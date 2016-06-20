@@ -688,6 +688,61 @@ def user_update(request, user, use_idm_account=False, **data):
 def keystone_role_list(request):
     manager = internal_keystoneclient(request).roles
     return manager.list()
+
+
+# SERVICE CATALOG & ENDPOINTS
+def service_list(request):
+    manager = internal_keystoneclient(request).services
+    return manager.list()
+
+def service_get(request, service_id):
+    return _get_element_and_cache(request,
+                                  service_id,
+                                  lambda req, e: internal_keystoneclient(req).services.get(e),
+                                  pickle_props=['name'])
+
+def create_service_account(request, service, region, password):
+    keystone = internal_keystoneclient(request)
+    #domain_name = getattr(settings, 'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN', 'Default')
+    #default_domain = keystone.domains.find(name=domain_name)
+    # TODO(garcianavalon) better domain usage
+    default_domain = 'default'
+    service_account = keystone.users.create(service+'-'+region, 
+                                            password=password,
+                                            domain=default_domain)
+    return service_account
+
+def delete_service_account(request, service, region):
+    keystone = internal_keystoneclient(request)
+    service_account = keystone.users.find(name=service+'-'+region)
+    return keystone.users.delete(service_account)
+
+def reset_service_account(request, service, region, password):
+    if not password:
+        password = uuid.uuid4().hex
+    keystone = internal_keystoneclient(request)
+    service_account = keystone.users.find(name=service+'-'+region)
+    return keystone.users.update(service_account, password=password)
+
+def endpoint_list(request, region=None, service_id=None):
+    manager = internal_keystoneclient(request).endpoints
+    return manager.list(region=region, service=service_id)
+
+def endpoint_get(request, endpoint_id):
+    manager = internal_keystoneclient(request).endpoints
+    return manager.get(endpoint_id)
+
+def endpoint_create(request, service, url, interface, region=None, enabled=True):
+    manager = internal_keystoneclient(request).endpoints
+    return manager.create(service=service, url=url, interface=interface, region=region, enabled=enabled)
+
+def endpoint_update(request, endpoint_id, endpoint_new_url):
+    manager = internal_keystoneclient(request).endpoints
+    return manager.update(endpoint_id, url=endpoint_new_url)
+
+def endpoint_delete(request, endpoint_id):
+    manager = internal_keystoneclient(request).endpoints
+    return manager.delete(endpoint_id)
     
 # PROJECTS
 def project_get(request, project_id):
@@ -753,6 +808,14 @@ def endpoint_group_list(request, use_idm_account=False):
         manager = api.keystone.keystoneclient(
             request, admin=True).endpoint_groups
     return manager.list()
+
+def endpoint_group_create(request, name, region_id, use_idm_account=False):
+    if use_idm_account:
+        manager = internal_keystoneclient(request).endpoint_groups
+    else:
+        manager = api.keystone.keystoneclient(
+            request, admin=True).endpoint_groups
+    return manager.create(name=name, filters={'region_id': region_id})
 
 def add_endpoint_group_to_project(request, project, endpoint_group, 
                                   use_idm_account=False):
@@ -840,50 +903,57 @@ class PickleObject():
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
-def _get_element_and_cache(request, role, function):
-    if not cache.get(role):
+def _get_element_and_cache(request, element, function, pickle_props):
+    if not cache.get(element):
         try:
-            role = function(request, role)
-            pickle_role = PickleObject(name=role.name, id=role.id)
-            cache.set(role, pickle_role, DEFAULT_OBJECTS_CACHE_TIME)
+            resource_element = function(request, element)
+            kwargs = {}
+            for prop in pickle_props:
+                kwargs[prop] = getattr(resource_element, prop)
+            pickle_element = PickleObject(id=resource_element.id, **kwargs)
+            cache.set(element, pickle_element, DEFAULT_OBJECTS_CACHE_TIME)
         except Exception as e:
             exceptions.handle(request)
-    return cache.get(role)
+    return cache.get(element)
 
 def get_owner_role(request, use_idm_account=True):
     owner = getattr(local_settings, "KEYSTONE_OWNER_ROLE")
     return _get_element_and_cache(
-        request, owner, lambda req, n: internal_keystoneclient(req).roles.find(name=n))
+        request, owner, lambda req, n: internal_keystoneclient(req).roles.find(name=n), pickle_props=['name'])
+
+def get_admin_role(request, use_idm_account=True):
+    return _get_element_and_cache(
+        request, 'admin', lambda req, n: internal_keystoneclient(req).roles.find(name=n), pickle_props=['name'])
 
 def get_member_role(request, use_idm_account=True):
     member = getattr(local_settings, "OPENSTACK_KEYSTONE_DEFAULT_ROLE")
     return _get_element_and_cache(
-        request, member, lambda req, n: internal_keystoneclient(req).roles.find(name=n))
+        request, member, lambda req, n: internal_keystoneclient(req).roles.find(name=n), pickle_props=['name'])
 
 def get_trial_role(request, use_idm_account=True):
     trial = getattr(local_settings, "KEYSTONE_TRIAL_ROLE")
     return _get_element_and_cache(
-        request, trial, lambda req, n: internal_keystoneclient(req).roles.find(name=n))
+        request, trial, lambda req, n: internal_keystoneclient(req).roles.find(name=n), pickle_props=['name'])
 
 def get_basic_role(request, use_idm_account=True):
     basic = getattr(local_settings, "KEYSTONE_BASIC_ROLE")
     return _get_element_and_cache(
-        request, basic, lambda req, n: internal_keystoneclient(req).roles.find(name=n))
+        request, basic, lambda req, n: internal_keystoneclient(req).roles.find(name=n), pickle_props=['name'])
 
 def get_community_role(request, use_idm_account=True):
     community = getattr(local_settings, "KEYSTONE_COMMUNITY_ROLE")
     return _get_element_and_cache(
-        request, community, lambda req, n: internal_keystoneclient(req).roles.find(name=n))
+        request, community, lambda req, n: internal_keystoneclient(req).roles.find(name=n), pickle_props=['name'])
 
 def get_provider_role(request, use_idm_account=True):
     provider = getattr(local_settings, "FIWARE_PROVIDER_ROLE_ID")
     return _get_element_and_cache(
-        request, provider, lambda req, role_id: internal_keystoneclient(req).fiware_roles.roles.get(role_id))
+        request, provider, lambda req, role_id: internal_keystoneclient(req).fiware_roles.roles.get(role_id), pickle_props=['name'])
 
 def get_purchaser_role(request, use_idm_account=True):
     purchaser = getattr(local_settings, "FIWARE_PURCHASER_ROLE_ID")
     return _get_element_and_cache(
-        request, purchaser, lambda req, role_id: internal_keystoneclient(req).fiware_roles.roles.get(role_id))
+        request, purchaser, lambda req, role_id: internal_keystoneclient(req).fiware_roles.roles.get(role_id), pickle_props=['name'])
 
 
 def get_default_cloud_role(request, cloud_app_id, use_idm_account=True):
@@ -894,7 +964,7 @@ def get_default_cloud_role(request, cloud_app_id, use_idm_account=True):
     """
     default_cloud = getattr(local_settings, "FIWARE_DEFAULT_CLOUD_ROLE_ID")
     return _get_element_and_cache(
-        request, default_cloud, lambda req, role_id: internal_keystoneclient(req).fiware_roles.roles.get(role_id))
+        request, default_cloud, lambda req, role_id: internal_keystoneclient(req).fiware_roles.roles.get(role_id), pickle_props=['name'])
 
 
 def get_idm_admin_app(request):

@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block main %}
+	{% include "endpoints_management/endpoints_management/_endpoints.html" %}
+	{% include "endpoints_management/endpoints_management/_disable_service_modal.html" %}
+	{% include "endpoints_management/endpoints_management/_endpoints_script.html" %}
+{% endblock %}

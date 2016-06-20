@@ -1,0 +1,216 @@
+<script>
+  var enableServiceURL = "{% url 'horizon:endpoints_management:endpoints_management:enable_service' 'serviceName' %}",
+  disableServiceURL = "{% url 'horizon:endpoints_management:endpoints_management:disable_service' 'serviceName' %}",
+  resetServiceURL = "{% url 'horizon:endpoints_management:endpoints_management:reset_service' 'serviceName' %}",
+  newServiceName = '{% if new_service_name %}{{ new_service_name }}{% endif %}',
+  newServicePassword = '{% if new_service_password %}{{ new_service_password }}{% endif %}',
+  endpointsUserRegion = '{{ endpoints_user_region }}',
+  highlightedService = '{{ highlighted_service }}',
+  serviceName = '',
+  editing = false;
+
+  function validateURL(url) {
+    var pattern = new RegExp('^(https?:\\/\\/)'+ // protocol
+     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|'+ // domain name
+     '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+     '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+     '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+     '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+    
+    if(!pattern.test(url)) {
+      return false;
+    } else {
+      return true;
+    }
+  };
+
+  function fillEndpoints(service, region) {
+    if (editing) {
+      $('#public_endpoint_' + region).val($("[data-service-name='" + service + "'][data-endpoint-interface='public'][data-endpoint-region='" + region + "']").val());
+      $('#internal_endpoint_' + region).val($("[data-service-name='" + service + "'][data-endpoint-interface='internal'][data-endpoint-region='" + region + "']").val());
+      $('#admin_endpoint_' + region).val($("[data-service-name='" + service + "'][data-endpoint-interface='admin'][data-endpoint-region='" + region + "']").val());
+    } else {
+      $('#public_endpoint_' + region).text($("[data-service-name='" + service + "'][data-endpoint-interface='public'][data-endpoint-region='" + region + "']").val());
+      $('#internal_endpoint_' + region).text($("[data-service-name='" + service + "'][data-endpoint-interface='internal'][data-endpoint-region='" + region + "']").val());
+      $('#admin_endpoint_' + region).text($("[data-service-name='" + service + "'][data-endpoint-interface='admin'][data-endpoint-region='" + region + "']").val());
+    }
+  };
+
+  function replaceEndpoints(region) {
+    jQuery.each(['public', 'internal', 'admin'], function(i, interface){
+      $('#' + interface + '_endpoint_' + region).replaceWith(function() {
+        return $("<input/>", {
+          type: 'text',
+          autocomplete: 'off',
+          id: interface + '_endpoint_' + region,
+        });
+      });
+    });
+  };
+
+  function getInvalidEndpoints() {
+    // returns the ID of the service button with an invalid endpoint
+    var inputFieldID = '';
+   
+    $('#endpoints_form input').each(function(e){
+      var url = $(this).val();
+      var service = $(this).attr('data-service-name');
+      if (!validateURL(url)) {
+        inputFieldID = service.charAt(0).toUpperCase() + service.slice(1) + '_radio';
+        return false;
+      }
+    });
+
+    return inputFieldID;
+  };
+
+  function validateServiceEndpoints(ignoreNewService) {
+    $(".endpoint input").each(function(e){
+      if ( ($(this).val()!== '' || (!ignoreNewService && serviceName==newServiceName)) && !validateURL($(this).val()) ) {
+        $(this).addClass('weak_pwd_input');
+      } else {
+        $(this).removeClass('weak_pwd_input');
+      }
+    });
+  };
+
+  // click on service depending on URL
+  $(function() {
+    if (highlightedService !== ''){
+      var inputFieldID = highlightedService.charAt(0).toUpperCase() + highlightedService.slice(1) + '_radio';
+      $("#" + inputFieldID).click();
+      if (serviceName == newServiceName){
+        $('#edit-endpoints-button').click();
+      }
+    }
+  });
+
+  // go to edit mode when clicking edit button
+  $('#edit-endpoints-button').click(function(e) {
+    e.preventDefault();
+    $('#endpoints-actions').children().show();
+    $('#edit-endpoints-button').hide();
+
+    editing = true;
+
+    {% for region in endpoints_allowed_regions %}
+    replaceEndpoints('{{ region }}');
+    {% endfor %}
+
+    if (serviceName !== '') {
+      var inputFieldID = serviceName.charAt(0).toUpperCase() + serviceName.slice(1) + '_radio';
+      $("input[type=radio]").prop("checked", false);
+      $("#" + inputFieldID).prop("checked", true);
+      $("input[type=radio]").change();
+    }
+  });
+
+  // show service info and/or endpoints when clicking on service
+  $("input[type=radio]").change(function(evt) {
+    if (!($(this).is(':checked'))) {
+      return;
+    }
+
+    // hide info message
+    $('.endpoints_info_message').hide();
+    // show service description
+    $('#service_description>p, #service_description h5, #service_description a, #service_username h6:nth-child(3), #service_username p.info').remove();
+    $('#service_description').append('<h5>' + $(this).attr('data-service-type') + '</h5>');
+    $('#service_description').append('<p>' + $(this).attr('data-service-description') + '</p>');
+
+    // if service is enabled, show username and endpoints
+    serviceName = $(this).attr('id').split('_radio')[0].toLowerCase();
+    if ($("input[data-service-name='" + serviceName + "']").length > 0){
+
+      // show endpoints and username containers
+      $('#endpoints_list').show();
+      $('#service_username').show();
+
+      // add disabling button and reset button if edit mode is enabled
+      if (editing) {
+        $("<a/>", {
+            class: 'btn btn-default secondary',
+            id: 'disable-service-button',
+            text: 'Disable service',
+            "data-toggle": "modal",
+            "data-target": "#disable_service_modal",
+        }).appendTo("#service_description");
+
+        $('#disable_service_form').attr('action', $('#disable_service_form').attr('action').replace('serviceName', serviceName));
+
+        $('#service_username a').attr('href', resetServiceURL.replace('serviceName', serviceName));
+        $('#service_username a').show();
+      } else {
+        $('#service_username a').hide();
+      }
+
+      // show username and password, if any
+      $("#service_username p").html(serviceName + '-' + endpointsUserRegion);
+      if (newServiceName === serviceName){
+        $passwordField = $("#service_username div div:first-child").append('<h6 class="panel-heading">Password</h6><p class="info">' + newServicePassword + '</p>');
+      }
+
+      // fill endpoints
+      {% for region in endpoints_allowed_regions %}
+      fillEndpoints(serviceName, '{{ region }}');
+      {% endfor %}
+
+      // clear previous validation and validate again
+      validateServiceEndpoints(true);
+
+    } else {
+
+      $('#endpoints_list').hide();
+      $('#service_username').hide();
+      if (editing) {
+        $("<a/>", {
+            href: enableServiceURL.replace('serviceName', serviceName),
+            class: 'btn btn-default secondary',
+            id: 'enable-service-button',
+            "data-service-name": serviceName,
+            text: 'Enable service',
+        }).appendTo("#service_description");
+      }
+    }
+  });
+
+  // fill in hidden form when typing
+  $("#endpoints_data")
+  .on('keyup', 'input', function() {
+    var interface = $(this).attr('id').split('_')[0];
+    var region = $(this).attr('id').split('_')[2];
+
+    var new_url = $(this).val();
+    $("[data-service-name='" + serviceName + "'][data-endpoint-interface='" + interface + "'][data-endpoint-region='" + region + "']").val(new_url);
+
+    $(window).bind('beforeunload', function(){
+      return 'Are you sure you want to leave?';
+    });})
+  .on('focusout', 'input', function() {
+    if (!validateURL($(this).val())) {
+      $(this).addClass('weak_pwd_input');
+    } else {
+      $(this).removeClass('weak_pwd_input');
+    }
+  });
+
+  $("#save-endpoints-button").click(function(e) {
+    var invalidEndpoint = getInvalidEndpoints();
+
+    if (invalidEndpoint !== ''){
+      e.preventDefault();
+      $("#" + invalidEndpoint).click();
+
+      // Add error message if it was not added yet
+      if($("#validation-errors").length == 0) {
+        $('#service_description').prepend('<div class="alert alert-message alert-danger" id="validation-errors"><p>Please fill in all the endpoints or disable the service</p></div>');
+      }
+      validateServiceEndpoints(false);
+    }
+  });
+
+  $("#manage_endpoints_form").submit(function(e){
+    $(window).unbind('beforeunload');
+  });
+
+</script>

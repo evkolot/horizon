@@ -1,0 +1,94 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block form_id %}manage_endpoints_form{% endblock %}
+{% block form_action %}{% url 'horizon:endpoints_management:endpoints_management:index' %}{% endblock %}
+
+{% block modal_id %}endpoints{% endblock %}
+{% block modal-header %}
+    {% include "horizon/common/_domain_page_header.html" with title="Manage Endpoints" %}
+{% endblock %}
+
+{% block modal-body %}
+<section id="services_list" class="services_list">
+  <header>
+    <h4>Services</h4>
+  </header>
+
+  <div class="btn-group-vertical services" data-toggle="buttons" id="services">
+    {% for service in available_services %}
+    <div class="btn btn-default service">
+      <input type="radio" id="{{ service.name }}_radio" autocomplete="off" data-service-type="{{ service.type }}" data-service-description="{{ service.description }}" />
+      <label for="{{ service.name }}_radio">{{ service.name }}</label>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<div id='endpoints-actions'>
+  <button class="btn" id="edit-endpoints-button" >Edit</button>
+  <button class="btn btn-primary" id="save-endpoints-button" type="submit">Save</button>
+  <a href="{% if new_service_name and new_services and new_service_name in new_services %}{% url 'horizon:endpoints_management:endpoints_management:disable_service' highlighted_service %}{% else %}{% url 'horizon:endpoints_management:endpoints_management:index' %}{% endif %}" class="btn btn-default secondary cancel">Cancel</a>
+</div>
+
+<section id="service_description" class="service_description">
+  <header>
+    <h4>Description</h4>
+  </header>
+  <div class="alert alert-info endpoints_info_message">
+    Select a service to see its description
+  </div>
+  {% if form.non_field_errors %}
+    <div class="alert alert-message alert-danger">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+</section>
+
+<section id="service_username" class="service_username">
+  <header>
+    <h4>Credentials</h4>
+  </header>
+  <div class="row content_pep">
+    <div class="col-md-8 user_pep">
+        <h6 class="panel-heading">Username</h6>
+        <p></p>
+    </div>
+    <div class="col-md-4 actions_pep">
+        <a href="#" class="btn btn-default" id="reset-service-button">Reset password</a>
+    </div>
+  </div>
+</section>
+
+<section id="endpoints_list" class="endpoints_list">
+  {% for region in endpoints_allowed_regions %}
+  <header>
+    <h4>Endpoints for {{ region }} region</h4>
+  </header>
+  <div id="endpoints_data">
+    <div class="form-group endpoint">
+      <label for="public_endpoint_{{ region }}">Public</label>
+      <p id="public_endpoint_{{ region }}"></p>
+    </div>
+    <div class="form-group endpoint">
+      <label for="internal_endpoint_{{ region }}">Internal</label>
+      <p id="internal_endpoint_{{ region }}"></p>
+    </div>
+    <div class="form-group endpoint">
+      <label for="admin_endpoint_{{ region }}">Admin</label>
+      <p id="admin_endpoint_{{ region }}"></p>
+    </div>
+  </div>
+  {% endfor %}
+</section>
+
+<div id="endpoints_form" class="hidden">
+  <fieldset>
+    {% include "horizon/common/_form_fields.html" %}
+  </fieldset>
+</div>
+{% endblock %}
+
+{% block modal-footer %}
+{% endblock %}
