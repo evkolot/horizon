@@ -5,8 +5,11 @@
     .panel-heading{
       font-family: $corporate-font-family-sans-serif-Regular;
       padding: 9px 12px;
-      margin-top: 3px;
-      .title,
+      //margin-top: 3px;
+      .title{
+        font-size: 14px;
+        padding: 5px 0px;
+      }
       .action{
         font-size: 13px;
         padding: 0px;

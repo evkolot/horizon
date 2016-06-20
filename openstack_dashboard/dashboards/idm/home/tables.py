@@ -21,16 +21,20 @@ class CreateOrganization(tables.LinkAction):
     name = "create_organization"
     verbose_name = "Create"
     url = "horizon:idm:organizations:create"
-    classes = ("link",)
     render_as_link = True
+
+    def get_default_classes(self):
+        return ("btn", "btn-primary", "btn-sm")
 
 
 class RegisterApplication(tables.LinkAction):
     name = "register_application"
     verbose_name = "Register"
     url = "horizon:idm:myApplications:create"
-    classes = ("link",)
     render_as_link = True
+
+    def get_default_classes(self):
+        return ("btn", "btn-primary", "btn-sm")
 
 class OrganizationsTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
@@ -47,7 +51,7 @@ class OrganizationsTable(tables.DataTable):
     def __init__(self, *args, **kwargs):
         super(OrganizationsTable, self).__init__(*args, **kwargs)
         self.filter_data.update({'user_id': self.request.user.id})
-    
+
     class Meta:
         name = "organizations"
         verbose_name = 'Organizations'
@@ -79,4 +83,3 @@ class ApplicationsTable(tables.DataTable):
         multi_select = False
         row_class = idm_tables.ApplicationClickableRow
         template = 'idm/home/_data_table.html'
-
