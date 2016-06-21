@@ -1,8 +1,12 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% block title %}Update {{service_name}} endpoints{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title="Update endpoints" %}
+{% endblock page_header %}
 
 {% block main %}
-	{% include "endpoints_management/endpoints_management/_endpoints.html" %}
-	{% include "endpoints_management/endpoints_management/_disable_service_modal.html" %}
-	{% include "endpoints_management/endpoints_management/_endpoints_script.html" %}
+  {% include "endpoints_management/endpoints_management/_endpoints.html" %}
+  {% include "endpoints_management/endpoints_management/_disable_service_modal.html" %}
 {% endblock %}

@@ -13,12 +13,12 @@
 # under the License.
 
 import logging
+import uuid
 
 from horizon import forms
 from horizon import messages
 from horizon import exceptions
 
-from django.forms import ValidationError
 from django import shortcuts
 from django.core.urlresolvers import reverse_lazy
 
@@ -28,82 +28,65 @@ LOG = logging.getLogger('idm_logger')
 
 
 class UpdateEndpointsForm(forms.SelfHandlingForm):
-    action = reverse_lazy('horizon:endpoints_management:endpoints_management:index')
-    description = 'Account status'
-    template_name = 'endpoints_management/endpoints_management/_endpoints.html'
+    service_name = '' # will be initialized in __init__
+    action = reverse_lazy('horizon:endpoints_management:endpoints_management:edit_service', service_name)
+    description = 'Update Service Endpoints'
+    template = 'endpoints_management/endpoints_management/_endpoints.html'
+
 
     def __init__(self, *args, **kwargs):
-        self.services = kwargs.pop('services')
-        self.regions = kwargs.pop('regions')
-        self.endpoints = kwargs.pop('endpoints')
+        service = kwargs.pop('service')
+        self.service_name = service.name
+        self.service_type = getattr(service, 'type', None)
+        self.service_description = getattr(service, 'description', None)
+        self.service_id = service.id
+
+        self.endpoints_list = kwargs.pop('endpoints_list')
 
         super(UpdateEndpointsForm, self).__init__(*args, **kwargs)
 
         fields = {}
         initial = {}
 
-        # add fields for existing endpoints, and set initial values
-        for endpoint in self.endpoints:
-            service_name = ''.join(service.name for service in self.services \
-                if service.id == endpoint.service_id)
-            fields[endpoint.id] = forms.CharField(label=service_name + '_' + endpoint.interface,
-                                                  required=False,
-                                                  widget=forms.TextInput(
-                                                  attrs={'data-service-name': service_name,
-                                                         'data-endpoint-interface': endpoint.interface,
-                                                         'data-endpoint-region': endpoint.region
-                                                  }))
-            initial[endpoint.id] = endpoint.url
-
-        # add blank fields for new service, if any
-        if 'new_services' in self.request.session and len(self.request.session['new_services']) > 0:
-            for service in self.request.session['new_services']:
-                for interface in ['public', 'admin', 'internal']:
-                    for region in self.request.session['endpoints_allowed_regions']:
-                        endpoint_id = service + '_' + interface + '_' + region
-                        fields[endpoint_id] = forms.CharField(label=endpoint_id,
-                                                              required=False,
-                                                              widget=forms.TextInput(
-                                                              attrs={'data-service-name': service,
-                                                                     'data-endpoint-interface': interface,
-                                                                     'data-endpoint-region': region
-                                                              }))
+        for region in self.request.session['endpoints_allowed_regions']:
+            for interface in ['public', 'internal', 'admin']:
+                field_ID = '_'.join([self.service_name, region.lower(), interface])
+                fields[field_ID] = forms.CharField(label=interface.capitalize(),
+                                                   required=True,
+                                                   widget=forms.TextInput(
+                                                   attrs={'data-service-name': self.service_name,
+                                                          'data-endpoint-interface': interface,
+                                                          'data-endpoint-region': region
+                                                   }))
+        for endpoint in self.endpoints_list:
+            field_ID = '_'.join([self.service_name, endpoint.region.lower(), endpoint.interface])
+            initial[field_ID] = endpoint.url
 
         self.fields = fields
         self.initial = initial
 
     def handle(self, request, data):
-        new_services = set()
+        is_new_service = False
+        
+        for field_ID, new_url in data.iteritems():
+            service_name, region, interface = field_ID.split('_')
 
-        # create and update endpoints
-        for endpoint_id, new_url in data.iteritems():
-            if '_' in endpoint_id: # new endpoint ID will look like "service_interface"
-                service_name, interface, region = endpoint_id.split('_')
-                service = next((s for s in self.services if s.name == service_name), None)
-                region = next((r for r in self.regions if r.id == region), None)
-                if not service:
-                    #LOG.debug ('Service {0} is not created, skipping this endpoint'.format(service_name))
-                    messages.error(request, 
-                        'Unable to store {0} endpoint for {1} service (service not found).'.format(interface, service_name))
-                    continue
-                keystone.endpoint_create(request, service=service, url=new_url, interface=interface, region=region)
-                new_services.add(service_name)
-
-            # existing endpoint ID can be used to retrieve endpoint object
-            else:
-                endpoint = keystone.endpoint_get(request, endpoint_id)
-                if new_url != '' and new_url != endpoint.url:
-                    keystone.endpoint_update(request, endpoint_id=endpoint_id, endpoint_new_url=new_url)
+            endpoint = next((e for e in self.endpoints_list if e.region_id == region.capitalize() and e.interface == interface), None)
+            if not endpoint:
+                is_new_service = True
+                keystone.endpoint_create(request, service=self.service_id, url=new_url, interface=interface, region=region)
+            elif new_url != '' and new_url != endpoint.url:
+                keystone.endpoint_update(request, endpoint_id=endpoint.id, endpoint_new_url=new_url)
 
         self._create_endpoint_group_for_region(request)
-
-        for service in new_services:
-            request.session['new_services'].pop(request.session['new_services'].index(service))
+        if (is_new_service):
+            self._create_service_account(request)
 
         # display success messages
         messages.success(request, 'Endpoints updated for your region.')
 
         return shortcuts.redirect('horizon:endpoints_management:endpoints_management:index')
+
 
     def _create_endpoint_group_for_region(self, request):
         for region in request.session['endpoints_allowed_regions']:
@@ -118,4 +101,17 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                     request=request,
                     name=region + ' Region Group',
                     region_id=region)
+
+
+    def _create_service_account(self, request):
+        region = request.session['endpoints_user_region']
+        password = uuid.uuid4().hex
+
+        service_account = keystone.create_service_account(request=request,
+                                                          password=password,
+                                                          service=self.service_name,
+                                                          region=region)
+
+        request.session['new_service_password'] = password
+        request.session['new_service_name'] = self.service_name
 

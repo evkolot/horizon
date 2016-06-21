@@ -724,9 +724,9 @@ def reset_service_account(request, service, region, password):
     service_account = keystone.users.find(name=service+'-'+region)
     return keystone.users.update(service_account, password=password)
 
-def endpoint_list(request, region=None, service_id=None):
+def endpoint_list(request):
     manager = internal_keystoneclient(request).endpoints
-    return manager.list(region=region, service=service_id)
+    return manager.list()
 
 def endpoint_get(request, endpoint_id):
     manager = internal_keystoneclient(request).endpoints

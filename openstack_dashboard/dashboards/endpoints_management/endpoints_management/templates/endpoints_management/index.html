@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% endblock %}
+
+{% block page_header %}
+	{% include "horizon/common/_domain_page_header.html" with title="Manage Endpoints" %}
+{% endblock page_header %}
+
+{% block main %}
+<div id="endpoints">
+
+  <div class="panel panel-default datatable">
+    <div class="panel-heading">
+      <span class="title">Services</span>
+    </div>
+
+    <div class="panel-body row datatable-content no-max-height" id="endpoints_content">
+      <div class="col-md-3 btn-group-vertical services" data-toggle="buttons" id="services">
+        {% for service in services %}
+        <div class="btn btn-default service">
+          <input type="radio" id="{{ service.name }}_radio" autocomplete="off" data-service-name="{{ service.name }}" />
+          <label for="{{ service.name }}_radio">{{ service.name.capitalize }}</label>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="col-md-9">
+      	<div class="service_description" id="default_service_description">
+          <h4>Description</h4>
+          <div class="alert alert-info endpoints_info_message">
+            Select a service to see its description
+          </div>
+        </div>
+        {% for form in endpoints_forms %}
+        	{% include form.template with form=form %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="panel-footer">
+    </div>
+  </div>
+</div>
+{% include "endpoints_management/endpoints_management/_disable_service_modal.html" %}
+{% endblock %}
