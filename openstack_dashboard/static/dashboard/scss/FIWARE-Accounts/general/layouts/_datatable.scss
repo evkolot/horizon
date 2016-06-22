@@ -1,5 +1,5 @@
-//HOME
-#home{
+//HOME & ENDPOINTS MANAGEMENT
+#home, #endpoints{
   .datatable {
     padding: 0 !important;
     .panel-heading{
@@ -24,6 +24,10 @@
       @media (max-width: $screen-sm-min){
         min-height: 15px;
       }
+    }
+    .no-max-height{
+      max-height: none;
+      overflow-y: hidden;
     }
   }
 }

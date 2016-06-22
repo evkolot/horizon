@@ -66,8 +66,9 @@ class ManageEndpointsView(views.APIView):
         endpoints = fiware_api.keystone.endpoint_list(self.request)
 
         context['endpoints_forms'] = []
+        context['services'] = []
         for service in services:
-            if service.name not in AVAILABLE_SERVICES.keys():
+            if service.name not in AVAILABLE_SERVICES.keys() or service.name == 'keystone':
                 continue
 
             if not getattr(service, 'description', None):
@@ -81,7 +82,7 @@ class ManageEndpointsView(views.APIView):
             context['endpoints_forms'].append(endpoints_forms.UpdateEndpointsForm(request=self.request,
                                                                                   service=service,
                                                                                   endpoints_list=service_endpoints))
-        context['services'] = services
+            context['services'].append(service)
 
         return context
 
@@ -129,7 +130,7 @@ def disable_service_view(request, service_name):
         # delete service account
         fiware_api.keystone.delete_service_account(request, service=service_name, region=region)
 
-        for endpoint in [e for e in endpoints if region in e.region_id and e.service_id == service_object.id]:
+        for endpoint in [e for e in endpoints if region.capitalize() in e.region_id and e.service_id == service_object.id]:
             fiware_api.keystone.endpoint_delete(request, endpoint)
 
         messages.success(request,

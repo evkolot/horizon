@@ -1,4 +1,4 @@
-#role_list, #services_list {
+#role_list {
   @include make-sm-column(5, $gutter: $grid-gutter-width);
   @include make-md-column(5, $gutter: $grid-gutter-width);
   @include make-lg-column(5, $gutter: $grid-gutter-width);
@@ -6,7 +6,7 @@
     padding-left: 0;
     padding-right: 0;
   }
-  .role, .service{
+  .role{
     text-align: left;
     position: relative;
     height: 34px;
@@ -37,7 +37,7 @@
   }
 }
 
-#permissions_list, #endpoints_list, #service_username, #service_description {
+#permissions_list {
   @include make-sm-column(7, $gutter: $grid-gutter-width);
   @include make-md-column(7, $gutter: $grid-gutter-width);
   @include make-lg-column(7, $gutter: $grid-gutter-width);
@@ -49,10 +49,8 @@
 
 .permissions_list,
 .role_list,
-.services_list,
-.endpoints_list,
-.service_username,
-.service_description {
+.services_list {
+  padding-top: 15px;
   header{
     min-height: 26px;
     h4{
@@ -113,7 +111,6 @@
     }
   }
 }
-
 
 .permissions_list{
   .alert{
@@ -184,6 +181,40 @@ ul.disabled-list{
   }
 }
 
-#endpoints_list, #service_username {
-  display: none;
+.services_list {
+  @media (max-width: $screen-sm-min){
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .btn-default:hover a{
+    color: $brand-primary;
+  }
+  .service{
+    text-align: left;
+    position: relative;
+    height: 34px;
+    padding-top: 7px;
+    padding-left: 6px;
+    box-shadow: none;
+    a{
+      position: absolute;
+      font-weight: normal;
+      color: $gray;
+    }
+    .checkbox{
+      float: right;
+      margin-right: -20px;
+      input:checked + span:before{
+        background: $brand-secundary !important;
+      }
+    }
+  }
+  .service.active{
+    color: $white;
+    background-color: $brand-primary;
+    border-color: $brand-primary;
+    a{
+      color: $white;
+    }
+  }
 }

@@ -54,13 +54,15 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                 fields[field_ID] = forms.CharField(label=interface.capitalize(),
                                                    required=True,
                                                    widget=forms.TextInput(
-                                                   attrs={'data-service-name': self.service_name,
-                                                          'data-endpoint-interface': interface,
-                                                          'data-endpoint-region': region
-                                                   }))
-        for endpoint in self.endpoints_list:
-            field_ID = '_'.join([self.service_name, endpoint.region.lower(), endpoint.interface])
-            initial[field_ID] = endpoint.url
+                                                    attrs={'class': 'endpoint_input'})
+                                                   )
+        if self.endpoints_list:
+            self.service_enabled = True
+            for endpoint in self.endpoints_list:
+                field_ID = '_'.join([self.service_name, endpoint.region.lower(), endpoint.interface])
+                initial[field_ID] = endpoint.url
+        else:
+            self.service_enabled = False
 
         self.fields = fields
         self.initial = initial
@@ -74,7 +76,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
             endpoint = next((e for e in self.endpoints_list if e.region_id == region.capitalize() and e.interface == interface), None)
             if not endpoint:
                 is_new_service = True
-                keystone.endpoint_create(request, service=self.service_id, url=new_url, interface=interface, region=region)
+                keystone.endpoint_create(request, service=self.service_id, url=new_url, interface=interface, region=region.capitalize())
             elif new_url != '' and new_url != endpoint.url:
                 keystone.endpoint_update(request, endpoint_id=endpoint.id, endpoint_new_url=new_url)
 
@@ -85,7 +87,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
         # display success messages
         messages.success(request, 'Endpoints updated for your region.')
 
-        return shortcuts.redirect('horizon:endpoints_management:endpoints_management:index')
+        return shortcuts.redirect('horizon:endpoints_management:endpoints_management:service', self.service_name)
 
 
     def _create_endpoint_group_for_region(self, request):
