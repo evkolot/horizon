@@ -84,6 +84,9 @@ class ManageEndpointsView(views.APIView):
                                                                                   endpoints_list=service_endpoints))
             context['services'].append(service)
 
+        # Bootstrap classes for form rendering
+        context['classes'] = {'label': 'col-sm-2',
+                              'value': 'col-sm-10'}
         return context
 
     def dispatch(self, request, *args, **kwargs):

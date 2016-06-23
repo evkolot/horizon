@@ -204,6 +204,7 @@ ul.disabled-list{
     .checkbox{
       float: right;
       margin-right: -20px;
+      transform: scale(0.8, 0.8);
       input:checked + span:before{
         background: $brand-secundary !important;
       }

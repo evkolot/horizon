@@ -70,9 +70,17 @@
       label{
         color: $brand-secundary;
       }
+      .control-label{
+        width: 13%;
+      }
       h5{
         border: none;
         color: $text-color;
+      }
+      .service_username, .service_password {
+        p {
+          color: $brand-secundary;
+        }
       }
       
     }

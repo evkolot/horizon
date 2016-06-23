@@ -5,7 +5,7 @@
         <h3>Disable Service</h3>
       </div>
       <form id="disable_service_form"
-            action="{% url 'horizon:endpoints_management:endpoints_management:disable_service' form.service_name %}"
+            action="{% url 'horizon:endpoints_management:endpoints_management:disable_service' service_name %}"
             method="POST">
         {% csrf_token %}
         
@@ -18,7 +18,7 @@
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Confirm</button>
-          <a href="{% url 'horizon:endpoints_management:endpoints_management:service' form.service_name %}" class="btn btn-default secondary">Cancel</a>
+          <a href="{% url 'horizon:endpoints_management:endpoints_management:service' service_name %}" class="btn btn-default secondary">Cancel</a>
         </div>
       </form>
     </div>

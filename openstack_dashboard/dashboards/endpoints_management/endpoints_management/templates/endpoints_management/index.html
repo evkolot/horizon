@@ -38,9 +38,9 @@
         {% for form in endpoints_forms %}
         	{% include form.template with form=form %}
           {% if form.service_enabled %}
-            {% include "endpoints_management/endpoints_management/_disable_service_modal.html" with service_name=form.service_name %}
+            {% include "endpoints_management/endpoints_management/_disable_service_modal.html" with service_name=form.service.name %}
             <script type="text/javascript">
-              $('#{{ form.service_name }}_switch input').prop('checked', true);
+              $('#{{ form.service.name }}_switch input').prop('checked', true);
             </script>
           {% endif %}
         {% endfor %}

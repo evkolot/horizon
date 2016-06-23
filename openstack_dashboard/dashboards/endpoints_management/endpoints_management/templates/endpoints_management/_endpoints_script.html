@@ -73,10 +73,12 @@
       return 'Are you sure you want to leave?';
     });})
   .on('focusout', 'input', function() {
+    var modalID = '#manage_' + serviceName + '_endpoints_modal';
     if (!validateURL($(this).val())) {
       $(this).addClass('weak_pwd_input');
     } else {
       $(this).removeClass('weak_pwd_input');
+      $(modalID + ' .modal-footer').find('.btn-primary').removeClass('disabled').removeAttr('disabled');
     }
 });
 
@@ -92,7 +94,8 @@
 
     if (validationError){
       evt.preventDefault();
-      $(this).find('.service_description').prepend('<div class="alert alert-message alert-danger" id="validation-errors"><p>Please fill in all the endpoints or disable the service</p></div>');
+      if ($(this).find('.alert.alert-message.alert-danger').length === 0)
+        $(this).find('.service_description').prepend('<div class="alert alert-message alert-danger" id="validation-errors"><ul class="errorlist"><li>Please fill in all the endpoints or disable the service</li></ul></div>');
     } else
       $(window).unbind('beforeunload');
   });
