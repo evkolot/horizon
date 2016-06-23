@@ -82,7 +82,7 @@
           color: $brand-secundary;
         }
       }
-      
+
     }
     .modal-footer{
       display:none;
@@ -100,6 +100,20 @@
   }
   .service_description, #default_service_description{
     padding-top: 15px;
+    .service_desc_txt{
+      color: $gray;
+    }
+  }
+  .endpoints_list{
+    .endpoints_data{
+      padding: 10px;
+      .form-group{
+        margin-bottom: 10px;
+        .control-label{
+          padding: 7px 0;
+        }
+      }
+    }
   }
   .service_password {
     p, a {

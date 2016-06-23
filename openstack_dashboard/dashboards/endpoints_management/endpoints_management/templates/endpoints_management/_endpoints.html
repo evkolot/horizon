@@ -11,9 +11,9 @@
 
 {% block modal-body %}
 <div class="service_description">
-  <h4>Description</h4>
-  <h5>{{ form.service.type.capitalize }}</h5>
-  <p>{{ form.service.description }}</p>
+  <!--<h4>Description</h4>-->
+  <h4>{{ form.service.type.capitalize }}</h4>
+  <p class="service_desc_txt">{{ form.service.description }}</p>
 </div>
 
 {% for region in endpoints_allowed_regions %}
@@ -40,6 +40,7 @@
 {% endblock %}
 
 {% block modal-footer %}
+
     <a href="{% url 'horizon:endpoints_management:endpoints_management:index' %}" class="btn btn-default secondary cancel">Cancel</a>
     <button type="submit" class="btn btn-primary always-enabled">Save</button>
 {% endblock %}

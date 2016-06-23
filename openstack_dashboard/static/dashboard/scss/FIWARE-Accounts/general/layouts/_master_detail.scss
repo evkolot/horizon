@@ -208,6 +208,9 @@ ul.disabled-list{
       input:checked + span:before{
         background: $brand-secundary !important;
       }
+      input + span:before{
+        background: #d0edf1 !important;
+      }
     }
   }
   .service.active{
