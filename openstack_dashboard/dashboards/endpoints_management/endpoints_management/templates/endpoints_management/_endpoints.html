@@ -34,7 +34,7 @@
 
 <div class="service_password{% if not form.service_enabled %} service_disabled{% endif %}">
   <h4>Password</h4>
-  {% if new_service_name == service_username %}<p>{{ new_service_password }}</p>{% endif %}
+  {% if new_service_name == form.service.name %}<p>{{ new_service_password }}</p>{% endif %}
   <a href="{% url 'horizon:endpoints_management:endpoints_management:reset_service' form.service.name %}" class="btn btn-default" id="reset-service-button">Reset password</a>
 </div>
 {% endblock %}
