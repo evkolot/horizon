@@ -12,6 +12,9 @@
 {% endfor %}
 <script src='{{ STATIC_URL }}horizon/lib/angular/angular-cookies.js' type='text/javascript' charset='utf-8'></script>
 
+<script src="{{ STATIC_URL }}library/bootstrap-tour-0.10.3/build/js/bootstrap-tour.min.js" type="text/javascript"  charset="utf-8"></script>
+
+<script src="{{ STATIC_URL }}fiware/tour.js" type="text/javascript" charset='utf-8'/></script>
 <script src='{{ STATIC_URL }}horizon/js/angular/controllers/dummy.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/angular/directives/forms.js' type='text/javascript' charset='utf-8'></script>
 <script src='{{ STATIC_URL }}horizon/js/angular/horizon.conf.js' type='text/javascript' charset='utf-8'></script>
@@ -50,6 +53,7 @@
 {# FIWARE js for single signout #}
 <script src="{{ STATIC_URL }}fiware/signOut.js"/></script>
 {##}
+
 <script src="{{ STATIC_URL }}library/select2/js/select2.js"/></script>
 
 <script src="{{ STATIC_URL }}library/autosize/js/jquery.autosize.min.js" type="text/javascript" charset='utf-8'></script>
@@ -61,6 +65,8 @@
 <script src="{{ STATIC_URL }}library/validator/jquery.validate.min.js" type="text/javascript" charset='utf-8'></script>
 
 <script type="text/javascript" src="{{ STATIC_URL }}library/tooltip/js/tooltip.js"></script>
+
+
 {% block custom_js_files %}
 
 {% endblock %}
