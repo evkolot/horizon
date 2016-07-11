@@ -15,15 +15,7 @@
   </div>
 
   {% include "horizon/_messages.html" %}
-
-  <script type="text/javascript">
-    $(function () {
-      $('[data-toggle="popover"]').popover({html:true})
-    });
-  </script>
-
   <script type="text/javascript" src="{{ STATIC_URL }}library/zxcvbn/zxcvbn.js"></script>
-  <script type="text/javascript" src="{{ STATIC_URL }}library/tooltip/js/tooltip.js"></script>
 
   <script type="text/javascript">
     strength_messages = {'0': 'weak',
@@ -47,7 +39,7 @@
         result = zxcvbn(pwdInput);
         $('[for=id_password1]').html("Password\t<a href='#' class='" +
                                       message_classes[result.score] +
-                                      "'data-toggle='tooltip' data-placement='right' title='" +
+                                      "'data-toggle='tooltip' data-placement='top' title='" +
                                       result.feedback.warning +
                                       "'>" + strength_messages[result.score] + '</a>');
         $('#id_password1').removeClass( "weak_pwd_input medium_pwd_input hard_pwd_input" ).addClass(input_classes[result.score]);

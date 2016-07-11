@@ -61,4 +61,11 @@ urlpatterns = patterns('',
         views.reset_password_pep_proxy, name='reset_password_pep'),
     url(r'^(?P<application_id>[^/]+)/pep/delete/$', 
         views.delete_pep_proxy, name='delete_pep'),
+
+    url(r'^(?P<application_id>[^/]+)/iot/register/$', 
+        views.register_iot_sensor, name='register_iot_sensor'),
+    url(r'^(?P<application_id>[^/]+)/iot/(?P<iot_sensor_name>[^/]+)/reset_password_sensor/$', 
+        views.reset_password_iot_sensor, name='reset_password_iot_sensor'),
+    url(r'^(?P<application_id>[^/]+)/iot/(?P<iot_sensor_name>[^/]+)/delete/$', 
+        views.delete_iot_sensor, name='delete_iot_sensor'),
 )

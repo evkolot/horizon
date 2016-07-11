@@ -22,33 +22,43 @@
 
         <div id="profile_editor_switcher" class="dropdown switcher_bar" tabindex='1'>
           {% if request.user.is_authenticated %}
-            {% if request.organization.id != request.user.default_project_id %}
-              <a  href="{% url 'horizon:idm:organizations:detail' request.organization.id %}">
-                {% if request.organization.img_small %}
-                  <img alt="Org" src="{{ MEDIA_URL }}{{ request.organization.img_small }}">
-                {% else %}
-                  <img alt="Org" src="{{ STATIC_URL }}dashboard/img/logos/small/group.png">
-                {% endif %}
-                {{ request.organization.name }}
-              </a>
-            {% else %}
-              <a  href="{% url 'horizon:idm:users:detail' request.user.id %}">
-                {% if request.user.use_gravatar %}
-                  {% gravatar request.user.name 25 "User" %}
-                {% elif request.user.img_small %}
-                  <img alt="User" src="{{ MEDIA_URL }}{{ request.user.img_small }}">
-                {% else %}
-                  <img alt="User" src="{{ STATIC_URL }}dashboard/img/logos/small/user.png">
-                {% endif %}
-                {{ request.user.username }}
-              </a>
-            {% endif %}
             <a class="dropdown-toggle" data-toggle="dropdown" href="#profile_editor_switcher">
+            {% if request.organization.id != request.user.default_project_id %}
+              {% if request.organization.img_small %}
+                <img alt="Org" src="{{ MEDIA_URL }}{{ request.organization.img_small }}">
+              {% else %}
+                <img alt="Org" src="{{ STATIC_URL }}dashboard/img/logos/small/group.png">
+              {% endif %}
+              {{ request.organization.name }}
+            {% else %}
+              {% if request.user.use_gravatar %}
+                {% gravatar request.user.name 25 "User" %}
+              {% elif request.user.img_small %}
+                <img alt="User" src="{{ MEDIA_URL }}{{ request.user.img_small }}">
+              {% else %}
+                <img alt="User" src="{{ STATIC_URL }}dashboard/img/logos/small/user.png">
+              {% endif %}
+              {{ request.user.username }}
+            {% endif %}
+
               <i class="fa fa-angle-double-down"></i>
             </a>
 
 
             <ul id="editor_list" class="dropdown-menu multi-level dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu">
+
+              <li>
+                {% if request.organization.id != request.user.default_project_id %}
+                <a href="{% url 'horizon:idm:organizations:detail' request.organization.id %}">
+                <i class="fa fa-users"></i>
+                {% else %}
+                <a href="{% url 'horizon:idm:users:detail' request.user.id %}">
+                <i class="fa fa-user"></i>
+                {% endif %}
+                 Profile
+                </a>
+              </li>
+
 
             {% if request.organizations %}
               <li class="dropdown-submenu">
@@ -86,6 +96,7 @@
                 <a href="{% url 'horizon:settings:multisettings:index' %}"> <i class="fa fa-cog"></i> {% trans "Settings" %}
                 </a>
               </li>
+              <li class="divider"></li>
               <li>
                 <a href="#" onclick="Fiware.signOut('account'); return false">
                   <i class="fa fa-sign-out"></i> {% trans "Sign Out" %}

@@ -642,3 +642,7 @@ CORS_ORIGIN_WHITELIST = (
 # PEP PROXIES
 PEP_PROXIES_GROUP = 'pep_proxies'
 PEP_PROXIES_ROLE = 'pep_proxy'
+
+# IOT SENSORS
+IOT_SENSORS_GROUP = 'iot_sensors'
+IOT_SENSORS_ROLE = 'iot_sensor'

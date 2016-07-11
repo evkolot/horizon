@@ -34,20 +34,39 @@
       top: 6px;
     }
   }
+  .callback_url{
+    margin-bottom: 25px;
+  }
   .extra{
-    min-height: 30px;
-    .panel-title{
-      text-align: right;
+    .panel-title > a:hover{
+       i{
+          transition: all 0.5s;
+        }
+    }
+    .collapse_out{
+      padding-top: 5px;
     }
     .collapse{
-      margin-bottom: 0;
-      div{
-          min-height: 40px;
-        p{
-           word-break: break-word;
-           margin-bottom: 15px;
+        margin: 0;
+        .content_pep{
+            .actions_pep{
+                padding: 20px;
+                //text-align: right;
+                //margin-top: 20px;
+            }
         }
-      }
+        .content_pep_activenew{
+          background-color: aliceblue;
+        }
+
+      //div{
+        //min-height: 40px;
+        //p{
+          // word-break: break-word;
+          // margin-bottom: 15px;
+        //}
+      //}
+
     }
   }
 }
