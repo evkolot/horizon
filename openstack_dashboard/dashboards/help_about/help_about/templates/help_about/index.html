@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% endblock %}
+
+{% block page_header %}
+{% endblock page_header %}
+
+{% block main %}
+<div class="panel-group settings" id="accordion">
+
+ {% for item in items %}
+    <div class="panel panel-default">
+      <a data-toggle="collapse" data-parent="#accordion" href="#collapse-{{ forloop.counter0 }}" class="panel-heading collapsed">
+        <h4 class="panel-title panel-close">
+          {{ item.description }}
+        </h4>
+      </a>
+      <div id="collapse-{{ forloop.counter0 }}" class="panel-collapse collapse">
+        <div class="panel-body">
+          {% include item.template_name %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+
+{% endblock %}
