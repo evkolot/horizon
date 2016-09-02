@@ -1,9 +1,19 @@
-var initTour = new Tour({ 
+var initTour = new Tour({
 	 	name: "Starters tour",
 	 	debug:true,
 		backdrop: true,
 		basePath: '/idm/',
-	    steps: [
+    template: "<div class='popover tour'>\
+    <div class='arrow'></div>\
+    <h3 class='popover-title'></h3>\
+    <div class='popover-content'></div>\
+    <div class='popover-navigation'><div class='btn-group'>\
+        <button class='btn btn-default' data-role='prev' onclick='initTour.prev()'>« Prev</button>\
+        <button class='btn btn-default' data-role='next' onclick='initTour.next()'>Next »</button>\
+    </div>\
+        <button class='btn btn-default' data-role='end' onclick='initTour.end()'>End tour</button>\
+    </div>",
+	  steps: [
 			{
 				title: "Let's get started!",
 				content: "Welcome to the FIWARE's keyrock IdM. This is a basic tour through the main features",
@@ -29,20 +39,8 @@ var initTour = new Tour({
 			{
 				title: "Initial tour finished!",
 				content: "You have finished the basic tour. Click in the button to start learning to register your applications or click 'End tour' to exit the tour",
-				orphan: true, 
-				template: "<div class='popover tour'>
-						    <div class='arrow'></div>
-						    <h3 class='popover-title'></h3>
-						    <div class='popover-content'></div>
-						    <div class='popover-navigation'>
-						        <button class='btn btn-default' data-role='prev'>« Prev</button>
-						        <span data-role='separator'>|</span>
-						   	<button class='btn btn-default' onclick='startAppTour()'> Start App Tour </button>
-						    <button class='btn btn-default' data-role='end'>End tour</button>
-						   	</div>
-						   </div>"
-			}
-
+				orphan: true
+      },
 		]
 });
 
