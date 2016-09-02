@@ -13,12 +13,12 @@
 	{{ organizations_table.render }}          
   </div>
   <script type="text/javascript">
-	function getCookie(name) {
-		var cookieValue = null;
-		if (document.cookie && document.cookie != '') {
-			var cookies = document.cookie.split(';');
-			for (var i = 0; i < cookies.length; i++) {
-				var cookie = jQuery.trim(cookies[i]);
+  	function getCookie(name) {
+  		var cookieValue = null;
+  		if (document.cookie && document.cookie != '') {
+  			var cookies = document.cookie.split(';');
+  			for (var i = 0; i < cookies.length; i++) {
+  				var cookie = jQuery.trim(cookies[i]);
 				// Does this cookie string begin with the name we want?
 				if (cookie.substring(0, name.length + 1) == (name + '=')) {
 					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
@@ -102,7 +102,7 @@
 			}, 
 			{
 				title: "Initial tour finished!",
-				content: "You have finished the basic tour. Click <span data-next-tour='appsTour'>here</span> to start learning to register your applications or click 'End tour' to exit the tour",
+				content: "You have finished the basic tour. Click <a href='#' class='next-tour' data-current-tour='initTour' data-next-tour='appsTour'>here</a> to start learning to register your applications or click 'End tour' to exit the tour",
 				orphan: true
 			},
 			]
@@ -111,6 +111,12 @@
 			initTour.init();
 			initTour.start();
 		}
+
+		$( "a.next-tour" ).click(function() {
+			var nextTour = $(this).attr('data-next-tour');
+			initTour.end();
+			appsTour.start();
+		});
 	});
   </script>
 {% endblock %}

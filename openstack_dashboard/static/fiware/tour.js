@@ -151,3 +151,43 @@ var settingsTour = new Tour({
 		return tourTemplate.replace(/tourName/g, 'settingsTour');
 	},
 });
+
+$( document ).ready(function() {
+	$( "a.next-tour" ).click(function() {
+		var nextTour = $(this).attr('data-next-tour');
+		var currentTour = $(this).attr('data-current-tour');
+
+		switch(currentTour) {
+			case 'appsTour':
+			appsTour.end();
+			break;
+			case 'orgsTour':
+			orgsTour.end();
+			break;
+			case 'rolesTour':
+			rolesTour.end();
+			break;
+			case 'settingsTour':
+			settingsTour.end();
+			break;
+		}
+		switch(nextTour) {
+			case 'appsTour':
+			appsTour.init();
+			appsTour.start(true);
+			break;
+			case 'orgsTour':
+			orgsTour.init();
+			orgsTour.start(true);
+			break;
+			case 'rolesTour':
+			rolesTour.init();
+			rolesTour.start(true);
+			break;
+			case 'settingsTour':
+			settingsTour.init();
+			settingsTour.start(true);
+			break;
+		}
+	});
+});
