@@ -30,5 +30,8 @@ urlpatterns = patterns('',
     #    views.ContactFormHandleView.as_view(), name='contact'),
     url(r'^(?P<user_id>[^/]+)/edit/avatar/$', 
         views.AvatarFormHandleView.as_view(), name='avatar'),
-    url(r'^(?P<user_id>[^/]+)/edit/delete_image$', views.DeleteImageView.as_view(), name='delete_image')
+    url(r'^(?P<user_id>[^/]+)/edit/delete_image$',
+        views.DeleteImageView.as_view(), name='delete_image'),
+    url(r'^(?P<user_id>[^/]+)/tour_ended/$', 
+        views.tour_ended, name='tour_ended'),
 )

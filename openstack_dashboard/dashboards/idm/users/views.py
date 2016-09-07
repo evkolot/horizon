@@ -233,3 +233,10 @@ class DeleteImageView(forms.ModalFormView):
         if not hasattr(user, 'img_original') and getattr(user, 'img_original') != '':
             return redirect('horizon:idm:users:edit')
         return super(DeleteImageView, self).dispatch(request, args, kwargs)
+
+
+def tour_ended(request, user_id):
+    if request.is_ajax():
+        fiware_api.keystone.user_update(request, request.user.id, starters_tour_ended=True, password='')
+
+    return redirect('horizon:idm:home:index')
