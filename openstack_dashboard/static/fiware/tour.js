@@ -4,7 +4,7 @@ var tourTemplate = "<div class='popover tour'>\
 	<div class='popover-content'></div>\
 	<div class='popover-navigation'><div class='btn-group'>\
 	<button class='btn btn-default' data-role='prev'>« Prev</button>\
-	<button class='btn btn-default' data-role='next'>Next »</button>\
+	<button class='btn btn-primary' data-role='next'>Next »</button>\
 	</div>\
 	<div class='btn-group'><button class='btn btn-default' data-role='end'>Exit</button></div>\
 	</div>";
@@ -64,24 +64,24 @@ var tours = {
 		{
 			path: "/idm/",
 			element: "#applications",
-			title: "Applications", 
+			title: "Applications",
 			content: "Applications are the experiments with the FIWARE technology you participate on (e.g. as an owner or purchaser). This table shows a quick summary of them.",
 			placement: "right"
 		},
 		{
 			path: "/idm/",
 			element: "#organizations",
-			title: "Organizations", 
+			title: "Organizations",
 			content: "Organizations are basically groups of users. They come in very handy when you want to authorize several users in your application at once. A quick summary of them can be found in this table.",
 			placement: "left"
-		}, 
+		},
 		{
 			path: "/idm/",
 			title: "You're all set!",
 			content: "<p>You finished the basics Tour! You can now head on to the next Tour and learn more about aplications and how to register one or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
 			orphan: true,
 			onShown: function (tour) {
-				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-default next-tour" data-current-tour="initTour" data-next-tour="appsTour">Next Tour</button>');
+				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="initTour" data-next-tour="appsTour">Next Tour</button>');
 			},
 			onHide: function (tour) {
 				$(".popover.tour .btn-group:last-child").remove();
@@ -109,15 +109,15 @@ var tours = {
 		{
 			path: "/idm/",
 			element: "#applications .btn-group",
-			title: "Registering a new application", 
+			title: "Registering a new application",
 			content: "The quickest way to register a new application is this button. Click on it to register your first application!",
 			placement: "right",
 			reflex: true
-		},  
+		},
 		{
 			path: "/idm/myApplications/create/",
 			element: "#create_application_modal",
-			title: "Registering a new application: STEP 1", 
+			title: "Registering a new application: STEP 1",
 			content: "This form contains the basic information required to create a new application.",
 			placement: "left",
 			orphan: true
@@ -125,7 +125,7 @@ var tours = {
 		{
 			path: "/idm/myApplications/create/",
 			element: "#id_name",
-			title: "Registering a new application: STEP 1", 
+			title: "Registering a new application: STEP 1",
 			content: "This is the name of your application.",
 			placement: "left",
 			onShown: function (tour) {
@@ -135,7 +135,7 @@ var tours = {
 		{
 			path: "/idm/myApplications/create/",
 			element: "#id_description",
-			title: "Registering a new application: STEP 1", 
+			title: "Registering a new application: STEP 1",
 			content: "Provide here a longer description for your application.",
 			placement: "left",
 			onShown: function (tour) {
@@ -145,7 +145,7 @@ var tours = {
 		{
 			path: "/idm/myApplications/create/",
 			element: "#id_url",
-			title: "Registering a new application: STEP 1", 
+			title: "Registering a new application: STEP 1",
 			content: "This is the URL of your app. This field is required to check that requests to KeyRock regarding your app (e.g. when using OAuth to authorize users) come actually from your app.",
 			placement: "left",
 			onShown: function (tour) {
@@ -155,7 +155,7 @@ var tours = {
 		{
 			path: "/idm/myApplications/create/",
 			element: "#id_callbackurl",
-			title: "Register an application: STEP 1", 
+			title: "Register an application: STEP 1",
 			content: "This is the callback URL of your application. KeyRock will redirect the User Agent back to it after an OAuth authorization flow.",
 			placement: "left",
 			onShown: function (tour) {
@@ -165,7 +165,7 @@ var tours = {
 		{
 			path: "/idm/myApplications/create/",
 			element: ".btn.btn-primary",
-			title: "Register an application: STEP 1", 
+			title: "Register an application: STEP 1",
 			content: "Click this button to continue.",
 			placement: "left",
 			reflex: true,
@@ -183,7 +183,7 @@ var tours = {
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/avatar\/", "i"),
 			element: ".btn.btn-primary",
-			title: "Register an application: STEP 2", 
+			title: "Register an application: STEP 2",
 			content: "Click this button to continue.",
 			placement: "left",
 			reflex: true,
@@ -194,14 +194,14 @@ var tours = {
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/roles\/", "i"),
 			element: "#create_application_roles",
-			title: "Register an application: STEP 3", 
+			title: "Register an application: STEP 3",
 			content: "In this last step, you can manage the roles and permissions of your app. We won't change anything now, but you can learn more about them in the next Tour.",
 			placement: "left"
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/roles\/", "i"),
 			element:  ".btn.btn-primary",
-			title: "Register an application: STEP 3", 
+			title: "Register an application: STEP 3",
 			content: "Click this button when you're done editing your new app.",
 			placement: "left",
 			reflex: true,
@@ -213,7 +213,7 @@ var tours = {
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/", "i"),
 			element:  "#detailApplication",
-			title: "Check out your new application", 
+			title: "Check out your new application",
 			content: "This is the detail page of your new app. You can find the OAuth credentials and register a PEP Proxy or some IoT Sensors. This is the end of th",
 			placement: "left"
 		},
@@ -234,14 +234,14 @@ var tours = {
 		steps: [
 		{
 			element: "#applications__action_register_organization",
-			title: "Register an organization", 
+			title: "Register an organization",
 			content: "You must click in this link to start resgistering your organization",
 			placement: "left",
 			path:"/idm/"
 		},
 		{
 			element: "#id_name",
-			title: "Register an organization", 
+			title: "Register an organization",
 			content: "This is the name",
 			path:"/idm/organizations/create/",
 			placement: "left",
@@ -251,7 +251,7 @@ var tours = {
 		},
 		{
 			element: "#id_description",
-			title: "Register an organization", 
+			title: "Register an organization",
 			content: "This is the description",
 			path:"/idm/organizations/create/",
 			placement: "left",
@@ -263,19 +263,19 @@ var tours = {
 			}
 		},
 		{
-			title: "Your organization has been created", 
+			title: "Your organization has been created",
 			content: "This is the main page of your brand new organization",
 			path:"/idm/home_orgs/"
 		},
 		{
 			element: "#applications",
-			title: "Organization main page", 
+			title: "Organization main page",
 			content: "This table displays the apps related to your organization",
 			path:"/idm/home_orgs/"
 		},
 		{
 			element: "#members",
-			title: "Organization main page", 
+			title: "Organization main page",
 			content: "This table displays the members of the organization",
 			path:"/idm/home_orgs/"
 		},
