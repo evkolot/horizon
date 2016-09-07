@@ -13,61 +13,58 @@
 	{{ organizations_table.render }}          
   </div>
   <script type="text/javascript">
-  	function getCookie(name) {
-  		var cookieValue = null;
-  		if (document.cookie && document.cookie != '') {
-  			var cookies = document.cookie.split(';');
-  			for (var i = 0; i < cookies.length; i++) {
-  				var cookie = jQuery.trim(cookies[i]);
-				// Does this cookie string begin with the name we want?
-				if (cookie.substring(0, name.length + 1) == (name + '=')) {
-					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-					break;
-				}
-			}
-		}
-		return cookieValue;
-	};
-
-	function csrfSafeMethod(method) {
-		// these HTTP methods do not require CSRF protection
-		return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-	}
-
-	var csrftoken = getCookie('csrftoken');
-
-	// AJAX setup functions
-	var beforeSend = function(xhr, settings) {
-		if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-			xhr.setRequestHeader("X-CSRFToken", csrftoken);
-		}
-	};
-	var error = function(jqXHR, status, errorThrown) {
-		if (jqXHR.status === 401){
-			var redir_url = jqXHR.getResponseHeader("X-Horizon-Location");
-			if (redir_url){
-				location.href = redir_url;
-			} else {
-				location.reload(true);
-			}
-		}
-		else {
-			if (!horizon.ajax.get_messages(jqXHR)) {
-				// Generic error handler. Really generic.
-				horizon.alert("danger", gettext("An error occurred. Please try again later."));
-			}
-		}
-	};
 
 	$( document ).ready(function() {
-		var initTour = new Tour({
-			name: "getStartedTour",
-			debug: false,
-			backdrop: true,
-			template: function() {
-				return tourTemplate.replace(/tourName/g, 'initTour');
-			},
-			onEnd: function() {
+		if ({% if request.user.starters_tour_ended %}false{% else %}true{% endif %}) {
+			
+			// CSRF functions for AJAX POST requests
+			function getCookie(name) {
+				var cookieValue = null;
+				if (document.cookie && document.cookie != '') {
+					var cookies = document.cookie.split(';');
+					for (var i = 0; i < cookies.length; i++) {
+						var cookie = jQuery.trim(cookies[i]);
+						// Does this cookie string begin with the name we want?
+						if (cookie.substring(0, name.length + 1) == (name + '=')) {
+							cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+							break;
+						}
+					}
+				}
+				return cookieValue;
+			};
+
+			function csrfSafeMethod(method) {
+				// these HTTP methods do not require CSRF protection
+				return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+			}
+
+			var csrftoken = getCookie('csrftoken');
+
+			// AJAX setup functions
+			var beforeSend = function(xhr, settings) {
+				if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+					xhr.setRequestHeader("X-CSRFToken", csrftoken);
+				}
+			};
+			var error = function(jqXHR, status, errorThrown) {
+				if (jqXHR.status === 401){
+					var redir_url = jqXHR.getResponseHeader("X-Horizon-Location");
+					if (redir_url){
+						location.href = redir_url;
+					} else {
+						location.reload(true);
+					}
+				}
+				else {
+					if (!horizon.ajax.get_messages(jqXHR)) {
+						// Generic error handler. Really generic.
+						horizon.alert("danger", gettext("An error occurred. Please try again later."));
+					}
+				}
+			};
+
+			tours.initTour._options.onEnd = function() {
 				$.ajax({
 					type: "POST",
 					url: "{% url 'horizon:idm:users:tour_ended' request.user.id %}",
@@ -76,47 +73,11 @@
 					beforeSend: beforeSend,
 					error: error
 				});
-			},
-			steps: [
-			{
-				title: "Let's get started!",
-				content: "Welcome to the FIWARE's KeyRock IdM. This is a basic tour that will show you the basics.",
-				orphan: true
-			},
-			{
-				title: "FIWARE Portal",
-				content: "The FIWARE's IdM is part of FIWARE Lab. You an check the other FIWARE lab components in this bar.",
-				orphan: true
-			},
-			{
-				element: "#applications",
-				title: "Applications", 
-				content: "This is the applications table",
-				placement: "right"
-			},
-			{
-				element: "#organizations",
-				title: "Organizations", 
-				content: "This is this the organizations table",
-				placement: "left"
-			}, 
-			{
-				title: "Initial tour finished!",
-				content: "You have finished the basic tour. Click <a href='#' class='next-tour' data-current-tour='initTour' data-next-tour='appsTour'>here</a> to start learning to register your applications or click 'End tour' to exit the tour",
-				orphan: true
-			},
-			]
-		});
-		if ({% if request.user.starters_tour_ended %}false{% else %}true{% endif %}) {
-			initTour.init();
-			initTour.start();
-		}
+			};
 
-		$( "a.next-tour" ).click(function() {
-			var nextTour = $(this).attr('data-next-tour');
-			initTour.end();
-			appsTour.start();
-		});
+			tours.initTour.init();
+			tours.initTour.start();
+		}
 	});
   </script>
 {% endblock %}
