@@ -1,1 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?><ns2:pdpPropertiesUpdate xmlns:ns2="http://authzforce.github.io/rest-api-model/xmlns/authz/5"><rootPolicyRefExpression>{{ policy_id }}</rootPolicyRefExpression></ns2:pdpPropertiesUpdate>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?><pdpPropertiesUpdate xmlns="http://authzforce.github.io/rest-api-model/xmlns/authz/5"><rootPolicyRefExpression>{{ policy_id }}</rootPolicyRefExpression></pdpPropertiesUpdate>
