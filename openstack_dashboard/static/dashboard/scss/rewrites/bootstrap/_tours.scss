@@ -3,11 +3,12 @@
 }
 .tour-step-background{
   border-radius: 0;
-  border: 1px solid $brand-secundary;
+  border: 3px solid $brand-secundary;
 }
-
+.tour-step-backdrop{
+  z-index: 2000;
+}
 .tour{
-  
   .popover-title{
     background-color: $gray-lighter;
     padding: 15px 15px 0;
@@ -16,4 +17,11 @@
     font-weight: bold;
     color: $brand-primary;
   }
+}
+/* popover arrow on tours */
+.popover.bottom > .arrow::after{
+  border-bottom-color: $gray-lighter;
+}
+.popover.right > .arrow::after{
+  border-right-color: $gray-lighter;
 }
