@@ -1,4 +1,4 @@
-<Policy PolicyId="{{role.id}}" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+<Policy PolicyId="{{role_id}}" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
   <Description>Role {{ role_id }} from application {{ app_id }}</Description>
   <Target>
     <AnyOf>
