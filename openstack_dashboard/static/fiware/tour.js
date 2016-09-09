@@ -9,8 +9,20 @@ var tourTemplate = "<div class='popover tour'>\
 	<div class='btn-group'><button class='btn btn-default' data-role='end'>Exit</button></div>\
 	</div>";
 
+var noButtonsTemplate = "<div class='popover tour'>\
+	<div class='arrow'></div>\
+	<h3 class='popover-title'></h3>\
+	<div class='popover-content'></div>\
+	<div class='popover-navigation'><div class='btn-group'>\
+	</div>\
+	<div class='btn-group'><button class='btn btn-default' data-role='end'>Exit</button></div>\
+	</div>";
+
 $.fn.extend({
 	inputTextWithDelay: function(text, delay=40) {
+		if (this.val() !== '')
+			return void 0;
+
 		i = 0;
 		$this = this;
 		interval = setInterval(function() {
@@ -29,9 +41,11 @@ var tours = {
 		backdrop: true,
 		backdropPadding: 5,
 		template: tourTemplate,
+		keyboard: false,
 		onRedirectError: function (tour) {
 			tour.end();
 			document.location.href = "/idm/";
+			window.console.log("Bootstrap Tour '" + tour._options.name + "' | " + 'Redirection error');
 		},
 		steps: [
 		{
@@ -92,60 +106,49 @@ var tours = {
 
 	appsTour: new Tour({
 		name: "applicationsTour",
-		debug: false,
+		debug: true,
 		backdrop: true,
+		backdropPadding: 5,
 		template: tourTemplate,
+		keyboard: false,
 		onRedirectError: function (tour) {
 			tour.end();
 			document.location.href = "/idm/";
+			window.console.log("Bootstrap Tour '" + tour._options.name + "' | " + 'Redirection error');
 		},
 		steps: [
 		{
 			path: "/idm/",
 			title: "Applications Tour",
 			content: "Welcome to the Applications Tour! You will now learn how to register an application in KeyRock.",
-			orphan: true
+			orphan: true,
 		},
 		{
 			path: "/idm/",
-			element: "#applications .btn-group",
-			title: "Registering a new application",
-			content: "The quickest way to register a new application is this button. Click on it to register your first application!",
+			element: "#applications",
+			title: "Registering a new application", 
+			content: "The quickest way to register a new application is the 'Register' button here. Click on it to register your first application!",
 			placement: "right",
-			reflex: true
+			reflex: true,
+			reflexElement: "#applications .btn-group"
 		},
 		{
 			path: "/idm/myApplications/create/",
 			element: "#create_application_modal",
-			title: "Registering a new application: STEP 1",
-			content: "This form contains the basic information required to create a new application.",
-			placement: "left",
-			orphan: true
-		},
-		{
-			path: "/idm/myApplications/create/",
-			element: "#id_name",
-			title: "Registering a new application: STEP 1",
-			content: "This is the name of your application.",
+			title: "<p>STEP 1:</p>Registering a new application",
+			content: "<p>This form contains the basic information required to create a new application.</p>First of all, provide a name and a longer description for your application.",
 			placement: "left",
 			onShown: function (tour) {
 				$("#id_name").inputTextWithDelay("First App");
+				setTimeout(function() {
+					$("#id_description").inputTextWithDelay("Created during the Applications Tour.");
+				}, 750);
 			}
 		},
 		{
 			path: "/idm/myApplications/create/",
-			element: "#id_description",
-			title: "Registering a new application: STEP 1",
-			content: "Provide here a longer description for your application.",
-			placement: "left",
-			onShown: function (tour) {
-				$("#id_description").inputTextWithDelay("Created during the Applications Tour.");
-			}
-		},
-		{
-			path: "/idm/myApplications/create/",
-			element: "#id_url",
-			title: "Registering a new application: STEP 1",
+			element: "#create_application_modal fieldset .form-group:eq(2)",
+			title: "<p>STEP 1:</p>Registering a new application",
 			content: "This is the URL of your app. This field is required to check that requests to KeyRock regarding your app (e.g. when using OAuth to authorize users) come actually from your app.",
 			placement: "left",
 			onShown: function (tour) {
@@ -154,8 +157,8 @@ var tours = {
 		},
 		{
 			path: "/idm/myApplications/create/",
-			element: "#id_callbackurl",
-			title: "Register an application: STEP 1",
+			element: "#create_application_modal fieldset .form-group:eq(3)",
+			title: "<p>STEP 1:</p>Registering a new application",
 			content: "This is the callback URL of your application. KeyRock will redirect the User Agent back to it after an OAuth authorization flow.",
 			placement: "left",
 			onShown: function (tour) {
@@ -165,64 +168,72 @@ var tours = {
 		{
 			path: "/idm/myApplications/create/",
 			element: ".btn.btn-primary",
-			title: "Register an application: STEP 1",
-			content: "Click this button to continue.",
+			title: "<p>STEP 1:</p>Registering a new application",
+			content: "Click on this button to continue to the next step.",
 			placement: "left",
 			reflex: true,
-			onNext: function (tour) {
-				$(".btn-primary").click();
-			}
+			template: noButtonsTemplate
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/avatar\/", "i"),
 			element: "#upload_image_modal",
-			title: "Register an application: STEP 2",
+			title: "<p>STEP 2:</p>Registering a new application",
 			content: "In this step you can choose an image for your app. We will leave the default one.",
 			placement: "left",
+			onShown: function (tour) {
+				$('[data-role="prev"]').addClass('disabled').prop('disabled', true).prop('tabindex', -1);
+			}
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/avatar\/", "i"),
 			element: ".btn.btn-primary",
-			title: "Register an application: STEP 2",
-			content: "Click this button to continue.",
+			title: "<p>STEP 2:</p>Registering a new application",
+			content: "Click on this button to continue to the next step.",
 			placement: "left",
 			reflex: true,
-			onNext: function (tour) {
-				$(".btn-primary").click();
-			}
+			template: noButtonsTemplate
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/roles\/", "i"),
 			element: "#create_application_roles",
-			title: "Register an application: STEP 3",
+			title: "<p>STEP 3:</p>Registering a new application",
 			content: "In this last step, you can manage the roles and permissions of your app. We won't change anything now, but you can learn more about them in the next Tour.",
-			placement: "left"
+			placement: "left",
+			onShown: function (tour) {
+				$('[data-role="prev"]').addClass('disabled').prop('disabled', true).prop('tabindex', -1);
+			}
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/roles\/", "i"),
 			element:  ".btn.btn-primary",
-			title: "Register an application: STEP 3",
-			content: "Click this button when you're done editing your new app.",
+			title: "<p>STEP 3:</p>Registering a new application",
+			content: "Click on this button when you're done editing your new app.",
 			placement: "left",
 			reflex: true,
-			onNext: function (appsTour) {
-				$(".btn-primary").click();
-				return (new jQuery.Deferred()).promise();
+			template: noButtonsTemplate
+		},
+		{
+			path: RegExp("\/idm\/myApplications\/[^\/]+\/", "i"),
+			element:  "#content_body",
+			title: "Check out your new application",
+			content: "This is the detail page of your new app. You can find here the OAuth credentials and register a PEP Proxy or some IoT Sensors.",
+			placement: "left",
+			onShown: function (tour) {
+				$('[data-role="prev"]').addClass('disabled').prop('disabled', true).prop('tabindex', -1);
 			}
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/", "i"),
-			element:  "#detailApplication",
-			title: "Check out your new application",
-			content: "This is the detail page of your new app. You can find the OAuth credentials and register a PEP Proxy or some IoT Sensors. This is the end of th",
-			placement: "left"
-		},
-		{
-			path: RegExp("\/idm\/myApplications\/[^\/]+\/", "i"),
 			title: "You're all set!",
-			content: "This is the end of the tour. If you want to learn more about roles and permissions in apps, click <a href='#' class='next-tour' data-current-tour='appsTour' data-next-tour='rolesTour'>here</a>. Otherwise click 'End tour' to exit and start experimenting yourself. Thank you for using FIWARE Lab!",
-			orphan: true
-		},
+			content: "<p>You finished the Applications Tour! You can now head on to the next Tour and learn more about roles and permissions inside apps and how to manage them or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
+			orphan: true,
+			onShown: function (tour) {
+				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="appsTour" data-next-tour="rolesTour">Next Tour</button>');
+			},
+			onHide: function (tour) {
+				$(".popover.tour .btn-group:last-child").remove();
+			}
+		}
 		]
 	}),
 
@@ -307,9 +318,9 @@ $( document ).ready(function() {
 		tours[nextTour].start();
 	});
 
-	$.each(tours, function(i, val) {
-		if (!val.ended()) {
-			val.init();
+	$.each(tours, function(i, tour) {
+		if (tour._getState('current_step')!== null && !tour.ended()) {
+			tour.init();
 			return false;
 		}
 	});

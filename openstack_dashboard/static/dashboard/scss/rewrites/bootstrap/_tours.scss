@@ -17,6 +17,11 @@
     font-weight: bold;
     color: $brand-primary;
   }
+  .popover-navigation{
+    .btn-group:last-child{
+      float:right;
+    }
+  }
 }
 /* popover arrow on tours */
 .popover.bottom > .arrow::after{
