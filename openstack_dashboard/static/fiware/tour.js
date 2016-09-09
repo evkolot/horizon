@@ -106,7 +106,7 @@ var tours = {
 
 	appsTour: new Tour({
 		name: "applicationsTour",
-		debug: true,
+		debug: false,
 		backdrop: true,
 		backdropPadding: 5,
 		template: tourTemplate,
@@ -136,7 +136,7 @@ var tours = {
 			path: "/idm/myApplications/create/",
 			element: "#create_application_modal",
 			title: "<p>STEP 1:</p>Registering a new application",
-			content: "<p>This form contains the basic information required to create a new application.</p>First of all, provide a name and a longer description for your application.",
+			content: "<p>This form contains the basic information required to create a new application.</p>First of all, provide a name and a longer description for your it.",
 			placement: "left",
 			onShown: function (tour) {
 				$("#id_name").inputTextWithDelay("First App");
@@ -237,67 +237,114 @@ var tours = {
 		]
 	}),
 
-	orgsTour: new Tour({
-		name: "organizationsTour",
-		debug: false,
-		backdrop: true,
-		template: tourTemplate,
-		steps: [
-		{
-			element: "#applications__action_register_organization",
-			title: "Register an organization",
-			content: "You must click in this link to start resgistering your organization",
-			placement: "left",
-			path:"/idm/"
-		},
-		{
-			element: "#id_name",
-			title: "Register an organization",
-			content: "This is the name",
-			path:"/idm/organizations/create/",
-			placement: "left",
-			onShow: function (orgTour) {
-				$("#id_name").val("Fancy organization");
-			}
-		},
-		{
-			element: "#id_description",
-			title: "Register an organization",
-			content: "This is the description",
-			path:"/idm/organizations/create/",
-			placement: "left",
-			onShow: function (orgTour) {
-				$("#id_description").val("Some description of the organization.");
-			},
-			onNext: function (appsTour) {
-				$(".btn-primary").click();
-			}
-		},
-		{
-			title: "Your organization has been created",
-			content: "This is the main page of your brand new organization",
-			path:"/idm/home_orgs/"
-		},
-		{
-			element: "#applications",
-			title: "Organization main page",
-			content: "This table displays the apps related to your organization",
-			path:"/idm/home_orgs/"
-		},
-		{
-			element: "#members",
-			title: "Organization main page",
-			content: "This table displays the members of the organization",
-			path:"/idm/home_orgs/"
-		},
-		]
-	}),
-
 	rolesTour: new Tour({
 		name: "rolesAndPermissionsTour",
 		debug: false,
 		backdrop: true,
 		template: tourTemplate,
+	}),
+
+	orgsTour: new Tour({
+		name: "organizationsTour",
+		debug: false,
+		backdrop: true,
+		backdropPadding: 5,
+		template: tourTemplate,
+		keyboard: false,
+		onRedirectError: function (tour) {
+			tour.end();
+			document.location.href = "/idm/";
+			window.console.log("Bootstrap Tour '" + tour._options.name + "' | " + 'Redirection error');
+		},
+		steps: [
+		{
+			path: "/idm/",
+			title: "Organizations Tour",
+			content: "Welcome to the Organizations Tour! You will now learn how to create an organization in KeyRock.",
+			orphan: true
+		},
+		{
+			path: "/idm/",
+			element: "#organizations",
+			title: "Creating a new organization", 
+			content: "The quickest way to create a new organization is the 'Create' button here. Click on it to create your first organization!",
+			placement: "left",
+			reflex: true,
+			reflexElement: "#organizations .btn-group"
+		},
+		{
+			path: "/idm/organizations/create/",
+			element: "#create_application_modal",
+			title: "<p>Creating a new organization",
+			content: "<p>This form contains the basic information required to create a new organization.</p>Just provide a name and a longer description for it.",
+			placement: "left",
+			onShown: function (tour) {
+				$("#id_name").inputTextWithDelay("First Org");
+				setTimeout(function() {
+					$("#id_description").inputTextWithDelay("Created during the Organizations Tour.");
+				}, 750);
+			}
+		},
+		{
+			path: "/idm/organizations/create/",
+			element: ".btn.btn-primary",
+			title: "Creating a new organization",
+			content: "Click on this button when you're done to create your new organization.",
+			placement: "left",
+			reflex: true,
+			template: noButtonsTemplate
+		},
+		{
+			path: "/idm/home_orgs/",
+			title: "Organization created!",
+			content: "Your new organization was successfully created. This is its home page.",
+			orphan: true
+		},
+		{
+			path: "/idm/home_orgs/",
+			element: "nav.sidebar",
+			title: "Navigation",
+			content: "There's a new section called 'Members' in the sidebar menu.",
+			placement: "right"
+		},
+		{
+			path: "/idm/home_orgs/",
+			element: "#applications",
+			title: "Applications",
+			content: "These are the applications your organization participates on.",
+			placement: "right"
+		},
+		{
+			path: "/idm/home_orgs/",
+			element: "#members",
+			title: "Members",
+			content: "This table shows a quick summary of the members of your organization.",
+			placement: "left"
+		},
+		{
+			path: "/idm/home_orgs/",
+			element: "#profile_editor_switcher",
+			title: "Organization profile",
+			content: "Note that you are now logged in as your new organization. You can use this section to log back in with your personal account.",
+			placement: "bottom"
+		},
+		{
+			path: "/idm/",
+			title: "You're all set!",
+			content: "<p>You finished the Organizations Tour! You can now head on to the next Tour and learn more about the most important settings of your account or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
+			orphan: true,
+			template: noButtonsTemplate,
+			redirect: function () {
+				document.location.href = $("#profile_editor_switcher .dropdown-menu .dropdown-menu li:last a").attr('href');
+			},
+			onShown: function (tour) {
+				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="orgsTour" data-next-tour="settingsTour">Next Tour</button>');
+			},
+			onHide: function (tour) {
+				$(".popover.tour .btn-group:last-child").remove();
+			}
+		},
+		]
 	}),
 
 	settingsTour: new Tour({
