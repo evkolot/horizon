@@ -7,9 +7,13 @@
   }
 }
 .btn-default{
-	border-color: #A9A9A9;
+	border-color: $brand-primary;
+  color: $brand-primary;
 }
-
+.btn-default.disabled{
+  border-color: $gray-light;
+  color: $gray-light;
+}
 .btn-default:hover, .btn-default:focus, .btn-default:active, .btn-default.active, .open > .btn-default.dropdown-toggle {
   color: $brand-primary;
   background-color: $white;

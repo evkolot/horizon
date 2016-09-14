@@ -1,5 +1,6 @@
 var _tourTemplate = "<div class='popover tour'>\
 	<div class='arrow'></div>\
+	<h5 class='tour-title'>Tour title</h5>\
 	<h3 class='popover-title'></h3>\
 	<div class='popover-content'></div>\
 	<div class='popover-navigation'><div class='btn-group'>\
@@ -43,7 +44,7 @@ var _toursDefaultOptions = {
 };
 
 var _toursOptions = {
-	
+
 	initTourOptions: {
 		name: "getStartedTour",
 		steps: [
@@ -100,14 +101,8 @@ var _toursOptions = {
 		{
 			path: "/idm/",
 			title: "You're all set!",
-			content: "<p>You finished the basics Tour! You can now head on to the next Tour and learn more about the most important settings of your profile or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
-			orphan: true,
-			onShown: function (tour) {
-				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="initTour" data-next-tour="profileTour">Next Tour</button>');
-			},
-			onHide: function (tour) {
-				$(".popover.tour .btn-group:last-child").remove();
-			}
+			content: "<p>You finished the basics Tour! You can now head on to the next Tour and learn more about the most important settings of your profile or exit this tutorial and start experimenting yourself.</p><p>Thank you for using FIWARE Lab!</p><a href='#' class='next-tour' data-current-tour='initTour' data-next-tour='profileTour'> > Go to Profile Tour</a>",
+			orphan: true
 		},
 		]
 	},
@@ -219,7 +214,7 @@ var _toursOptions = {
 		{
 			path: "/idm/",
 			element: "#applications",
-			title: "Registering a new application", 
+			title: "Registering a new application",
 			content: "The quickest way to register a new application is the 'Register' button. Click on it to register your first application!",
 			placement: "right",
 			reflex: true,
@@ -461,7 +456,7 @@ var _toursOptions = {
 		{
 			path: "/idm/",
 			element: "#organizations",
-			title: "Creating a new organization", 
+			title: "Creating a new organization",
 			content: "The quickest way to create a new organization is the 'Create' button. Click on it to create your first organization!",
 			placement: "left",
 			reflex: true,

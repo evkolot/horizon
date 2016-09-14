@@ -13,13 +13,28 @@
   border-bottom: 3px solid $brand-secundary;
 }
 .tour{
+  .tour-title{
+    padding: 15px 15px 0px;
+    color: $brand-secundary;
+  }
+  }
   .popover-title{
     background-color: $gray-lighter;
-    padding: 15px 15px 0;
+    padding: 5px 15px 0;
     font-size: 1.2em;
     border: none;
     font-weight: bold;
     color: $brand-primary;
+  }
+  .popover-content{
+    .next-tour{
+      font-family: $corporate-font-family-sans-serif-Regular;
+      color: $gray-darker;
+      font-size: 1.1em;
+      &:hover{
+        text-decoration: underline !important;
+      }
+    }
   }
   .popover-navigation{
     .btn-group:last-child{
@@ -33,4 +48,7 @@
 }
 .popover.right > .arrow::after{
   border-right-color: $gray-lighter;
+}
+.popover.left > .arrow::after{
+  border-left-color: $gray-lighter;
 }
