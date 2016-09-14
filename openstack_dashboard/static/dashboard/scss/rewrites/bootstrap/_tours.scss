@@ -8,6 +8,10 @@
 .tour-step-backdrop{
   z-index: 2000;
 }
+.tour-profile-step{
+  border-radius: 0;
+  border-bottom: 3px solid $brand-secundary;
+}
 .tour{
   .popover-title{
     background-color: $gray-lighter;
