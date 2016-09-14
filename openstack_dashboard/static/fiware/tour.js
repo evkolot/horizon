@@ -33,18 +33,18 @@ var _toursDefaultOptions = {
 	debug: false,
 	backdrop: true,
 	backdropPadding: 5,
-	template: tourTemplate,
+	template: _tourTemplate,
 	keyboard: false,
 	onRedirectError: function (tour) {
 		tour.end();
 		document.location.href = "/idm/";
 		window.console.log("Bootstrap Tour '" + tour._options.name + "' | " + 'Redirection error');
-	},
+	}
 };
 
-var tours = {
-
-	initTour: new Tour(_toursDefaultOptions.push({
+var _toursOptions = {
+	
+	initTourOptions: {
 		name: "getStartedTour",
 		steps: [
 		{
@@ -110,9 +110,9 @@ var tours = {
 			}
 		},
 		]
-	})),
+	},
 
-	profileTour: new Tour(_toursDefaultOptions.push({
+	profileTourOptions: {
 		name: "profileTour",
 		steps: [
 		{
@@ -168,7 +168,7 @@ var tours = {
 			element:  "#detailUser>header a",
 			placement: "bottom",
 			reflex: true,
-			template: noNextTemplate
+			template: _noNextTemplate
 		},
 		{
 			path: RegExp("\/idm\/users\/[^\/]+\/edit\/", "i"),
@@ -176,7 +176,7 @@ var tours = {
 			content: "Provide some useful information about yourself. This will appear in your profile page.",
 			element:  "#content_body>.panel.panel-default:first-child",
 			placement: "left",
-			template: noPrevTemplate,
+			template: _noPrevTemplate,
 			onShown: function (tour) {
 				$("#id_description").inputTextWithDelay("This is something about myself.");
 				setTimeout(function() {
@@ -196,7 +196,7 @@ var tours = {
 			title: "You're all set!",
 			content: "<p>You finished the Profile Tour! You can now head on to the next Tour and learn more about aplications and how to register one or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
 			orphan: true,
-			template: noPrevTemplate,
+			template: _noPrevTemplate,
 			onShown: function (tour) {
 				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="profileTour" data-next-tour="appsTour">Next Tour</button>');
 			},
@@ -205,9 +205,9 @@ var tours = {
 			}
 		}
 		]
-	})),
+	},
 
-	appsTour: new Tour(_toursDefaultOptions.push({
+	appsTourOptions: {
 		name: "applicationsTour",
 		steps: [
 		{
@@ -265,7 +265,7 @@ var tours = {
 			content: "Click on this button to continue to the next step.",
 			placement: "left",
 			reflex: true,
-			template: noNextTemplate
+			template: _noNextTemplate
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/avatar\/", "i"),
@@ -273,7 +273,7 @@ var tours = {
 			title: "<p>STEP 2:</p>Registering a new application",
 			content: "In this step you can choose an image for your app. We will leave the default one.",
 			placement: "left",
-			template: noPrevTemplate
+			template: _noPrevTemplate
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/avatar\/", "i"),
@@ -282,7 +282,7 @@ var tours = {
 			content: "Click on this button to continue to the next step.",
 			placement: "left",
 			reflex: true,
-			template: noNextTemplate
+			template: _noNextTemplate
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/roles\/", "i"),
@@ -290,7 +290,7 @@ var tours = {
 			title: "<p>STEP 3:</p>Registering a new application",
 			content: "In this last step, you can manage the roles and permissions of your app. We won't change anything now, but you can learn more about them in the next Tour.",
 			placement: "left",
-			template: noPrevTemplate
+			template: _noPrevTemplate
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/roles\/", "i"),
@@ -299,7 +299,7 @@ var tours = {
 			content: "Click on this button when you're done editing your new app.",
 			placement: "left",
 			reflex: true,
-			template: noNextTemplate
+			template: _noNextTemplate
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/", "i"),
@@ -307,7 +307,7 @@ var tours = {
 			title: "Check out your new application",
 			content: "This is the detail page of your new app, with some useful information about it.",
 			placement: "left",
-			template: noPrevTemplate
+			template: _noPrevTemplate
 		},
 		{
 			path: "/idm/",
@@ -322,9 +322,9 @@ var tours = {
 			}
 		}
 		]
-	})),
+	},
 
-	rolesTour: new Tour(_toursDefaultOptions.push({
+	rolesTourOptions: {
 		name: "rolesAndPermissionsTour",
 		steps: [
 		{
@@ -339,7 +339,7 @@ var tours = {
 			element: "#applications",
 			content: "To continue with the tour, click on any of your apps. If you don't have any, you should first create one or take the Applications tour.",
 			placement: 'right',
-			template: noNextTemplate,
+			template: _noNextTemplate,
 			reflex: true,
 			reflexElement: "#applications .list-group-item a.item",
 			onShown: function (tour) {
@@ -363,7 +363,7 @@ var tours = {
 			content: "This link will take you to the Roles Management page or this application. Click on it to continue.",
 			placement: "bottom",
 			reflex: true,
-			template: noNextTemplate
+			template: _noNextTemplate
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/edit\/roles\/", "i"),
@@ -371,7 +371,7 @@ var tours = {
 			title: "Managing Roles & Permissions",
 			content: "This view lets you manage the roles and permissions of your application.",
 			placement: "left",
-			template: noPrevTemplate
+			template: _noPrevTemplate
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/edit\/roles\/", "i"),
@@ -416,7 +416,7 @@ var tours = {
 			title: "Save changes",
 			content: "Click on this button to save the changes you made.",
 			placement: "bottom",
-			template: noNextTemplate,
+			template: _noNextTemplate,
 			reflex: true,
 		},
 		{
@@ -425,7 +425,7 @@ var tours = {
 			title: "Authorizing users",
 			content: "This section shows the users who have been assigned some role in your app. Use the Authorize button to assign a new role to a certain user.",
 			placement: "left",
-			template: noPrevTemplate
+			template: _noPrevTemplate
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/", "i"),
@@ -447,9 +447,9 @@ var tours = {
 			}
 		},
 		]
-	})),
+	},
 
-	orgsTour: new Tour(_toursDefaultOptions.push({
+	orgsTourOptions: {
 		name: "organizationsTour",
 		steps: [
 		{
@@ -487,14 +487,14 @@ var tours = {
 			content: "Click on this button when you're done to create your new organization.",
 			placement: "left",
 			reflex: true,
-			template: noNextTemplate
+			template: _noNextTemplate
 		},
 		{
 			path: "/idm/home_orgs/",
 			title: "Organization created!",
 			content: "Your new organization was successfully created. This is its home page.",
 			orphan: true,
-			template: noPrevTemplate
+			template: _noPrevTemplate
 		},
 		{
 			path: "/idm/home_orgs/",
@@ -541,10 +541,19 @@ var tours = {
 			redirect: function () {
 				document.location.href = $("#profile_editor_switcher .dropdown-menu .dropdown-menu li:last a").attr('href');
 			},
-			template: noPrevTemplate
+			template: _noPrevTemplate
 		},
 		]
-	}))
+	}
+}
+
+var tours = {
+
+	initTour: new Tour($.extend(_toursDefaultOptions, _toursOptions.initTourOptions)),
+	profileTour: new Tour($.extend(_toursDefaultOptions, _toursOptions.profileTourOptions)),
+	appsTour: new Tour($.extend(_toursDefaultOptions, _toursOptions.appsTourOptions)),
+	rolesTour: new Tour($.extend(_toursDefaultOptions, _toursOptions.rolesTourOptions)),
+	orgsTour: new Tour($.extend(_toursDefaultOptions, _toursOptions.orgsTourOptions))
 };
 
 $( document ).ready(function() {
