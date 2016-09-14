@@ -100,15 +100,110 @@ var tours = {
 		{
 			path: "/idm/",
 			title: "You're all set!",
-			content: "<p>You finished the basics Tour! You can now head on to the next Tour and learn more about aplications and how to register one or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
+			content: "<p>You finished the basics Tour! You can now head on to the next Tour and learn more about the most important settings of your profile or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
 			orphan: true,
 			onShown: function (tour) {
-				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="initTour" data-next-tour="appsTour">Next Tour</button>');
+				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="initTour" data-next-tour="profileTour">Next Tour</button>');
 			},
 			onHide: function (tour) {
 				$(".popover.tour .btn-group:last-child").remove();
 			}
 		},
+		]
+	})),
+
+	profileTour: new Tour(_toursDefaultOptions.push({
+		name: "profileTour",
+		steps: [
+		{
+			path: "/idm/",
+			title: "Profile Tour",
+			content: "Welcome to the Profile Tour! You will now learn how the most important settings of your profile.",
+			orphan: true,
+		},
+		{
+			path: "/idm/",
+			element: "#profile_editor_switcher",
+			title: "Your Profile",
+			content: "Access your profile page from this menu.",
+			placement: "bottom",
+			onShown: function() {
+				$('.tour-step-backdrop').closest(".nav").addClass("tour-step-backdrop-parent").css("z-index", "1101");
+				$('.tour-step-backdrop').closest(".navbar").addClass("tour-step-backdrop-parent").css("z-index", "1101");
+				$('#user_info').addClass('tour-profile-step');
+			},
+			onHidden: function() {
+				$('.tour-step-backdrop-parent').removeClass("tour-step-backdrop-parent").css("z-index", "");
+				$('#user_info').removeClass('tour-profile-step');
+			}
+		},
+		{
+			path: RegExp("\/idm\/users\/[^\/]+\/$", "i"),
+			element:  "#content_body",
+			title: "Your profile",
+			content: "This is your profile page. It contains some useful information, such as your avatar and some personal data about yourself.",
+			placement: "left",
+			redirect: function () {
+				document.location.href = $("#profile_editor_switcher .dropdown-menu li:first-child a").attr('href');
+			},
+		},
+		{
+			path: RegExp("\/idm\/users\/[^\/]+\/$", "i"),
+			element:  "#detailUser>.panel.panel-default:nth-child(3)",
+			title: "Your profile",
+			content: "This table shows the organizations you belong to.",
+			placement: "left"
+		},
+		{
+			path: RegExp("\/idm\/users\/[^\/]+\/$", "i"),
+			title: "Your profile",
+			content: "This table shows the applications you are authorized on (i.e. you were assigned at least one role on them).",
+			element:  "#detailUser>.panel.panel-default:nth-child(4)",
+			placement: "left"
+		},
+		{
+			path: RegExp("\/idm\/users\/[^\/]+\/$", "i"),
+			title: "Your profile",
+			content: "Let's include some personal information! Click this button to edit your profile.",
+			element:  "#detailUser>header a",
+			placement: "bottom",
+			reflex: true,
+			template: noNextTemplate
+		},
+		{
+			path: RegExp("\/idm\/users\/[^\/]+\/edit\/", "i"),
+			title: "Editing your profile",
+			content: "Provide some useful information about yourself. This will appear in your profile page.",
+			element:  "#content_body>.panel.panel-default:first-child",
+			placement: "left",
+			template: noPrevTemplate,
+			onShown: function (tour) {
+				$("#id_description").inputTextWithDelay("This is something about myself.");
+				setTimeout(function() {
+					$("#id_website").inputTextWithDelay("http://my.website.com");
+				}, 750);
+			}
+		},
+		{
+			path: RegExp("\/idm\/users\/[^\/]+\/edit\/", "i"),
+			title: "Editing your profile",
+			content: "Choose your avatar now. You can choose from a previously uploaded image, upload a new one or even use your Gravatar!",
+			element:  "#content_body>.panel.panel-default:last-child",
+			placement: "left"
+		},
+		{
+			path: "/idm/",
+			title: "You're all set!",
+			content: "<p>You finished the Profile Tour! You can now head on to the next Tour and learn more about aplications and how to register one or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
+			orphan: true,
+			template: noPrevTemplate,
+			onShown: function (tour) {
+				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="profileTour" data-next-tour="appsTour">Next Tour</button>');
+			},
+			onHide: function (tour) {
+				$(".popover.tour .btn-group:last-child").remove();
+			}
+		}
 		]
 	})),
 
@@ -441,108 +536,13 @@ var tours = {
 		{
 			path: "/idm/",
 			title: "You're all set!",
-			content: "<p>You finished the Organizations Tour! You can now head on to the next Tour and learn more about the most important settings of your profile or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
+			content: "<p>You finished the Organizations Tour! Now start experimenting yourself.</p>Thank you for using FIWARE Lab!",
 			orphan: true,
 			redirect: function () {
 				document.location.href = $("#profile_editor_switcher .dropdown-menu .dropdown-menu li:last a").attr('href');
 			},
-			template: noPrevTemplate,
-			onShown: function (tour) {
-				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="orgsTour" data-next-tour="profileTour">Next Tour</button>');
-			},
-			onHide: function (tour) {
-				$(".popover.tour .btn-group:last-child").remove();
-			}
-		},
-		]
-	})),
-
-	profileTour: new Tour(_toursDefaultOptions.push({
-		name: "profileTour",
-		steps: [
-		{
-			path: "/idm/",
-			title: "Profile Tour",
-			content: "Welcome to the Profile Tour! You will now learn how the most important settings of your profile.",
-			orphan: true,
-		},
-		{
-			path: "/idm/",
-			element: "#profile_editor_switcher",
-			title: "Your Profile",
-			content: "Access your profile page from this menu.",
-			placement: "bottom",
-			onShown: function() {
-				$('.tour-step-backdrop').closest(".nav").addClass("tour-step-backdrop-parent").css("z-index", "1101");
-				$('.tour-step-backdrop').closest(".navbar").addClass("tour-step-backdrop-parent").css("z-index", "1101");
-				$('#user_info').addClass('tour-profile-step');
-			},
-			onHidden: function() {
-				$('.tour-step-backdrop-parent').removeClass("tour-step-backdrop-parent").css("z-index", "");
-				$('#user_info').removeClass('tour-profile-step');
-			}
-		},
-		{
-			path: RegExp("\/idm\/users\/[^\/]+\/$", "i"),
-			element:  "#content_body",
-			title: "Your profile",
-			content: "This is your profile page. It contains some useful information, such as your avatar and some personal data about yourself.",
-			placement: "left",
-			redirect: function () {
-				document.location.href = $("#profile_editor_switcher .dropdown-menu li:first-child a").attr('href');
-			},
-		},
-		{
-			path: RegExp("\/idm\/users\/[^\/]+\/$", "i"),
-			element:  "#detailUser>.panel.panel-default:nth-child(3)",
-			title: "Your profile",
-			content: "This table shows the organizations you belong to.",
-			placement: "left"
-		},
-		{
-			path: RegExp("\/idm\/users\/[^\/]+\/$", "i"),
-			title: "Your profile",
-			content: "This table shows the applications you are authorized on (i.e. you were assigned at least one role on them).",
-			element:  "#detailUser>.panel.panel-default:nth-child(4)",
-			placement: "left"
-		},
-		{
-			path: RegExp("\/idm\/users\/[^\/]+\/$", "i"),
-			title: "Your profile",
-			content: "Let's include some personal information! Click this button to edit your profile.",
-			element:  "#detailUser>header a",
-			placement: "bottom",
-			reflex: true,
-			template: noNextTemplate
-		},
-		{
-			path: RegExp("\/idm\/users\/[^\/]+\/edit\/", "i"),
-			title: "Editing your profile",
-			content: "Provide some useful information about yourself. This will appear in your profile page.",
-			element:  "#content_body>.panel.panel-default:first-child",
-			placement: "left",
-			template: noPrevTemplate,
-			onShown: function (tour) {
-				$("#id_description").inputTextWithDelay("This is something about myself.");
-				setTimeout(function() {
-					$("#id_website").inputTextWithDelay("http://my.website.com");
-				}, 750);
-			}
-		},
-		{
-			path: RegExp("\/idm\/users\/[^\/]+\/edit\/", "i"),
-			title: "Editing your profile",
-			content: "Choose your avatar now. You can choose from a previously uploaded image, upload a new one or even use your Gravatar!",
-			element:  "#content_body>.panel.panel-default:last-child",
-			placement: "left"
-		},
-		{
-			path: "/idm/",
-			title: "You're all set!",
-			content: "<p>You finished the Profile Tour! Now start experimenting yourself.</p>Thank you for using FIWARE Lab!",
-			orphan: true,
 			template: noPrevTemplate
-		}
+		},
 		]
 	}))
 };
