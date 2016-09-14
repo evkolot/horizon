@@ -78,6 +78,12 @@
 			tours.initTour.init();
 			tours.initTour.start();
 		}
+
+		/* Add link to Help&About in last tour */
+		tours.orgsTour._options.steps[9].onShown = function(tour) {
+			$('#end-tours').attr('href', "{% url 'horizon:help_about:help_about:index' %}");
+		};
+
 	});
   </script>
 {% endblock %}

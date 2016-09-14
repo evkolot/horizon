@@ -12,6 +12,7 @@ var _tourTemplate = "<div class='popover tour'>\
 
 var _noNextTemplate = "<div class='popover tour'>\
 	<div class='arrow'></div>\
+	<h5 class='tour-title'>Tour title</h5>\
 	<h3 class='popover-title'></h3>\
 	<div class='popover-content'></div>\
 	<div class='popover-navigation'><div class='btn-group'>\
@@ -22,6 +23,7 @@ var _noNextTemplate = "<div class='popover tour'>\
 
 var _noPrevTemplate = "<div class='popover tour'>\
 	<div class='arrow'></div>\
+	<h5 class='tour-title'>Tour title</h5>\
 	<h3 class='popover-title'></h3>\
 	<div class='popover-content'></div>\
 	<div class='popover-navigation'><div class='btn-group'>\
@@ -34,7 +36,6 @@ var _toursDefaultOptions = {
 	debug: false,
 	backdrop: true,
 	backdropPadding: 5,
-	template: _tourTemplate,
 	keyboard: false,
 	onRedirectError: function (tour) {
 		tour.end();
@@ -47,6 +48,7 @@ var _toursOptions = {
 
 	initTourOptions: {
 		name: "getStartedTour",
+		template: _tourTemplate.replace('Tour title', 'Basics Tour'),
 		steps: [
 		{
 			path: "/idm/",
@@ -109,10 +111,11 @@ var _toursOptions = {
 
 	profileTourOptions: {
 		name: "profileTour",
+		template: _tourTemplate.replace('Tour title', 'Profile Tour'),
 		steps: [
 		{
 			path: "/idm/",
-			title: "Profile Tour",
+			title: "Let's get started!",
 			content: "Welcome to the Profile Tour! You will now learn how the most important settings of your profile.",
 			orphan: true,
 		},
@@ -145,13 +148,13 @@ var _toursOptions = {
 		{
 			path: RegExp("\/idm\/users\/[^\/]+\/$", "i"),
 			element:  "#detailUser>.panel.panel-default:nth-child(3)",
-			title: "Your profile",
+			title: "Your organizations",
 			content: "This table shows the organizations you belong to.",
 			placement: "left"
 		},
 		{
 			path: RegExp("\/idm\/users\/[^\/]+\/$", "i"),
-			title: "Your profile",
+			title: "Your apps",
 			content: "This table shows the applications you are authorized on (i.e. you were assigned at least one role on them).",
 			element:  "#detailUser>.panel.panel-default:nth-child(4)",
 			placement: "left"
@@ -163,7 +166,7 @@ var _toursOptions = {
 			element:  "#detailUser>header a",
 			placement: "bottom",
 			reflex: true,
-			template: _noNextTemplate
+			template: _noNextTemplate.replace('Tour title', 'Profile Tour')
 		},
 		{
 			path: RegExp("\/idm\/users\/[^\/]+\/edit\/", "i"),
@@ -171,7 +174,7 @@ var _toursOptions = {
 			content: "Provide some useful information about yourself. This will appear in your profile page.",
 			element:  "#content_body>.panel.panel-default:first-child",
 			placement: "left",
-			template: _noPrevTemplate,
+			template: _noPrevTemplate.replace('Tour title', 'Profile Tour'),
 			onShown: function (tour) {
 				$("#id_description").inputTextWithDelay("This is something about myself.");
 				setTimeout(function() {
@@ -189,25 +192,20 @@ var _toursOptions = {
 		{
 			path: "/idm/",
 			title: "You're all set!",
-			content: "<p>You finished the Profile Tour! You can now head on to the next Tour and learn more about aplications and how to register one or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
+			content: "<p>You finished the Profile Tour! You can now head on to the next Tour and learn more about aplications and how to register one or exit this tutorial and start experimenting yourself.</p><p>Thank you for using FIWARE Lab!</p><a href='#' class='next-tour' data-current-tour='profileTour' data-next-tour='appsTour'> > Go to Applications Tour</a>",
 			orphan: true,
-			template: _noPrevTemplate,
-			onShown: function (tour) {
-				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="profileTour" data-next-tour="appsTour">Next Tour</button>');
-			},
-			onHide: function (tour) {
-				$(".popover.tour .btn-group:last-child").remove();
-			}
+			template: _noPrevTemplate.replace('Tour title', 'Profile Tour')
 		}
 		]
 	},
 
 	appsTourOptions: {
 		name: "applicationsTour",
+		template: _tourTemplate.replace('Tour title', 'Applications Tour'),
 		steps: [
 		{
 			path: "/idm/",
-			title: "Applications Tour",
+			title: "Let's get started!",
 			content: "Welcome to the Applications Tour! You will now learn how to register an application in KeyRock.",
 			orphan: true,
 		},
@@ -223,7 +221,7 @@ var _toursOptions = {
 		{
 			path: "/idm/myApplications/create/",
 			element: "#create_application_modal",
-			title: "<p>STEP 1:</p>Registering a new application",
+			title: "STEP 1: Registering a new application",
 			content: "<p>This form contains the basic information required to create a new application.</p>First of all, provide a name and a longer description for your it.",
 			placement: "left",
 			onShown: function (tour) {
@@ -236,7 +234,7 @@ var _toursOptions = {
 		{
 			path: "/idm/myApplications/create/",
 			element: "#create_application_modal fieldset .form-group:eq(2)",
-			title: "<p>STEP 1:</p>Registering a new application",
+			title: "STEP 1: Registering a new application",
 			content: "This is the URL of your app. This field is required to check that requests to KeyRock regarding your app (e.g. when using OAuth to authorize users) come actually from your app.",
 			placement: "left",
 			onShown: function (tour) {
@@ -246,7 +244,7 @@ var _toursOptions = {
 		{
 			path: "/idm/myApplications/create/",
 			element: "#create_application_modal fieldset .form-group:eq(3)",
-			title: "<p>STEP 1:</p>Registering a new application",
+			title: "STEP 1: Registering a new application",
 			content: "This is the callback URL of your application. KeyRock will redirect the User Agent back to it after an OAuth authorization flow.",
 			placement: "left",
 			onShown: function (tour) {
@@ -256,93 +254,82 @@ var _toursOptions = {
 		{
 			path: "/idm/myApplications/create/",
 			element: ".btn.btn-primary",
-			title: "<p>STEP 1:</p>Registering a new application",
+			title: "STEP 1: Registering a new application",
 			content: "Click on this button to continue to the next step.",
 			placement: "left",
 			reflex: true,
-			template: _noNextTemplate
+			template: _noNextTemplate.replace('Tour title', 'Applications Tour')
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/avatar\/", "i"),
 			element: "#upload_image_modal",
-			title: "<p>STEP 2:</p>Registering a new application",
+			title: "STEP 2: Registering a new application",
 			content: "In this step you can choose an image for your app. We will leave the default one.",
 			placement: "left",
-			template: _noPrevTemplate
+			template: _noPrevTemplate.replace('Tour title', 'Applications Tour')
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/avatar\/", "i"),
 			element: ".btn.btn-primary",
-			title: "<p>STEP 2:</p>Registering a new application",
+			title: "STEP 2: Registering a new application",
 			content: "Click on this button to continue to the next step.",
 			placement: "left",
 			reflex: true,
-			template: _noNextTemplate
+			template: _noNextTemplate.replace('Tour title', 'Applications Tour')
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/roles\/", "i"),
 			element: "#create_application_roles",
-			title: "<p>STEP 3:</p>Registering a new application",
+			title: "STEP 3: Registering a new application",
 			content: "In this last step, you can manage the roles and permissions of your app. We won't change anything now, but you can learn more about them in the next Tour.",
 			placement: "left",
-			template: _noPrevTemplate
+			template: _noPrevTemplate.replace('Tour title', 'Applications Tour')
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/step\/roles\/", "i"),
 			element:  ".btn.btn-primary",
-			title: "<p>STEP 3:</p>Registering a new application",
+			title: "STEP 3: Registering a new application",
 			content: "Click on this button when you're done editing your new app.",
 			placement: "left",
 			reflex: true,
-			template: _noNextTemplate
+			template: _noNextTemplate.replace('Tour title', 'Applications Tour')
 		},
 		{
-			path: RegExp("\/idm\/myApplications\/[^\/]+\/", "i"),
+			path: RegExp("\/idm\/myApplications\/[^\/]+\/$", "i"),
 			element:  "#content_body",
 			title: "Check out your new application",
 			content: "This is the detail page of your new app, with some useful information about it.",
 			placement: "left",
-			template: _noPrevTemplate
+			template: _noPrevTemplate.replace('Tour title', 'Applications Tour')
 		},
 		{
 			path: "/idm/",
 			title: "You're all set!",
-			content: "<p>You finished the Applications Tour! You can now head on to the next Tour and learn more about roles and permissions inside apps and how to manage them or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
-			orphan: true,
-			onShown: function (tour) {
-				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="appsTour" data-next-tour="rolesTour">Next Tour</button>');
-			},
-			onHide: function (tour) {
-				$(".popover.tour .btn-group:last-child").remove();
-			}
+			content: "<p>You finished the Applications Tour! You can now head on to the next Tour and learn more about roles and permissions inside apps and how to manage them or exit this tutorial and start experimenting yourself.</p><p>Thank you for using FIWARE Lab!</p><a href='#' class='next-tour' data-current-tour='appsTour' data-next-tour='rolesTour'> > Go to Roles & Permissions Tour</a>",
+			orphan: true
 		}
 		]
 	},
 
 	rolesTourOptions: {
 		name: "rolesAndPermissionsTour",
+		template: _tourTemplate.replace('Tour title', 'Roles & Permissions Tour'),
 		steps: [
 		{
 			path: "/idm/",
-			title: "Roles & Permissions Tour",
+			title: "Let's get started!",
 			content: "Welcome to the Roles & Permissions Tour! You will now learn how roles and permissions inside applications work.",
 			orphan: true,
 		},
 		{
 			path: "/idm/",
-			title: "Roles & Permissions Tour",
+			title: "Pick an application",
 			element: "#applications",
-			content: "To continue with the tour, click on any of your apps. If you don't have any, you should first create one or take the Applications tour.",
+			content: "<p>To continue with the tour, click on any of your apps. If you don't have any, you should first create one or take the Applications tour.</p><a href='#' class='next-tour' data-current-tour='rolesTour' data-next-tour='appsTour'> > Go to Applications Tour</a>",
 			placement: 'right',
-			template: _noNextTemplate,
+			template: _noNextTemplate.replace('Tour title', 'Roles & Permissions Tour'),
 			reflex: true,
-			reflexElement: "#applications .list-group-item a.item",
-			onShown: function (tour) {
-				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-default next-tour" data-current-tour="rolesTour" data-next-tour="appsTour">Take the Apps Tour</button>');
-			},
-			onHide: function (tour) {
-				$(".popover.tour .btn-group:last-child").remove();
-			}
+			reflexElement: "#applications .list-group-item a.item"
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/", "i"),
@@ -358,7 +345,7 @@ var _toursOptions = {
 			content: "This link will take you to the Roles Management page or this application. Click on it to continue.",
 			placement: "bottom",
 			reflex: true,
-			template: _noNextTemplate
+			template: _noNextTemplate.replace('Tour title', 'Roles & Permissions Tour')
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/edit\/roles\/", "i"),
@@ -366,7 +353,7 @@ var _toursOptions = {
 			title: "Managing Roles & Permissions",
 			content: "This view lets you manage the roles and permissions of your application.",
 			placement: "left",
-			template: _noPrevTemplate
+			template: _noPrevTemplate.replace('Tour title', 'Roles & Permissions Tour')
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/edit\/roles\/", "i"),
@@ -411,45 +398,41 @@ var _toursOptions = {
 			title: "Save changes",
 			content: "Click on this button to save the changes you made.",
 			placement: "bottom",
-			template: _noNextTemplate,
+			template: _noNextTemplate.replace('Tour title', 'Roles & Permissions Tour'),
 			reflex: true,
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/$", "i"),
 			element:  "#auth_users",
 			title: "Authorizing users",
-			content: "This section shows the users who have been assigned some role in your app. Use the Authorize button to assign a new role to a certain user.",
+			content: "This section shows the users who have been assigned some role in your app. Use the 'Authorize' button to assign a new role to a certain user.",
 			placement: "left",
-			template: _noPrevTemplate
+			template: _noPrevTemplate.replace('Tour title', 'Roles & Permissions Tour')
 		},
 		{
 			path: RegExp("\/idm\/myApplications\/[^\/]+\/", "i"),
 			element:  "#organizations",
 			title: "Authorizing organizations",
-			content: "This section shows the organizations who have been assigned some role in your app. Use the Authorize button to assign a new role to a certain organization.",
+			content: "This section shows the organizations who have been assigned some role in your app. Use the 'Authorize' button to assign a new role to a certain organization.",
 			placement: "left"
 		},
 		{
 			path: "/idm/",
 			title: "You're all set!",
-			content: "<p>You finished the Roles & Permissions Tour! You can now head on to the next Tour and learn more about organizations or exit this tutorial and start experimenting yourself.</p>Thank you for using FIWARE Lab!",
+			content: "<p>You finished the Roles & Permissions Tour! You can now head on to the next Tour and learn more about organizations or exit this tutorial and start experimenting yourself.</p><p>Thank you for using FIWARE Lab!</p><a href='#' class='next-tour' data-current-tour='rolesTour' data-next-tour='orgsTour'> > Go to Organizations Tour</a>",
 			orphan: true,
-			onShown: function (tour) {
-				$(".popover.tour .btn-group:last-child").append('<button class="btn btn-primary next-tour" data-current-tour="rolesTour" data-next-tour="orgsTour">Next Tour</button>');
-			},
-			onHide: function (tour) {
-				$(".popover.tour .btn-group:last-child").remove();
-			}
+			template: _noPrevTemplate.replace('Tour title', 'Roles & Permissions Tour')
 		},
 		]
 	},
 
 	orgsTourOptions: {
 		name: "organizationsTour",
+		template: _tourTemplate.replace('Tour title', 'Organizations Tour'),
 		steps: [
 		{
 			path: "/idm/",
-			title: "Organizations Tour",
+			title: "Let's get started!",
 			content: "Welcome to the Organizations Tour! You will now learn how to create an organization in KeyRock.",
 			orphan: true
 		},
@@ -482,14 +465,14 @@ var _toursOptions = {
 			content: "Click on this button when you're done to create your new organization.",
 			placement: "left",
 			reflex: true,
-			template: _noNextTemplate
+			template: _noNextTemplate.replace('Tour title', 'Organizations Tour')
 		},
 		{
 			path: "/idm/home_orgs/",
 			title: "Organization created!",
 			content: "Your new organization was successfully created. This is its home page.",
 			orphan: true,
-			template: _noPrevTemplate
+			template: _noPrevTemplate.replace('Tour title', 'Organizations Tour')
 		},
 		{
 			path: "/idm/home_orgs/",
@@ -531,12 +514,20 @@ var _toursOptions = {
 		{
 			path: "/idm/",
 			title: "You're all set!",
-			content: "<p>You finished the Organizations Tour! Now start experimenting yourself.</p>Thank you for using FIWARE Lab!",
+			content: "<p>You finished the Organizations Tour! You can now head on to Help&About to learn more about KeyRock or start experimenting yourself.</p><p>Thank you for using FIWARE Lab!</p><a href='#' class='next-tour' data-current-tour='orgsTour' id='end-tours'> > Go to Help&About</a>",
 			orphan: true,
 			redirect: function () {
-				document.location.href = $("#profile_editor_switcher .dropdown-menu .dropdown-menu li:last a").attr('href');
+				var switchAccountElements = $("#profile_editor_switcher .dropdown-menu .dropdown-menu li a");
+				var userImageElement;
+				switchAccountElements.find('img').each(function(index, value){
+					if ($(value).attr('src').includes('UserAvatar')){
+						userImageElement = value;
+						return false;
+					}
+				});
+				document.location.href = $(userImageElement).closest('a').attr('href');
 			},
-			template: _noPrevTemplate
+			template: _noPrevTemplate.replace('Tour title', 'Organizations Tour')
 		},
 		]
 	}
@@ -574,8 +565,11 @@ $( document ).ready(function() {
 		var currentTour = $(this).attr('data-current-tour');
 
 		tours[currentTour].end();
-		tours[nextTour].init();
-		tours[nextTour].start();
+
+		if (nextTour !== undefined) {
+			tours[nextTour].init();
+			tours[nextTour].start();
+		}
 	});
 
 	/* resume tour if any */
@@ -585,5 +579,4 @@ $( document ).ready(function() {
 			return false;
 		}
 	});
-
 });
