@@ -28,18 +28,20 @@ class MultiItemView(views.APIView):
     
     def get_context_data(self, **kwargs):
         context = super(MultiItemView, self).get_context_data(**kwargs)
-
-        # Initial data
-        user_id = self.request.user.id
-
-        #Create forms
-        status = AccountStatusView()
-        context['items'] = [status]
+        context['items'] = [AboutView(), DocumentationView(), ToursView()]
 
         return context
 
 
 # Handeling views
-class AccountStatusView(views.APIView):
-    template_name = 'help_about/help_about/status.html'
-    description = 'Account Status'
+class AboutView(views.APIView):
+    template_name = 'help_about/help_about/about.html'
+    description = 'About FIWARE Accounts'
+
+class DocumentationView(views.APIView):
+    template_name = 'help_about/help_about/documentation.html'
+    description = 'Documentation'
+
+class ToursView(views.APIView):
+    template_name = 'help_about/help_about/tours.html'
+    description = 'Tours'
