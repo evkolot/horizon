@@ -22,14 +22,18 @@ class ManageMembersLink(tables.LinkAction):
     name = "manage_members"
     verbose_name = ("Add")
     url = "horizon:idm:home_orgs:members"
-    classes = ("ajax-modal", "link",)
+
+    def get_default_classes(self):
+        return ("ajax-modal", "btn", "btn-primary", "btn-sm")
 
 class RegisterApplication(tables.LinkAction):
     name = "register_application"
     verbose_name = "Register"
     url = "horizon:idm:myApplications:create"
-    classes = ("link",)
     render_as_link = True
+
+    def get_default_classes(self):
+        return ("btn", "btn-primary", "btn-sm")
 
 class MembersTable(tables.DataTable):
     avatar = tables.Column(lambda obj: idm_utils.get_avatar(
