@@ -569,7 +569,10 @@ $( document ).ready(function() {
 
 		if (nextTour !== undefined) {
 			tours[nextTour].init();
-			tours[nextTour].start();
+			if (tours[nextTour]._getState('current_step')!== null)
+				tours[nextTour].restart();
+			else
+				tours[nextTour].start();
 		}
 	});
 
