@@ -368,7 +368,8 @@ var _toursOptions = {
 			title: "Roles",
 			content: "Click on a role and the permissions attached to it will be shown on the right.",
 			placement: "bottom",
-			reflexElement: "div.btn.btn-default.role.no-editable",
+			template: _noNextTemplate.replace('Tour title', 'Roles & Permissions Tour'),
+			reflexElement: "div.btn.btn-default.role",
 			reflex: true
 		},
 		{
