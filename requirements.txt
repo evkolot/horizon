@@ -61,4 +61,5 @@ XStatic-JSEncrypt==2.0.0.2  # MIT License
 XStatic-QUnit==1.14.0.2  # MIT License
 XStatic-Rickshaw==1.5.0.0  # BSD License (prior)
 XStatic-Spin==1.2.5.2  # MIT License
-django-cors-headers==1.1.0
+#django-cors-headers==1.1.0
+-e git+https://github.com/ging/django-cors-headers.git#egg=django-cors-headers
