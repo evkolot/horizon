@@ -50,6 +50,7 @@
             <a data-toggle="collapse" href="#collapse_oauth2_credentials" aria-expanded="true" aria-controls="collapse_oauth2_credentials" class="collapsed">
                 OAuth2 Credentials <i class="fa fa-angle-up"></i>
             </a>
+            <a href="#" class="contextual-help" data-toggle="popover" data-title="OAuth2 Credentials" data-placement="left" data-content="You will be asked for these credentials in the OAuth2 library you use for your application"><i class="fa fa-question-circle"></i></a>
           </h4>
           <div class="collapse_out">
             <div id="collapse_oauth2_credentials" class="form-group collapse" role="tabpanel">
@@ -75,6 +76,7 @@
             <a data-toggle="collapse" href="#collapse_pep_proxy" aria-expanded="true" aria-controls="collapse_pep_proxy" class="collapsed">
                 PEP Proxy <i class="fa fa-angle-up"></i>
             </a>
+            <a href="#" class="contextual-help" data-toggle="popover" data-title="PEP Proxy" data-placement="left" data-content="A PEP Proxy, along with an Authorization PDP, will let you add authentication and authorization security to your application. This way, you will be able also to manage specific permissions and policies to your resources, allowing different access levels to your users."><i class="fa fa-question-circle"></i></a>
           </h4>
           <div id="collapse_pep_proxy" class="form-group collapse {% if pep_proxy_password %}in{% endif %}" role="tabpanel">
             {% if application.pep_proxy_name %}
@@ -108,6 +110,7 @@
             <a data-toggle="collapse" href="#collapse_iot_sensors" aria-expanded="true" aria-controls="collapse_iot_sensors" class="collapsed">
               IoT Sensors <i class="fa fa-angle-up"></i>
             </a>
+            <a href="#" class="contextual-help" data-toggle="popover" data-title="IoT Sensors" data-placement="left" data-content="If your application is related to IoT, sensors need to be registered here for them to be authenticated."><i class="fa fa-question-circle"></i></a>
           </h4>
           <div id="collapse_iot_sensors" class="form-group collapse {% if iot_sensor_password %}in{% endif %} no-transition" role="tabpanel">
             {% if application.iot_sensors %}
@@ -142,11 +145,11 @@
   {{ organizations_table.render}}
 </div>
 <script type="text/javascript">
-  $('.panel-title a').mouseover(function(){
+  $('.panel-title a:first-child').mouseover(function(){
     $(this).children().toggleClass('fa-rotate-180');
   });
 
-  $('.panel-title a').mouseleave(function(){
+  $('.panel-title a:first-child').mouseleave(function(){
     if ($(this).hasClass('collapsed')){
       $(this).children().removeClass('fa-rotate-180');
     } else {
@@ -154,7 +157,7 @@
     }
   });
 
-  $('.panel-title a').click(function(){
+  $('.panel-title a:first-child').click(function(){
     if ($(this).hasClass('collapsed')){
       $(this).children().addClass('fa-rotate-180');
     } else {

@@ -19,6 +19,7 @@ from django import forms
 from django import shortcuts
 from django.conf import settings
 from django.http import HttpResponse
+from django.utils.safestring import mark_safe
 
 from horizon import exceptions
 from horizon import forms
@@ -43,8 +44,12 @@ class CreateApplicationForm(forms.SelfHandlingForm):
         label=("Description"), 
         widget=forms.Textarea(attrs={'rows':4, 'cols':40}),
         required=True)
-    url = forms.CharField(label=("URL"), required=True)
-    callbackurl = forms.CharField(label=("Callback URL"), required=True)
+    url = forms.CharField(
+        label=mark_safe('URL <a href="#" class="contextual-help" data-toggle="popover" data-placement="left" data-title="Application URL" data-content="For security purposes, only OAuth requests coming from this URL will be accepted by KeyRock."><i class="fa fa-question-circle" ></i></a>'),
+        required=True)
+    callbackurl = forms.CharField(
+        label=mark_safe('Callback URL <a href="#" class="contextual-help" data-toggle="popover" data-placement="left" data-title="Application Callback URL" data-content="The user agent will be redirected to this URL when OAuth flow is finished."><i class="fa fa-question-circle" ></i></a>'),
+        required=True)
     title = 'Application Information'
 
     def handle(self, request, data):
@@ -244,7 +249,10 @@ class CreatePermissionForm(forms.SelfHandlingForm):
     description = forms.CharField(max_length=255, label=("Description"))
     action = forms.CharField(required=False, max_length=255, label=("HTTP action"))
     resource = forms.CharField(required=False, max_length=255, label=("Resource"))
-    xml = forms.CharField(required=False, label="Advanced XACML Rule", widget=forms.Textarea())
+    xml = forms.CharField(
+        required=False,
+        label='Use XACML to define a more complex authorization policy.',
+        widget=forms.Textarea())
     no_autocomplete = True
 
     def clean(self):
