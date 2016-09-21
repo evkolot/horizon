@@ -12,7 +12,7 @@
     <div class="panel panel-default">
       <a data-toggle="collapse" data-parent="#accordion" href="#collapse-{{ forloop.counter0 }}" class="panel-heading collapsed">
         <h4 class="panel-title panel-close">
-          {{ item.description }}
+          <i class="{{ item.icon }}" aria-hidden="true"></i> {{ item.description }}
         </h4>
       </a>
       <div id="collapse-{{ forloop.counter0 }}" class="panel-collapse collapse">

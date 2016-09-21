@@ -25,7 +25,7 @@ LOG = logging.getLogger('idm_logger')
 
 class MultiItemView(views.APIView):
     template_name = 'help_about/help_about/index.html'
-    
+
     def get_context_data(self, **kwargs):
         context = super(MultiItemView, self).get_context_data(**kwargs)
         context['items'] = [AboutView(), DocumentationView(), ToursView()]
@@ -37,11 +37,14 @@ class MultiItemView(views.APIView):
 class AboutView(views.APIView):
     template_name = 'help_about/help_about/about.html'
     description = 'About FIWARE Accounts'
+    icon = 'fa fa-info-circle'
 
 class DocumentationView(views.APIView):
     template_name = 'help_about/help_about/documentation.html'
     description = 'Documentation'
+    icon = 'fa fa-book'
 
 class ToursView(views.APIView):
     template_name = 'help_about/help_about/tours.html'
-    description = 'Tours'
+    description = 'Learning Tours'
+    icon = 'fa fa-graduation-cap'
