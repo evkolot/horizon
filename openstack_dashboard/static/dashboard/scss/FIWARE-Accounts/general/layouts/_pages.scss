@@ -610,7 +610,7 @@ textarea {
     }
   }
   .modal-footer{
-    border: none !important; 
+    border: none !important;
   }
 }
 
@@ -692,4 +692,13 @@ textarea {
 
 .contextual-help {
   float: right;
+  i{
+    color: $gray;
+    &:hover, &:active, &:focus{
+      color: $brand-primary;
+    }
+  }
+  i.active{
+    color: $brand-primary;
+  }
 }

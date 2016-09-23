@@ -18,7 +18,7 @@
     color: $brand-secundary;
   }
   }
-  .popover-title{
+  .tour-subtitle{
     background-color: $gray-lighter;
     padding: 5px 15px 0;
     font-size: 1.2em;
@@ -26,7 +26,7 @@
     font-weight: bold;
     color: $brand-primary;
   }
-  .popover-content{
+  .tour-content{
     .next-tour{
       font-family: $corporate-font-family-sans-serif-Regular;
       color: $gray-darker;
@@ -36,19 +36,9 @@
       }
     }
   }
-  .popover-navigation{
+  .tour-navigation{
     .btn-group:last-child{
       float:right;
     }
   }
-}
-/* popover arrow on tours */
-.popover.bottom > .arrow::after{
-  border-bottom-color: $gray-lighter;
-}
-.popover.right > .arrow::after{
-  border-right-color: $gray-lighter;
-}
-.popover.left > .arrow::after{
-  border-left-color: $gray-lighter;
 }
