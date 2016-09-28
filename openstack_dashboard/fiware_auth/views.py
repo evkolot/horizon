@@ -24,6 +24,7 @@ from keystoneclient import exceptions as ks_exceptions
 
 from horizon import messages
 from horizon import exceptions
+from horizon import forms
 
 from openstack_auth import views as openstack_auth_views
 
@@ -333,6 +334,19 @@ class ResetPasswordView(_RequestPassingFormView):
             LOG.warning(msg)
             exceptions.handle(request, msg)
         return None
+
+
+class ExpiredPasswordView(forms.ModalFormView):
+    form_class = fiware_forms.ExpiredPasswordForm
+    template_name = 'auth/password/expired.html'
+    success_url = reverse_lazy('login')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not fiware_api.keystone.user_is_password_expired(request):
+            return redirect('horizon:user_home')
+        return super(ExpiredPasswordView, self).dispatch(
+            request, *args, **kwargs)
+
 
 class ResendConfirmationInstructionsView(_RequestPassingFormView):
     form_class = fiware_forms.EmailForm

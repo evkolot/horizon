@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Password Expired" %}{% endblock %}
+
+{% block body_id %}base{% endblock %}
+
+{% block content %}
+  {% include '_header.html' %}
+  <div id="frontpage" class="container-fluid wrap">
+    <div class="row">
+
+      {% include 'auth/password/_expired.html' %}
+
+      {% if show_application_details %}
+        {% include 'oauth2/_application_info.html' with application=application %}
+      {% else %}
+        {% include 'auth/_presentation.html' %}
+      {% endif %}
+      
+    </div>
+  </div>
+  {% include "horizon/_messages.html" %}
+  <script type="text/javascript" src="{{ STATIC_URL }}library/zxcvbn/zxcvbn.js"></script>
+
+  <script type="text/javascript">
+    strength_messages = {'0': 'weak',
+                         '1': 'medium',
+                         '2': 'medium',
+                         '3': 'hard',
+                         '4': 'hard'};
+    message_classes =  { '0': 'weak_pwd',
+                         '1': 'medium_pwd',
+                         '2': 'medium_pwd',
+                         '3': 'hard_pwd',
+                         '4': 'hard_pwd'};
+    input_classes =    { '0': 'weak_pwd_input',
+                         '1': 'medium_pwd_input',
+                         '2': 'medium_pwd_input',
+                         '3': 'hard_pwd_input',
+                         '4': 'hard_pwd_input'};
+    $("body").on("input", "#id_new_password", function() {
+      var pwdInput = this.value;
+      if (pwdInput !== '') {
+        result = zxcvbn(pwdInput);
+        $('[for=id_new_password]').html("New password\t<a href='#' class='" +
+                                      message_classes[result.score] +
+                                      "'data-toggle='tooltip' data-placement='top' title='" +
+                                      result.feedback.warning +
+                                      "'>" + strength_messages[result.score] + '</a>');
+        $('#id_new_password').removeClass( "weak_pwd_input medium_pwd_input hard_pwd_input" ).addClass(input_classes[result.score]);
+      } else {
+        $('[for=id_new_password]').html("Ǹew password");
+        $('#id_new_password').removeClass( "weak_pwd_input medium_pwd_input hard_pwd_input" )
+      }
+    });
+  </script>
+{% endblock %}

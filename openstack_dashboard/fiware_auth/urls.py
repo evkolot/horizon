@@ -41,6 +41,8 @@ urlpatterns = patterns(
     # NOTE(garcianavalon) override to use our form
     url(r'^auth/login/$', openstack_auth_views.login, 
         {'form_class': fiware_auth_forms.LoginWithEmailForm}, name='login'),
+    url(r'password/expired/$', views.ExpiredPasswordView.as_view(),
+                            name='fiware_auth_expired_password'),
     # NOTE(garcianavalon) override to add a message
     url(r'^auth/switch/(?P<tenant_id>[^/]+)/$', views.switch, name='switch_tenants'),
 )
