@@ -75,7 +75,7 @@ class UserInfoMiddleware(object):
             msg = ("Session expired")
             LOG.debug(msg + 'for user %s', request.user.id)
             utils.add_logout_reason(request, response, msg)
-            response.set_cookie('logout_reason_level', 'info', max_age=10)
+            response.set_cookie('logout_reason_level', 'warning', max_age=10)
             return response
         
 
@@ -178,7 +178,7 @@ class CustomHorizonMiddleware(middleware.HorizonMiddleware):
             msg = ("Session expired")
             LOG.debug(msg + 'for user %s', request.user.id)
             utils.add_logout_reason(request, response, msg)
-            response.set_cookie('logout_reason_level', 'info', max_age=10)
+            response.set_cookie('logout_reason_level', 'warning', max_age=10)
 
             if request.is_ajax():
                 response_401 = http.HttpResponse(status=401)
