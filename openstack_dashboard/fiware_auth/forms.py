@@ -123,6 +123,7 @@ class ExpiredPasswordForm(horizon_forms.SelfHandlingForm):
         msg = ('Password changed correctly!. Please log in again to continue.')
         LOG.info(msg)
         utils.add_logout_reason(request, response, msg)
+        response.set_cookie('logout_reason_level', 'success', max_age=10)
         return response
 
 class RegistrationForm(ConfirmPasswordForm):

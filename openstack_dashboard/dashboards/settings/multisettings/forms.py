@@ -114,6 +114,7 @@ class PasswordForm(forms.SelfHandlingForm):
                 msg = ('Password changed. Please log in again to continue.')
                 LOG.info(msg)
                 utils.add_logout_reason(request, response, msg)
+                response.set_cookie('logout_reason_level', 'success', max_age=10)
                 return response
             except Exception:
                 exceptions.handle(request,
