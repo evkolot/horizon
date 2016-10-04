@@ -10,7 +10,9 @@
         </li>
       {% endfor %}
     </ul>
-    <div id="spinner_{{ tab_group.get_id }}" class="tab-spinner-inline"><i class="fa fa-circle-o-notch fa-spin"></i></div>
+    {{ tab_group.render_tab_group_actions }}
+    <div id="spinner_{{ tab_group.get_id }}" class="tab-spinner-inline"><i class="fa fa-circle-o-notch fa-spin"></i>
+    </div>
   </div>
   {# Tab Content #}
   <div id="body_{{ tab_group.get_id }}" class="panel-body tab-content">
@@ -20,7 +22,6 @@
       </div>
       {% endfor %}
   </div>
-
 </div>
 {% endif %}
 {% endwith %}

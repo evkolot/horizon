@@ -1,0 +1,10 @@
+{% load i18n %}
+<div class="tab_group_actions clearfix">
+  <div class="btn-group"> 
+    {% block table_actions %}
+      {% for action in tab_group_actions %}
+        {%  include "horizon/common/_tab_group_action.html" %}
+      {% endfor %}
+    {% endblock table_actions %}
+  </div>
+</div>

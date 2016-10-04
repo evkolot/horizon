@@ -13,9 +13,11 @@
 import logging
 
 from django.conf import settings
+from django import template
 
 from horizon import exceptions
 from horizon import tabs
+from horizon import tables
 
 from openstack_dashboard import fiware_api
 from openstack_dashboard.dashboards.idm import utils as idm_utils
@@ -147,7 +149,26 @@ class AuthorizedTab(tabs.TableTab):
         return applications
 
         
+class RegisterApplication(tables.LinkAction):
+    name = "register_application"
+    verbose_name = "Register"
+    url = "horizon:idm:myApplications:create"
+    render_as_link = True
+
+
 class PanelTabs(tabs.TabGroup):
     slug = "panel_tabs"
     tabs = (ProvidingTab, PurchasedTab, AuthorizedTab)
     sticky = True
+    tab_group_actions = (RegisterApplication(), )
+
+    def render_tab_group_actions(self):
+        """Renders the actions specified in ``tab_group_actions``."""
+        template_path = 'horizon/common/_tab_group_actions.html'
+        table_actions_template = template.loader.get_template(template_path)
+        bound_actions = self.tab_group_actions
+        extra_context = {"tab_group_actions": bound_actions,
+                         "slug": self.slug,
+                         "tab_group_actions_menu": []}
+        context = template.RequestContext(self.request, extra_context)
+        return table_actions_template.render(context)
