@@ -124,6 +124,7 @@ MIDDLEWARE_CLASSES = (
     'openstack_dashboard.fiware_middleware.middleware.UserInfoMiddleware',
     'openstack_dashboard.fiware_middleware.middleware.OrganizationInfoMiddleware',
     'openstack_dashboard.fiware_middleware.middleware.SwitchMiddleware',
+    'openstack_dashboard.fiware_middleware.middleware.ExpiredPasswordMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'openstack_dashboard.fiware_middleware.middleware.CustomHorizonMiddleware',
     'django.middleware.doc.XViewMiddleware',

@@ -277,7 +277,7 @@
 }
 
 //strength password styles
-.registration{
+.registration, .login {
   .modal-body{
     .weak_pwd, .medium_pwd, .hard_pwd{
       font-weight: bold;

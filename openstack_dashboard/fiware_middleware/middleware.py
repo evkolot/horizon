@@ -14,6 +14,7 @@
 
 import logging
 import six
+import datetime
 
 from django import http
 from django.conf import settings
@@ -74,6 +75,7 @@ class UserInfoMiddleware(object):
             msg = ("Session expired")
             LOG.debug(msg + 'for user %s', request.user.id)
             utils.add_logout_reason(request, response, msg)
+            response.set_cookie('logout_reason_level', 'warning', max_age=10)
             return response
         
 
@@ -135,6 +137,30 @@ class SwitchMiddleware(object):
         request.organizations = organizations
 
 
+class ExpiredPasswordMiddleware(object):
+    """Checks if password has expired, and redirects the user to reset it"""
+
+    def process_request(self, request):
+        path = request.META['PATH_INFO']
+
+        if _is_static_or_media_requests(self, path):
+            return
+
+        if (reverse('logout') == path
+            or not hasattr(request, 'user') 
+            or not request.user.is_authenticated()
+            or reverse('fiware_auth_expired_password') == path):
+            return
+
+        if (fiware_api.keystone.user_is_password_expired(request)):
+            response = http.HttpResponseRedirect(reverse('fiware_auth_expired_password'))
+            msg = ("It's been a long time since you haven't changed your password. Please choose a new one.")
+            LOG.debug(msg + 'for user %s', request.user.id)
+            utils.add_logout_reason(request, response, msg)
+            response.set_cookie('logout_reason_level', 'warning', max_age=10)
+            return response
+
+
 class CustomHorizonMiddleware(middleware.HorizonMiddleware):
     """ Redirect to logout instead of login when user is not authenticated, to
     make sure that session cookie is deleted. Also redirect to login
@@ -152,6 +178,7 @@ class CustomHorizonMiddleware(middleware.HorizonMiddleware):
             msg = ("Session expired")
             LOG.debug(msg + 'for user %s', request.user.id)
             utils.add_logout_reason(request, response, msg)
+            response.set_cookie('logout_reason_level', 'warning', max_age=10)
 
             if request.is_ajax():
                 response_401 = http.HttpResponse(status=401)

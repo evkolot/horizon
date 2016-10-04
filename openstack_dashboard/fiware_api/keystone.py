@@ -237,6 +237,9 @@ def register_user(request, name, username, password):
         domain=default_domain,
         password=password,
         username=username)
+
+    date = str(datetime.date.today())
+    new_user = keystone.users.update(new_user, password_changed_at=date)
     return new_user
 
 def activate_user(request, user, activation_key):
@@ -249,6 +252,28 @@ def change_password(request, user_email, new_password):
     user = _find_user(keystone, email=user_email)
     user = keystone.users.update(user, password=new_password, enabled=True)
     return user
+
+def user_update_own_password(request, origpassword, password):
+    result = api.keystone.user_update_own_password(request, origpassword, password)
+
+    keystone = internal_keystoneclient(request)
+    date = datetime.datetime.today().strftime('%Y-%m-%d') 
+    user = keystone.users.get(request.user.id)
+    keystone.users.update(user, password_changed_at=date)
+
+    return result
+
+def user_is_password_expired(request):
+    keystone = internal_keystoneclient(request)
+    user = keystone.users.get(request.user.id)
+    
+    if getattr(user, 'password_changed_at', None) is not None:
+        password_changed_date = datetime.datetime.strptime(user.password_changed_at, "%Y-%m-%d")
+    else:
+        password_changed_date = datetime.datetime.today()
+        keystone.users.update(user, password_changed_at=password_changed_date.strftime('%Y-%m-%d'))
+
+    return (datetime.datetime.today() - password_changed_date).days > settings.FIWARE_DEFAULT_DURATION['user_password']
 
 def check_username(request, username):
     keystone = internal_keystoneclient(request)

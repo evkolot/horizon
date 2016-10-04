@@ -3,10 +3,10 @@
 {% load url from future %}
 
 <div class="login">
-  {% block modal-header %}Log In{% endblock %}
-  {% block modal_class %}login {% if hide %}modal hide{% endif %}{% endblock %}
+  {% block modal-header %}Password expired{% endblock %}
+  {% block modal_class %}login{% if hide %}modal hide{% endif %}{% endblock %}
 
-  {% block form_action %}{% url 'login' %}{% endblock %}
+  {% block form_action %}{% url 'fiware_auth_expired_password' %}{% endblock %}
   {% block autocomplete %}{{ HORIZON_CONFIG.password_autocomplete }}{% endblock %}
 
   {% block modal-body %}
@@ -28,15 +28,7 @@
   {% endblock %}
 
   {% block modal-footer %}
-    <div class="checkbox">
-      <label>
-        <input type="checkbox"> 
-        <span class="lbl padding-0">
-          remember me
-        </span>
-      </label>
-    </div>
-    <button type="submit" class="btn btn-primary pull-right">{% trans "Sign In" %}</button>
+    <button type="submit" class="btn btn-primary pull-right">{% trans "Continue" %}</button>
     <div class="actions">
       <a href="{% url 'fiware_auth_register' %}">
         Sign up

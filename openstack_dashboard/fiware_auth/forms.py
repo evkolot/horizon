@@ -12,22 +12,36 @@
 # limitations under the License.
 
 import os
+import logging
 
 from nocaptcha_recaptcha.fields import NoReCaptchaField
 from nocaptcha_recaptcha.widgets import NoReCaptchaWidget
 
 from django import forms
+from django import http
 from django.conf import settings
+from django.forms import ValidationError  # noqa
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from django.core.urlresolvers import reverse_lazy
+from django.views.decorators.debug import sensitive_variables  # noqa
 
 from openstack_auth import forms as openstack_auth_forms
 
+from horizon import forms as horizon_forms
+from horizon import exceptions
+from horizon import messages
+from horizon.utils import validators
+from horizon.utils import functions as utils
+
 from keystoneclient import exceptions as keystoneclient_exceptions
 
+from openstack_dashboard import api
 from openstack_dashboard import fiware_api
 
 from django_gravatar.helpers import has_gravatar
+
+LOG = logging.getLogger('idm_logger')
 
 
 TRIAL_USER_MESSAGE = 'auth/_trial_users_not_available.html'
@@ -60,6 +74,57 @@ class ConfirmPasswordForm(forms.Form):
                                             code='invalid')
         return cleaned_data
 
+class ExpiredPasswordForm(horizon_forms.SelfHandlingForm):
+    action = reverse_lazy('fiware_auth_expired_password')
+    template = 'auth/password/_expired.html'
+    description = 'Change your password'
+
+    current_password = forms.CharField(
+        label=('Current password'),
+        widget=forms.PasswordInput(render_value=False))
+    new_password = forms.RegexField(
+        label=('New password'),
+        widget=forms.PasswordInput(render_value=False),
+        regex=validators.password_validator(),
+        error_messages={'invalid':
+                        validators.password_validator_msg()})
+    confirm_password = forms.CharField(
+        label=('Confirm new password'),
+        widget=forms.PasswordInput(render_value=False))
+    no_autocomplete = True
+
+    def clean(self):
+        '''Check to make sure password fields match.'''
+        data = super(horizon_forms.Form, self).clean()
+        if 'new_password' in data:
+            if data['new_password'] != data.get('confirm_password', None):
+                raise ValidationError(('Passwords do not match.'))
+
+        self.user_is_editable = api.keystone.keystone_can_edit_user()
+
+        if self.user_is_editable:
+            try:
+                fiware_api.keystone.user_update_own_password(self.request,
+                                                             data['current_password'],
+                                                             data['new_password'])
+            except Exception:
+                raise ValidationError(('Unable to change password. Make sure your current password is correct.'))
+        return data
+
+    # We have to protect the entire 'data' dict because it contains the
+    # oldpassword and newpassword strings.
+    @sensitive_variables('data')
+    def handle(self, request, data):
+        if not self.user_is_editable:
+            messages.error(self.request, ('Changing password is not supported.'))
+            return False
+
+        response = http.HttpResponseRedirect(settings.LOGOUT_URL)
+        msg = ('Password changed correctly!. Please log in again to continue.')
+        LOG.info(msg)
+        utils.add_logout_reason(request, response, msg)
+        response.set_cookie('logout_reason_level', 'success', max_age=10)
+        return response
 
 class RegistrationForm(ConfirmPasswordForm):
     """
