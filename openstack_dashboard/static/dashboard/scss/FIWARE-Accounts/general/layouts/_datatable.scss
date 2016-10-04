@@ -101,14 +101,19 @@
 .panel-heading {
   .tab-spinner-inline {
     position: absolute;
-    top: 50px;
-    right: 28px;
+    top: 51px;
+    right: 90px;
     i {
       color: #5B5B5F;
     }
   }
+  .tab_group_actions{
+    position: absolute;
+    right: 20px;
+    z-index: 9;
+    top: 45px;
+  }
   .nav-tabs{
-
     @media (max-width: 375px){
       li {
         width: 100%;
@@ -135,6 +140,33 @@
           &:hover{
             border-bottom: none;
           }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: $screen-sm-min){
+  .panel-heading {
+    .tab-spinner-inline {
+      right: 80px;
+    }
+    .tab_group_actions{
+      right: 6px;
+    }
+  }
+}
+@media (max-width: $screen-xs-min){
+  .panel-heading {
+    .tab-spinner-inline {
+      right: 15px;
+    }
+    .tab_group_actions{
+      position: static;
+      .btn-group{
+        width: 100%;
+        .btn{
+          width: 100%;
         }
       }
     }
