@@ -13,8 +13,11 @@
 # under the License.
 import logging
 
+from django import template
+
 from horizon import exceptions
 from horizon import tabs
+from horizon import tables
 
 from django.core.cache import cache
 
@@ -115,7 +118,26 @@ class MemberOrganizationsTab(tabs.TableTab):
         return organizations
 
 
+class CreateOrganization(tables.LinkAction):
+    name = "create_organization"
+    verbose_name = "Create"
+    url = "horizon:idm:organizations:create"
+    render_as_link = True
+
+
 class PanelTabs(tabs.TabGroup):
     slug = "panel_tabs"
     tabs = (OwnedOrganizationsTab, MemberOrganizationsTab, OtherOrganizationsTab)
     sticky = True
+    tab_group_actions = (CreateOrganization(), )
+
+    def render_tab_group_actions(self):
+        """Renders the actions specified in ``tab_group_actions``."""
+        template_path = 'horizon/common/_tab_group_actions.html'
+        table_actions_template = template.loader.get_template(template_path)
+        bound_actions = self.tab_group_actions
+        extra_context = {"tab_group_actions": bound_actions,
+                         "slug": self.slug,
+                         "tab_group_actions_menu": []}
+        context = template.RequestContext(self.request, extra_context)
+        return table_actions_template.render(context)
