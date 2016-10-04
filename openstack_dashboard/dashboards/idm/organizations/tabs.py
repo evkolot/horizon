@@ -32,7 +32,7 @@ LIMIT = getattr(settings, 'PAGE_LIMIT', 8)
 
 
 class OtherOrganizationsTab(tabs.TableTab):
-    name = ("Other Organizations")
+    name = ("Other Org.")
     slug = "other_organizations_tab"
     table_classes = (organization_tables.OtherOrganizationsTable,)
     template_name = ("horizon/common/_detail_table.html")
@@ -49,7 +49,7 @@ class OtherOrganizationsTab(tabs.TableTab):
         #     organizations = idm_utils.filter_default(
         #         [t for t in all_organizations if not t in my_organizations])
         #     organizations = sorted(organizations, key=lambda x: x.name.lower())
-        
+
         #     self._tables['other_organizations'].pages = idm_utils.total_pages(
         #         organizations, LIMIT)
 
@@ -102,7 +102,7 @@ class MemberOrganizationsTab(tabs.TableTab):
         #     my_organizations = fiware_api.keystone.project_list(
         #         self.request, user=self.request.user.id)
         #     owner_organizations = [org.id for org in self.request.organizations]
-        #     organizations = [o for o in my_organizations 
+        #     organizations = [o for o in my_organizations
         #                      if not o.id in owner_organizations]
 
         #     organizations = idm_utils.filter_default(sorted(organizations, key=lambda x: x.name.lower()))

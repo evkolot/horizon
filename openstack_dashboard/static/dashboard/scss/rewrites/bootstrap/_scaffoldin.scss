@@ -52,8 +52,9 @@ hr{
   h2 {
     font-family: $corporate-font-family-sans-serif-Regular;
     color: $brand-secundary;
-    text-align: right;
-    padding-top: 2px;
+    margin: 0;
+    //text-align: right;
+    //padding-top: 2px;
     @media (max-width: 375px){
       padding: 3px 0 10px;
       font-size: 19px;

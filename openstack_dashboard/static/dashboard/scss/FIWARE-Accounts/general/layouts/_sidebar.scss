@@ -19,12 +19,15 @@
     padding-left: 0px;
     border-bottom: 1px solid $border-color;
   }
+  h5{
+    margin-top: 3px;
+  }
   h5 span{
     font-size: 19px;
     font-family: $corporate-font-family-sans-serif-Regular;
-    color: #DDDDDD;
+    color: $gray-dark;
     border-bottom: 1px solid $border-color;
-    padding-bottom: 8px;
+    padding-bottom: 15px;
     letter-spacing: 1px;
     width: 100%;
     display: block;
@@ -127,12 +130,12 @@
       h4.active{
         span,
         i{
-          color: $brand-primary;
+          color: $brand-secundary;
         }
         &:hover{
           span,
           i{
-            color: $brand-primary;
+            color: $brand-secundary;
           }
         }
       }
@@ -167,4 +170,3 @@ a.notify i{@extend .fa-comment;}
 a.administrators i{@extend .fa-wrench;}
 a.user_accounts i{@extend .fa-shield;}
 a.endpoints_management i{@extend .fa-globe;}
-
