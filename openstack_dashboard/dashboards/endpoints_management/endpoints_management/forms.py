@@ -22,6 +22,7 @@ from horizon import exceptions
 from django import shortcuts
 from django.template.defaultfilters import register
 from django.core.urlresolvers import reverse_lazy
+from django.utils.datastructures import SortedDict
 
 from openstack_dashboard.fiware_api import keystone
 
@@ -40,8 +41,10 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
 
         super(UpdateEndpointsForm, self).__init__(*args, **kwargs)
 
-        fields = {}
+        fields = SortedDict()
         initial = {}
+
+        self.fields.keyOrder = []
 
         for region in self.request.session['endpoints_allowed_regions']:
             for interface in ['public', 'internal', 'admin']:
@@ -51,6 +54,8 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                                                    widget=forms.TextInput(
                                                     attrs={'class': 'endpoint_input'})
                                                    )
+                self.fields.keyOrder.append(field_ID)
+
         if self.endpoints_list:
             self.service_enabled = True
             for endpoint in self.endpoints_list:
@@ -114,7 +119,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
 
 @register.filter(name='filter_region')
 def filter_region(form, region_id):
-    filtered_fields = {}
+    filtered_fields = SortedDict()
     
     for field in form.fields:
         service_name, region, interface = field.split('_')

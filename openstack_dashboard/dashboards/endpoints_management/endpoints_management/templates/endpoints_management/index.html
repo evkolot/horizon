@@ -18,7 +18,7 @@
       <div class="col-md-3 col-xs-12 btn-group-vertical services_list" id="services_list">
         {% for service in services %}
         <div class="btn btn-default service" data-service-name="{{ service.name }}">
-          <a href="#">{{ service.name.capitalize }}</a>
+          <span>{{ service.name.capitalize }}</span>
           <div class="checkbox checkbox-slider--b-flat" id="{{ service.name }}_switch">
             <label>
               <input type="checkbox" autocomplete="off"><span></span>
