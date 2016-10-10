@@ -10,7 +10,7 @@
 pbr==1.8.1
 # Horizon Core Requirements
 Babel==2.1.1
-Django==1.6.11
+Django==1.7
 django-nocaptcha-recaptcha==0.0.18
 django-compressor==1.4
 #django_openstack_auth>=1.1.7,!=1.1.8,<=1.1.9
@@ -61,5 +61,4 @@ XStatic-JSEncrypt==2.0.0.2  # MIT License
 XStatic-QUnit==1.14.0.2  # MIT License
 XStatic-Rickshaw==1.5.0.0  # BSD License (prior)
 XStatic-Spin==1.2.5.2  # MIT License
-#django-cors-headers==1.1.0
--e git+https://github.com/ging/django-cors-headers.git#egg=django-cors-headers
+django-cors-headers==1.2.2

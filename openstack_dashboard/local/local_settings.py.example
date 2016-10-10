@@ -639,6 +639,10 @@ CORS_ORIGIN_WHITELIST = (
     'data.lab.fiware.org',
     'help.lab.fiware.org',
 )
+def cors_allow_api_to_everyone(sender, request, **kwargs):
+    #return request.path.startswith('/api/')
+    return False
+check_request_enabled.connect(cors_allow_api_to_everyone)
 
 # PEP PROXIES
 PEP_PROXIES_GROUP = 'pep_proxies'

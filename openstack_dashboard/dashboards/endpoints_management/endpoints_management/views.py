@@ -14,7 +14,6 @@ import logging
 import uuid
 
 from django.shortcuts import redirect
-from django.utils import simplejson
 from django.forms.formsets import formset_factory
 
 from openstack_dashboard import fiware_api
