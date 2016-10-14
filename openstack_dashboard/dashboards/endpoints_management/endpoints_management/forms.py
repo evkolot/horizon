@@ -25,13 +25,12 @@ from django.core.urlresolvers import reverse_lazy
 from django.utils.datastructures import SortedDict
 
 from openstack_dashboard.fiware_api import keystone
+from openstack_dashboard.dashboards.endpoints_management import utils
 
 LOG = logging.getLogger('idm_logger')
 
 
 class UpdateEndpointsForm(forms.SelfHandlingForm):
-    service_name = '' # will be initialized in __init__
-    action = reverse_lazy('horizon:endpoints_management:endpoints_management:edit_service', service_name)
     description = 'Update Service Endpoints'
     template = 'endpoints_management/endpoints_management/_endpoints.html'
 
@@ -44,8 +43,6 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
         fields = SortedDict()
         initial = {}
 
-        self.fields.keyOrder = []
-
         for region in self.request.session['endpoints_allowed_regions']:
             for interface in ['public', 'internal', 'admin']:
                 field_ID = '_'.join([self.service.name, region.lower(), interface])
@@ -54,7 +51,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                                                    widget=forms.TextInput(
                                                     attrs={'class': 'endpoint_input'})
                                                    )
-                self.fields.keyOrder.append(field_ID)
+                fields.keyOrder.append(field_ID)
 
         if self.endpoints_list:
             self.service_enabled = True
@@ -66,6 +63,10 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
 
         self.fields = fields
         self.initial = initial
+
+        self.service_account_name = keystone.get_service_account_name(self.request,
+                                                                      self.service.name,
+                                                                      self.request.session['endpoints_user_region'])
 
     def handle(self, request, data):
         is_new_service = False
@@ -81,7 +82,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                 keystone.endpoint_update(request, endpoint_id=endpoint.id, endpoint_new_url=new_url)
 
         self._create_endpoint_group_for_region(request)
-        if (is_new_service):
+        if (is_new_service and not utils._is_service_account_shared(request, self.service_account_name)):
             self._create_service_account(request)
 
         # display success messages

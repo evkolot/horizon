@@ -12,6 +12,7 @@
 
 import logging
 import uuid
+import re
 
 from django.shortcuts import redirect
 from django.forms.formsets import formset_factory
@@ -22,27 +23,12 @@ from horizon import views
 from horizon import forms
 from horizon import messages
 from horizon import exceptions
+from openstack_dashboard.local import local_settings
 from openstack_dashboard.dashboards.endpoints_management.endpoints_management import forms as endpoints_forms
 from openstack_dashboard.dashboards.endpoints_management import utils
 
-from keystoneclient.openstack.common.apiclient import exceptions as ks_exceptions
-
 
 LOG = logging.getLogger('idm_logger')
-
-# NOTE @(federicofdez) Move to local_settings.py
-AVAILABLE_SERVICES = {
-    'swift': {'type': 'Object storage',
-              'description': 'Stores and retrieves arbitrary unstructured data objects via a RESTful, HTTP based API. It is highly fault tolerant with its data replication and scale out architecture. Its implementation is not like a file server with mountable directories.'},
-    'nova': {'type': 'Compute',
-             'description': 'Manages the lifecycle of compute instances in an OpenStack environment. Responsibilities include spawning, scheduling and decomissioning of machines on demand.'},
-    'neutron': {'type': 'Networking',
-                'description': 'Enables network connectivity as a service for other OpenStack services, such as OpenStack Compute. Provides an API for users to define networks and the attachments into them. Has a pluggable architecture that supports many popular networking vendors and technologies.'},
-    'cinder': {'type': 'Block storage',
-               'description': 'Provides persistent block storage to running instances. Its pluggable driver architecture facilitates the creation and management of block storage devices.'},
-    'glance': {'type': 'Image service',
-               'description': 'Stores and retrieves virtual machine disk images. OpenStack Compute makes use of this during instance provisioning.'},
-}
 
 class ManageEndpointsView(views.APIView):
     template_name = 'endpoints_management/endpoints_management/index.html'
@@ -66,6 +52,9 @@ class ManageEndpointsView(views.APIView):
 
         context['endpoints_forms'] = []
         context['services'] = []
+
+        AVAILABLE_SERVICES = getattr(local_settings, 'AVAILABLE_SERVICES')
+
         for service in services:
             if service.name not in AVAILABLE_SERVICES.keys() or service.name == 'keystone':
                 continue
@@ -129,8 +118,12 @@ def disable_service_view(request, service_name):
     try:
         LOG.debug('Disabling service {0}...'.format(service_name))
         
-        # delete service account
-        fiware_api.keystone.delete_service_account(request, service=service_name, region=region)
+        # delete service account if necessary
+        service_account_name = fiware_api.keystone.get_service_account_name(request,
+                                                                            service=service_name,
+                                                                            region=region)
+        if not utils._is_service_account_shared(request, service_account_name):
+            fiware_api.keystone.delete_service_account(request, service=service_name, region=region)
 
         for endpoint in [e for e in endpoints if region.capitalize() in e.region_id and e.service_id == service_object.id]:
             fiware_api.keystone.endpoint_delete(request, endpoint)

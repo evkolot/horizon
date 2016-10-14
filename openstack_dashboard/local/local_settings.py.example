@@ -4,6 +4,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from openstack_dashboard import exceptions
 
+from corsheaders.signals import check_request_enabled
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -651,3 +653,28 @@ PEP_PROXIES_ROLE = 'pep_proxy'
 # IOT SENSORS
 IOT_SENSORS_GROUP = 'iot_sensors'
 IOT_SENSORS_ROLE = 'iot_sensor'
+
+# ENDPOINTS MANAGEMENT DASHBOARD
+SERVICE_PROJECT = 'service_project_name'
+# Description and extra roles of services that can be managed
+AVAILABLE_SERVICES = {
+    'swift': {'type': 'Object storage',
+              'description': 'Stores and retrieves arbitrary unstructured data objects via a RESTful, HTTP based API. \
+                              It is highly fault tolerant with its data replication and scale out architecture. Its \
+                              implementation is not like a file server with mountable directories.'},
+    'nova': {'type': 'Compute',
+             'description': 'Manages the lifecycle of compute instances in an OpenStack environment. Responsibilities \
+                             include spawning, scheduling and decomissioning of machines on demand.'},
+    'neutron': {'type': 'Networking',
+                'description': 'Enables network connectivity as a service for other OpenStack services, such as OpenStack \
+                                Compute. Provides an API for users to define networks and the attachments into them. Has \
+                                a pluggable architecture that supports many popular networking vendors and technologies.'},
+    'cinder': {'type': 'Block storage',
+               'description': 'Provides persistent block storage to running instances. Its pluggable driver architecture \
+                               facilitates the creation and management of block storage devices.'},
+    'heat': {'type': 'Orchestration',
+             'description': 'Orchestrates multiple composite cloud applications by using either the native HOT template \
+                             format or the AWS CloudFormation template format, through both an OpenStack-native REST API \
+                             and a CloudFormation-compatible Query API.',
+             'extra_roles': [{'role': 'admin', 'domain': 'heat'}]},
+}

@@ -15,6 +15,7 @@
 import datetime
 import json
 import logging
+import re
 import requests
 import uuid
 
@@ -732,22 +733,66 @@ def create_service_account(request, service, region, password):
     #default_domain = keystone.domains.find(name=domain_name)
     # TODO(garcianavalon) better domain usage
     default_domain = 'default'
-    service_account = keystone.users.create(service+'-'+region, 
+
+    service_account_name = get_service_account_name(request, service, region)
+    
+    service_account = keystone.users.create(service_account_name, 
                                             password=password,
                                             domain=default_domain)
+
+    add_project_user_role(request,
+                          user=service_account,
+                          role=get_admin_role(request),
+                          project=get_service_project(request))
+
+    extra_roles_to_assign = getattr(local_settings, "AVAILABLE_SERVICES")[service].get('extra_roles')
+
+    if extra_roles_to_assign:
+        for role in extra_roles_to_assign:
+            role = keystone.roles.find(name=role['name'])
+            if role.get('domain'):
+                add_domain_user_role(request,
+                                     user=service_account,
+                                     role=role,
+                                     domain=keystone.domains.find(name=role['domain']))
+            elif role.get('project'):
+                add_project_user_role(request,
+                                      user=service_account,
+                                      role=role,
+                                      project=keystone.projects.find(name=role['project']))
+
     return service_account
 
 def delete_service_account(request, service, region):
     keystone = internal_keystoneclient(request)
-    service_account = keystone.users.find(name=service+'-'+region)
+
+    service_account_name = get_service_account_name(request, service, region)
+
+    service_account = keystone.users.find(name=service_account_name)
     return keystone.users.delete(service_account)
 
 def reset_service_account(request, service, region, password):
     if not password:
         password = uuid.uuid4().hex
     keystone = internal_keystoneclient(request)
-    service_account = keystone.users.find(name=service+'-'+region)
+
+    service_account_name = get_service_account_name(request, service, region)
+    service_account = keystone.users.find(name=service_account_name)
+
     return keystone.users.update(service_account, password=password)
+
+# have several versions of the same service (e.g. nova, novav3) use the 
+# same account (e.g. "nova-region_name")
+def get_service_account_name(request, service, region):
+    service_name = re.search('^([a-z]+)(v\d)?$', service).group(1)
+    service_account_name = service_name + '-' + region
+    
+    existing_account = [u for u in internal_keystoneclient(request).users.list()
+                        if u.name == service_account_name]
+    if not existing_account and service_name == 'quantum':
+        return 'neutron-' + region
+    
+    return service_account_name
 
 def endpoint_list(request):
     manager = internal_keystoneclient(request).endpoints
@@ -805,6 +850,10 @@ def project_delete(request, project):
 def add_domain_user_role(request, user, role, domain):
     manager = internal_keystoneclient(request).roles
     return manager.grant(role, user=user, domain=domain)
+
+def add_project_user_role(request, user, role, project):
+    manager = internal_keystoneclient(request).roles
+    return manager.grant(role, user=user, project=project)
 
 def remove_domain_user_role(request, user, role, domain):
     manager = internal_keystoneclient(request).roles
@@ -990,6 +1039,15 @@ def get_default_cloud_role(request, cloud_app_id, use_idm_account=True):
     default_cloud = getattr(local_settings, "FIWARE_DEFAULT_CLOUD_ROLE_ID")
     return _get_element_and_cache(
         request, default_cloud, lambda req, role_id: internal_keystoneclient(req).fiware_roles.roles.get(role_id), pickle_props=['name'])
+
+def get_service_project(request, use_idm_account=True):
+    service_project_name = getattr(local_settings, "SERVICE_PROJECT")
+    return _get_element_and_cache(
+        request,
+        service_project_name,
+        lambda req, service_project_name:
+            next(p for p in internal_keystoneclient(req).projects.list() if p.name == service_project_name),
+        pickle_props=['name'])
 
 
 def get_idm_admin_app(request):
