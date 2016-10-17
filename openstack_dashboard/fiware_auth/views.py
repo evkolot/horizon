@@ -342,10 +342,10 @@ class ExpiredPasswordView(forms.ModalFormView):
     success_url = reverse_lazy('login')
 
     def dispatch(self, request, *args, **kwargs):
-        if not fiware_api.keystone.user_is_password_expired(request):
-            return redirect('horizon:user_home')
-        return super(ExpiredPasswordView, self).dispatch(
-            request, *args, **kwargs)
+        if request.user.username and fiware_api.keystone.user_is_password_expired(request):
+            return super(ExpiredPasswordView, self).dispatch(request, *args, **kwargs)
+
+        return redirect('horizon:user_home')
 
 
 class ResendConfirmationInstructionsView(_RequestPassingFormView):
