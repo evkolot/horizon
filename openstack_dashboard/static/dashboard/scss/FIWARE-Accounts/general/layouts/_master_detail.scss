@@ -201,6 +201,13 @@ ul.disabled-list{
       font-weight: normal;
       color: $gray;
     }
+    .service-name{
+      float: left;
+      max-width: 70%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .checkbox{
       float: right;
       margin-right: -20px;
