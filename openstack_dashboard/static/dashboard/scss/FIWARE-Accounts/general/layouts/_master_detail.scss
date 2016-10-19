@@ -182,6 +182,7 @@ ul.disabled-list{
 }
 
 .services_list {
+  padding-bottom: 15px;
   @media (max-width: $screen-sm-min){
     padding-left: 0;
     padding-right: 0;
@@ -211,6 +212,9 @@ ul.disabled-list{
       input + span:before{
         background: #d0edf1 !important;
       }
+    }
+    span:first-child{
+      float: left;
     }
   }
   .service.active{
