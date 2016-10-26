@@ -40,7 +40,8 @@ def _is_user_administrator(request, user_id):
 
 def _store_allowed_regions(request):
     # save allowed regions in session
-    user_region = request.user.id.split('admin-')[1]
+    user = fiware_api.keystone.user_get(request, request.user.id)
+    user_region = user.name.split('admin-')[1]
     regions = fiware_api.keystone.region_list(request)
     allowed_regions = [r.id for r in regions if user_region in r.id.lower()]
 
