@@ -28,7 +28,8 @@ def is_current_user_keystone_administrator(request):
     admin role AND if their username starts with 'admin')
     """
 
-    if 'admin' in request.user.id and request.user.id.index('admin') == 0:
+    user = fiware_api.keystone.user_get(request, request.user.id)
+    if 'admin' in user.name and user.name.index('admin') == 0:
         return _is_user_administrator(request, request.user.id)
     return False
 
