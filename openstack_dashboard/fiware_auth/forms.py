@@ -25,6 +25,7 @@ from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse_lazy
 from django.views.decorators.debug import sensitive_variables  # noqa
+from django.utils.datastructures import SortedDict
 
 from openstack_auth import forms as openstack_auth_forms
 
@@ -161,6 +162,7 @@ class RegistrationForm(ConfirmPasswordForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(RegistrationForm, self).__init__(*args, **kwargs)
+        self.fields = SortedDict(self.fields)
         if settings.USE_CAPTCHA:
             self.fields.keyOrder = [
                 'username', 'email', 'use_gravatar', 'password1', 'password2', 
