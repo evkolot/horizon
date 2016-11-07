@@ -233,14 +233,13 @@ def register_user(request, name, username, password):
     # TODO(garcianavalon) better domain usage
     default_domain = 'default'
     # if not (check_user(name) or check_email(email)):
+    date = str(datetime.date.today())
     new_user = keystone.user_registration.users.register_user(
         name,
         domain=default_domain,
         password=password,
-        username=username)
-
-    date = str(datetime.date.today())
-    new_user = keystone.users.update(new_user, password_changed_at=date)
+        username=username,
+        password_changed_at=date)
     return new_user
 
 def activate_user(request, user, activation_key):
