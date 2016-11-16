@@ -72,6 +72,7 @@ class ManageEndpointsView(views.APIView):
                                                                                   endpoints_list=service_endpoints))
             context['services'].append(service)
 
+        context['services'].sort(key=lambda s: s.name)
         # Bootstrap classes for form rendering
         context['classes'] = {'label': 'col-sm-2',
                               'value': 'col-sm-10'}
