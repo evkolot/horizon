@@ -786,10 +786,11 @@ def get_service_account_name(request, service, region):
     service_name = re.search('^([a-z]+)(v\d)?$', service).group(1)
     service_account_name = service_name + '-' + region
     
-    existing_account = [u for u in internal_keystoneclient(request).users.list()
+    if service_name == 'quantum':
+        existing_account = [u for u in internal_keystoneclient(request).users.list()
                         if u.name == service_account_name]
-    if not existing_account and service_name == 'quantum':
-        return 'neutron-' + region
+        if not existing_account:
+            return 'neutron-' + region
     
     return service_account_name
 
