@@ -54,13 +54,15 @@ def _is_service_account_shared(request, service_account_name):
     # let's check first if the service_account could be potentially shared
     # i.e. there is another service of the same type
     services_IDs = [s.id for s in fiware_api.keystone.service_list(request) if service in s.name]
-    if len(services_IDs) < 1:
+    if len(services_IDs) < 2:
         return False
 
     # let's check now if more than one of those services is enabled
-    endpoints = [e for e in fiware_api.keystone.endpoint_list(request) if e.region_id == region.capitalize() and \
-                                                                           e.service_id in services_IDs]
-    if len(endpoints) > 3:
+    endpoints = []
+    for region in request.session['endpoints_allowed_regions']:
+        endpoints.append([e for e in fiware_api.keystone.endpoint_list(request) if e.region_id == region and \
+                                                                           e.service_id in services_IDs])
+    if len(endpoints) > request.session['endpoints_allowed_regions']*3:
         return True
     
     return False
