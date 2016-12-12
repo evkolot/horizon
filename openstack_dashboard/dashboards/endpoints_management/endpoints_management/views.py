@@ -145,12 +145,22 @@ def reset_service_password_view(request, service_name):
 
     region = request.session['endpoints_user_region']
     password = uuid.uuid4().hex
-    service_account = fiware_api.keystone.reset_service_account(request=request, 
-                                                                service=service_name,
-                                                                region=region,
-                                                                password=password)
+
+    try:
+        service_account, isNewAccount = fiware_api.keystone.reset_service_account(request=request, 
+                                                                                  service=service_name,
+                                                                                  region=region,
+                                                                                  password=password)
+    except Exception:
+        messages.error(request, 'An error occured when resetting the password. Please contact and admin.')
+        return redirect('horizon:endpoints_management:endpoints_management:service', service_name)
+
+    if isNewAccount:
+        messages.warning(request, 'Account did not exist for service {0}, so a new one was created.'.format(service_name.capitalize()))
+    else:
+        messages.success(request, 'Password for service {0} was reset.'.format(service_name.capitalize()))
+
     request.session['new_service_password'] = password
     request.session['new_service_name'] = service_name
-    messages.success(request, 'Password for service {0} was reset.'.format(service_name.capitalize()))
 
     return redirect('horizon:endpoints_management:endpoints_management:service', service_name)

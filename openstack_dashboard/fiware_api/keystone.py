@@ -735,7 +735,7 @@ def create_service_account(request, service, region, password):
 
     service_account_name = get_service_account_name(request, service, region)
     
-    service_account = keystone.users.create(service_account_name, 
+    service_account = keystone.users.create(name=service_account_name, 
                                             password=password,
                                             domain=default_domain)
 
@@ -776,9 +776,12 @@ def reset_service_account(request, service, region, password):
     keystone = internal_keystoneclient(request)
 
     service_account_name = get_service_account_name(request, service, region)
-    service_account = keystone.users.find(name=service_account_name)
 
-    return keystone.users.update(service_account, password=password)
+    try:
+        service_account = keystone.users.find(name=service_account_name)
+        return (keystone.users.update(service_account, password=password), False)
+    except ks_exceptions.NotFound:
+        return (create_service_account(request, service, region, password), True)
 
 # have several versions of the same service (e.g. nova, novav3) use the 
 # same account (e.g. "nova-region_name")
