@@ -786,13 +786,17 @@ def reset_service_account(request, service, region, password):
 # have several versions of the same service (e.g. nova, novav3) use the 
 # same account (e.g. "nova-region_name")
 def get_service_account_name(request, service, region):
+    keystone = internal_keystoneclient(request)
+
     service_name = re.search('^([a-z]+)(v\d)?$', service).group(1)
     service_account_name = service_name + '-' + region
     
+    # support quantum-region name for old regions
+    # but use neutron for new ones
     if service_name == 'quantum':
-        existing_account = [u for u in internal_keystoneclient(request).users.list()
-                        if u.name == service_account_name]
-        if not existing_account:
+        try:
+            existing_account = keystone.users.find(name=service_account_name)
+        except ks_exceptions.NotFound:
             return 'neutron-' + region
     
     return service_account_name
