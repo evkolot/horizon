@@ -169,7 +169,6 @@ def reset_service_password_view(request, service_name):
 
 def _is_service_account_shared(request, service_account_name):
     service, region = service_account_name.split('-')
-    import pdb; pdb.set_trace()
 
     # let's check first if the service_account could be potentially shared
     # i.e. there is another service of the same type
@@ -183,7 +182,6 @@ def _is_service_account_shared(request, service_account_name):
         endpoints = endpoints + [e for e in fiware_api.keystone.endpoint_list(request) \
                                  if e.region_id == region and \
                                  e.service_id in services_IDs]
-    import pdb; pdb.set_trace()
     if len(endpoints) > 0:
         return True
     
