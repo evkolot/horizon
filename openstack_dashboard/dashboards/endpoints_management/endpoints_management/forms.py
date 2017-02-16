@@ -24,6 +24,8 @@ from django.template.defaultfilters import register
 from django.core.urlresolvers import reverse_lazy
 from django.utils.datastructures import SortedDict
 
+from keystoneclient import exceptions as ks_exceptions
+
 from openstack_dashboard.fiware_api import keystone
 from openstack_dashboard.dashboards.endpoints_management import utils
 
@@ -69,7 +71,6 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                                                                       self.request.session['endpoints_user_region'])
 
     def handle(self, request, data):
-        is_new_service = False
         
         for field_ID, new_url in data.iteritems():
             service_name, region, interface = field_ID.split('_')
@@ -77,8 +78,6 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
             # check if the endpoint already exists
             endpoint = next((e for e in self.endpoints_list if e.region_id == region and e.interface == interface), None)
             if not endpoint:
-                # check if service was previously enabled for some other region of the user
-                is_new_service = True if next((e for e in self.endpoints_list if self.request.session['endpoints_user_region'] in e.region_id and e.interface == interface), None) else False
                 # create new endpoint
                 keystone.endpoint_create(request, service=self.service.id, url=new_url, interface=interface, region=region)
             elif new_url != '' and new_url != endpoint.url:
@@ -86,7 +85,11 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                 keystone.endpoint_update(request, endpoint_id=endpoint.id, endpoint_new_url=new_url)
 
         self._create_endpoint_group_for_region(request)
-        if (is_new_service and not utils._is_service_account_shared(request, self.service_account_name)):
+
+        # create service account if it does not exist
+        try:
+            keystone.user_get(request, self.service_account_name)
+        except ks_exceptions.NotFound:
             self._create_service_account(request)
 
         # display success messages

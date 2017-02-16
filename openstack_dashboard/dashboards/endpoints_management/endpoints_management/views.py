@@ -118,16 +118,17 @@ def disable_service_view(request, service_name):
 
     try:
         LOG.debug('Disabling service {0}...'.format(service_name))
-        
+
+        # delete endpoints
+        for endpoint in [e for e in endpoints if region.capitalize() in e.region_id and e.service_id == service_object.id]:
+            fiware_api.keystone.endpoint_delete(request, endpoint)
+
         # delete service account if necessary
         service_account_name = fiware_api.keystone.get_service_account_name(request,
                                                                             service=service_name,
                                                                             region=region)
-        if not utils._is_service_account_shared(request, service_account_name):
+        if not _is_service_account_shared(request, service_account_name):
             fiware_api.keystone.delete_service_account(request, service=service_name, region=region)
-
-        for endpoint in [e for e in endpoints if region.capitalize() in e.region_id and e.service_id == service_object.id]:
-            fiware_api.keystone.endpoint_delete(request, endpoint)
 
         messages.success(request,
                          ('Service %s was successfully disabled.')
@@ -164,3 +165,27 @@ def reset_service_password_view(request, service_name):
     request.session['new_service_name'] = service_name
 
     return redirect('horizon:endpoints_management:endpoints_management:service', service_name)
+
+
+def _is_service_account_shared(request, service_account_name):
+    service, region = service_account_name.split('-')
+    import pdb; pdb.set_trace()
+
+    # let's check first if the service_account could be potentially shared
+    # i.e. there is another service of the same type
+    services_IDs = [s.id for s in fiware_api.keystone.service_list(request) if service in s.name]
+    if len(services_IDs) < 2:
+        return False
+
+    # let's check now if more than one of those services is enabled
+    endpoints = []
+    for region in request.session['endpoints_allowed_regions']:
+        endpoints = endpoints + [e for e in fiware_api.keystone.endpoint_list(request) \
+                                 if e.region_id == region and \
+                                 e.service_id in services_IDs]
+    import pdb; pdb.set_trace()
+    if len(endpoints) > 0:
+        return True
+    
+    return False
+

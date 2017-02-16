@@ -767,8 +767,13 @@ def delete_service_account(request, service, region):
 
     service_account_name = get_service_account_name(request, service, region)
 
-    service_account = keystone.users.find(name=service_account_name)
-    return keystone.users.delete(service_account)
+    try:
+        service_account = keystone.users.find(name=service_account_name)
+        return keystone.users.delete(service_account)
+    except ks_exceptions.NotFound:
+        LOG.error('Service account could not be deleted because it was not found')
+        return
+
 
 def reset_service_account(request, service, region, password):
     if not password:
