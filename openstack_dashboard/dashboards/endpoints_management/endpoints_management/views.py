@@ -112,7 +112,7 @@ def disable_service_view(request, service_name):
 
     services = fiware_api.keystone.service_list(request)
     endpoints = fiware_api.keystone.endpoint_list(request)
-    region = request.session['endpoints_user_region']
+    user_region = request.session['endpoints_user_region']
 
     service_object = next((s for s in services if s.name == service_name), None)
 
@@ -120,15 +120,16 @@ def disable_service_view(request, service_name):
         LOG.debug('Disabling service {0}...'.format(service_name))
 
         # delete endpoints
-        for endpoint in [e for e in endpoints if region.capitalize() in e.region_id and e.service_id == service_object.id]:
-            fiware_api.keystone.endpoint_delete(request, endpoint)
+        for region in request.session['endpoints_allowed_regions']:
+            for endpoint in [e for e in endpoints if region == e.region_id and e.service_id == service_object.id]:
+                fiware_api.keystone.endpoint_delete(request, endpoint)
 
         # delete service account if necessary
         service_account_name = fiware_api.keystone.get_service_account_name(request,
                                                                             service=service_name,
-                                                                            region=region)
+                                                                            region=user_region)
         if not _is_service_account_shared(request, service_account_name):
-            fiware_api.keystone.delete_service_account(request, service=service_name, region=region)
+            fiware_api.keystone.delete_service_account(request, service=service_name, region=user_region)
 
         messages.success(request,
                          ('Service %s was successfully disabled.')
