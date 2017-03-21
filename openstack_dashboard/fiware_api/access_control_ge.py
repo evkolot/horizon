@@ -82,7 +82,7 @@ def policyset_update(request, application, role_permissions):
 
     if not settings.ACCESS_CONTROL_MAGIC_KEY:
         LOG.warning('ACCESS_CONTROL_MAGIC_KEY setting is not set.')
-        return 
+        # return 
 
     app_id = application.id
     policy_id = str(uuid.uuid4())
