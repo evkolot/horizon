@@ -262,12 +262,14 @@ class UpdateAccountForm(forms.SelfHandlingForm, UserAccountsLogicMixin):
             cleaned_data['regions'] = []
             return cleaned_data
 
+        if not regions:
+            raise forms.ValidationError(
+                'You must choose a region for this accout type.',
+                code='invalid')
+
         for region in regions:
             if not region in allowed_regions[role_name]:
-                if not region:
-                    msg = 'You must choose a region for this accout type.'
-                else:
-                    msg = '{0} is not allowed for that account type.'.format(region)
+                msg = '{0} is not allowed for that account type.'.format(region)
                 raise forms.ValidationError(
                     msg,
                     code='invalid')
