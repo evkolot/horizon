@@ -23,5 +23,5 @@ class User_Accounts(horizon.Panel):
     name = _("User Accounts")
     slug = "user_accounts"
 
-
-dashboard.Idm_Admin.register(User_Accounts)
+# (aalonsog) User accounts management not available now
+#dashboard.Idm_Admin.register(User_Accounts)
