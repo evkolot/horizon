@@ -181,7 +181,9 @@ class RegistrationForm(ConfirmPasswordForm):
             self.fields['trial'].widget.attrs['disabled'] = 'disabled'
             self.fields['trial'].label = mark_safe(
                 self.fields['trial'].label + render_to_string(TRIAL_USER_MESSAGE))
-    
+        
+        # [aalonsog] Trial users are not currently available
+        self.fields['trial'].widget = forms.HiddenInput()
     # def clean_username(self):
     #     """ Validate that the username is not already in use."""
     #     username = self.cleaned_data['username']

@@ -102,9 +102,13 @@ class MultiFormView(views.APIView):
         idm_username = getattr(settings, 'IDM_USER_CREDENTIALS')['username']
 
         if idm_username == user.name:
-            context['forms'] = [status, password, email, cancel]
+            context['forms'] = [password, email, cancel]
+            # (aalonsog) Status info not available now
+            # context['forms'] = [status, password, email, cancel]
         else:
-            context['forms'] = [status, password, email, two_factor, cancel]
+            context['forms'] = [password, email, two_factor, cancel]
+            # (aalonsog) Status info not available now
+            # context['forms'] = [status, password, email, two_factor, cancel]
         return context
 
 
