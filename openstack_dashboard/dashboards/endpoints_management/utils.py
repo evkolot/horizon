@@ -29,7 +29,7 @@ def is_current_user_keystone_administrator(request):
     """
 
     user = fiware_api.keystone.user_get(request, request.user.id)
-    if 'admin' in user.name and user.name.index('admin') == 0:
+    if 'admin' in user.username and user.username.index('admin') == 0:
         return _is_user_administrator(request, request.user.id)
     return False
 
@@ -41,26 +41,10 @@ def _is_user_administrator(request, user_id):
 def _store_allowed_regions(request):
     # save allowed regions in session
     user = fiware_api.keystone.user_get(request, request.user.id)
-    user_region = user.name.split('admin-')[1]
+    user_region = user.username.split('admin-')[1]
     regions = fiware_api.keystone.region_list(request)
     allowed_regions = [r.id for r in regions if user_region in r.id.lower()]
 
     request.session['endpoints_allowed_regions'] = allowed_regions
     request.session['endpoints_user_region'] = user_region
 
-def _is_service_account_shared(request, service_account_name):
-    service, region = service_account_name.split('-')
-
-    # let's check first if the service_account could be potentially shared
-    # i.e. there is another service of the same type
-    services_IDs = [s.id for s in fiware_api.keystone.service_list(request) if service in s.name]
-    if len(services_IDs) < 1:
-        return False
-
-    # let's check now if more than one of those services is enabled
-    endpoints = [e for e in fiware_api.keystone.endpoint_list(request) if e.region_id == region.capitalize() and \
-                                                                           e.service_id in services_IDs]
-    if len(endpoints) > 3:
-        return True
-    
-    return False

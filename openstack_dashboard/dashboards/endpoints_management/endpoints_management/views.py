@@ -72,6 +72,7 @@ class ManageEndpointsView(views.APIView):
                                                                                   endpoints_list=service_endpoints))
             context['services'].append(service)
 
+        context['services'].sort(key=lambda s: s.name)
         # Bootstrap classes for form rendering
         context['classes'] = {'label': 'col-sm-2',
                               'value': 'col-sm-10'}
@@ -111,22 +112,24 @@ def disable_service_view(request, service_name):
 
     services = fiware_api.keystone.service_list(request)
     endpoints = fiware_api.keystone.endpoint_list(request)
-    region = request.session['endpoints_user_region']
+    user_region = request.session['endpoints_user_region']
 
     service_object = next((s for s in services if s.name == service_name), None)
 
     try:
         LOG.debug('Disabling service {0}...'.format(service_name))
-        
+
+        # delete endpoints
+        for region in request.session['endpoints_allowed_regions']:
+            for endpoint in [e for e in endpoints if region == e.region_id and e.service_id == service_object.id]:
+                fiware_api.keystone.endpoint_delete(request, endpoint)
+
         # delete service account if necessary
         service_account_name = fiware_api.keystone.get_service_account_name(request,
                                                                             service=service_name,
-                                                                            region=region)
-        if not utils._is_service_account_shared(request, service_account_name):
-            fiware_api.keystone.delete_service_account(request, service=service_name, region=region)
-
-        for endpoint in [e for e in endpoints if region.capitalize() in e.region_id and e.service_id == service_object.id]:
-            fiware_api.keystone.endpoint_delete(request, endpoint)
+                                                                            region=user_region)
+        if not _is_service_account_shared(request, service_account_name):
+            fiware_api.keystone.delete_service_account(request, service=service_name, region=user_region)
 
         messages.success(request,
                          ('Service %s was successfully disabled.')
@@ -144,12 +147,44 @@ def reset_service_password_view(request, service_name):
 
     region = request.session['endpoints_user_region']
     password = uuid.uuid4().hex
-    service_account = fiware_api.keystone.reset_service_account(request=request, 
-                                                                service=service_name,
-                                                                region=region,
-                                                                password=password)
+
+    try:
+        service_account, isNewAccount = fiware_api.keystone.reset_service_account(request=request, 
+                                                                                  service=service_name,
+                                                                                  region=region,
+                                                                                  password=password)
+    except Exception:
+        messages.error(request, 'An error occured when resetting the password. Please contact and admin.')
+        return redirect('horizon:endpoints_management:endpoints_management:service', service_name)
+
+    if isNewAccount:
+        messages.warning(request, 'Account did not exist for service {0}, so a new one was created.'.format(service_name.capitalize()))
+    else:
+        messages.success(request, 'Password for service {0} was reset.'.format(service_name.capitalize()))
+
     request.session['new_service_password'] = password
     request.session['new_service_name'] = service_name
-    messages.success(request, 'Password for service {0} was reset.'.format(service_name.capitalize()))
 
     return redirect('horizon:endpoints_management:endpoints_management:service', service_name)
+
+
+def _is_service_account_shared(request, service_account_name):
+    service, region = service_account_name.split('-')
+
+    # let's check first if the service_account could be potentially shared
+    # i.e. there is another service of the same type
+    services_IDs = [s.id for s in fiware_api.keystone.service_list(request) if service in s.name]
+    if len(services_IDs) < 2:
+        return False
+
+    # let's check now if more than one of those services is enabled
+    endpoints = []
+    for region in request.session['endpoints_allowed_regions']:
+        endpoints = endpoints + [e for e in fiware_api.keystone.endpoint_list(request) \
+                                 if e.region_id == region and \
+                                 e.service_id in services_IDs]
+    if len(endpoints) > 0:
+        return True
+    
+    return False
+

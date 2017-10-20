@@ -24,6 +24,8 @@ from django.template.defaultfilters import register
 from django.core.urlresolvers import reverse_lazy
 from django.utils.datastructures import SortedDict
 
+from keystoneclient import exceptions as ks_exceptions
+
 from openstack_dashboard.fiware_api import keystone
 from openstack_dashboard.dashboards.endpoints_management import utils
 
@@ -45,7 +47,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
 
         for region in self.request.session['endpoints_allowed_regions']:
             for interface in ['public', 'internal', 'admin']:
-                field_ID = '_'.join([self.service.name, region.lower(), interface])
+                field_ID = '_'.join([self.service.name, region, interface])
                 fields[field_ID] = forms.CharField(label=interface.capitalize(),
                                                    required=True,
                                                    widget=forms.TextInput(
@@ -56,7 +58,7 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
         if self.endpoints_list:
             self.service_enabled = True
             for endpoint in self.endpoints_list:
-                field_ID = '_'.join([self.service.name, endpoint.region.lower(), endpoint.interface])
+                field_ID = '_'.join([self.service.name, endpoint.region, endpoint.interface])
                 initial[field_ID] = endpoint.url
         else:
             self.service_enabled = False
@@ -69,20 +71,25 @@ class UpdateEndpointsForm(forms.SelfHandlingForm):
                                                                       self.request.session['endpoints_user_region'])
 
     def handle(self, request, data):
-        is_new_service = False
         
         for field_ID, new_url in data.iteritems():
             service_name, region, interface = field_ID.split('_')
 
-            endpoint = next((e for e in self.endpoints_list if e.region_id == region.capitalize() and e.interface == interface), None)
+            # check if the endpoint already exists
+            endpoint = next((e for e in self.endpoints_list if e.region_id == region and e.interface == interface), None)
             if not endpoint:
-                is_new_service = True
-                keystone.endpoint_create(request, service=self.service.id, url=new_url, interface=interface, region=region.capitalize())
+                # create new endpoint
+                keystone.endpoint_create(request, service=self.service.id, url=new_url, interface=interface, region=region)
             elif new_url != '' and new_url != endpoint.url:
+                # update endpoint
                 keystone.endpoint_update(request, endpoint_id=endpoint.id, endpoint_new_url=new_url)
 
         self._create_endpoint_group_for_region(request)
-        if (is_new_service and not utils._is_service_account_shared(request, self.service_account_name)):
+
+        # create service account if it does not exist
+        try:
+            keystone.user_get(request, self.service_account_name)
+        except ks_exceptions.NotFound:
             self._create_service_account(request)
 
         # display success messages
@@ -124,7 +131,7 @@ def filter_region(form, region_id):
     
     for field in form.fields:
         service_name, region, interface = field.split('_')
-        if region == region_id.lower():
+        if region == region_id:
             filtered_fields[field] = form.fields[field]
 
     filtered_form = UpdateEndpointsForm(request=form.request,

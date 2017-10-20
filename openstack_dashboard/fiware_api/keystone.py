@@ -233,14 +233,13 @@ def register_user(request, name, username, password):
     # TODO(garcianavalon) better domain usage
     default_domain = 'default'
     # if not (check_user(name) or check_email(email)):
+    date = str(datetime.date.today())
     new_user = keystone.user_registration.users.register_user(
         name,
         domain=default_domain,
         password=password,
-        username=username)
-
-    date = str(datetime.date.today())
-    new_user = keystone.users.update(new_user, password_changed_at=date)
+        username=username,
+        password_changed_at=date)
     return new_user
 
 def activate_user(request, user, activation_key):
@@ -736,7 +735,7 @@ def create_service_account(request, service, region, password):
 
     service_account_name = get_service_account_name(request, service, region)
     
-    service_account = keystone.users.create(service_account_name, 
+    service_account = keystone.users.create(name=service_account_name, 
                                             password=password,
                                             domain=default_domain)
 
@@ -768,8 +767,13 @@ def delete_service_account(request, service, region):
 
     service_account_name = get_service_account_name(request, service, region)
 
-    service_account = keystone.users.find(name=service_account_name)
-    return keystone.users.delete(service_account)
+    try:
+        service_account = keystone.users.find(name=service_account_name)
+        return keystone.users.delete(service_account)
+    except ks_exceptions.NotFound:
+        LOG.error('Service account could not be deleted because it was not found')
+        return
+
 
 def reset_service_account(request, service, region, password):
     if not password:
@@ -777,20 +781,28 @@ def reset_service_account(request, service, region, password):
     keystone = internal_keystoneclient(request)
 
     service_account_name = get_service_account_name(request, service, region)
-    service_account = keystone.users.find(name=service_account_name)
 
-    return keystone.users.update(service_account, password=password)
+    try:
+        service_account = keystone.users.find(name=service_account_name)
+        return (keystone.users.update(service_account, password=password), False)
+    except ks_exceptions.NotFound:
+        return (create_service_account(request, service, region, password), True)
 
 # have several versions of the same service (e.g. nova, novav3) use the 
 # same account (e.g. "nova-region_name")
 def get_service_account_name(request, service, region):
+    keystone = internal_keystoneclient(request)
+
     service_name = re.search('^([a-z]+)(v\d)?$', service).group(1)
     service_account_name = service_name + '-' + region
     
-    existing_account = [u for u in internal_keystoneclient(request).users.list()
-                        if u.name == service_account_name]
-    if not existing_account and service_name == 'quantum':
-        return 'neutron-' + region
+    # support quantum-region name for old regions
+    # but use neutron for new ones
+    if service_name == 'quantum':
+        try:
+            existing_account = keystone.users.find(name=service_account_name)
+        except ks_exceptions.NotFound:
+            return 'neutron-' + region
     
     return service_account_name
 
