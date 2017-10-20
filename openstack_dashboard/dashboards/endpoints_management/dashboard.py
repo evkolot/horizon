@@ -29,5 +29,5 @@ class Endpoints_Management(horizon.Dashboard):
         request = context['request']
         return utils.is_current_user_keystone_administrator(request)
 
-# (aalonsog) Endpoints management not available now
-#horizon.register(Endpoints_Management)
+
+horizon.register(Endpoints_Management)
