@@ -21,5 +21,4 @@ class Endpoints_Management(horizon.Panel):
     name = "Endpoints Management"
     slug = "endpoints_management"
 
-# (aalonsog) Endpoints management not available now
-#dashboard.Endpoints_Management.register(Endpoints_Management)
+dashboard.Endpoints_Management.register(Endpoints_Management)
